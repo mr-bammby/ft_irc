@@ -17,7 +17,7 @@ class Client
 
 
 	public:
-		Client(int id, int client_fd);
+		Client(int fd, int client_fd);
 		Client();
 		Client(const Client &c);
 		~Client();
@@ -26,7 +26,7 @@ class Client
 
 		int 					parse(std::string command);
 		const std::string&		getNickname();
-		int						setNickname(std::string name); //check for name uniqness before call of this function
+		int					setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
 
 		
