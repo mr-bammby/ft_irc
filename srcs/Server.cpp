@@ -66,8 +66,7 @@ int Server::start_loop()
 			{
 				create_client();
 			}
-			// changed iterator to start from second position, because first is server and it goes into if condition(gets deleted)
-			for (std::vector<pollfd>::iterator pfdit = ++pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
+			for (std::vector<pollfd>::iterator pfdit = pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
 			{
 				if (pfdit->revents & POLLIN)
 				{
