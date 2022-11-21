@@ -1,11 +1,35 @@
 #include "Server.hpp"
 
+int checkPort(char* argv)
+{
+	for (int i = 0; argv[i]; i++)
+	{
+		if (std::isdigit(argv[i]) == 0)
+		{
+			std::cout<<"Port should be a number"<<std::endl;
+			return (0);
+		}
+	}
+	int port;
+	sscanf(argv, "%d", &port);
+	if (port < 1025)
+	{
+		std::cout<<"Port should be a bigger then 1024"<<std::endl;
+		return (0);
+	}
+	return (port);
+}
+
 int main(int argc, char *argv[])
 {
-	(void) argv;
-	if (argc != 3)
+	int port;
+
+	if (argc == 3)
 	{
-		Server s(6667, std::string("password1234"));
+		port = checkPort(argv[1]);
+		if (!port)
+			return (1);
+		Server s(port, argv[2]);
 		s.init();
 		s.start_loop();
 	}

@@ -1,3 +1,14 @@
+// https://datatracker.ietf.org/doc/html/rfc1459#section-4.1
+enum ComsInit
+{
+	// Parameters: <password>
+	PASS,
+	// Parameters: <nickname> [ <hopcount> ]
+	NICK,
+	// Parameters: <username> <hostname> <servername> <realname>
+	USER
+};
+
 enum ComsMsg
 {
 	// Send private messages between users. <receiver> is the 
