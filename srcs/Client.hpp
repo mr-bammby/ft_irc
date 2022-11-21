@@ -18,6 +18,7 @@ class Client
 
 	public:
 		Client(int fd, int client_fd);
+		Client();
 		Client(const Client &c);
 		~Client();
 
@@ -32,8 +33,8 @@ class Client
 	private:
 		int				id;
 		int				client_fd;
-		Client::State	state;
 		std::string		nickname;
+		Client::State	state;
 		
 };
 

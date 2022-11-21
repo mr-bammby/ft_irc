@@ -48,6 +48,7 @@ int Server::init()
 	}
 
 	// struct pollfd pollfds[10] = {0};
+	pollfds.push_back(pollfd());
 	pollfds[0].fd = server_fd;
 	pollfds[0].events = POLLIN | POLLPRI;
 	return 0;
@@ -79,7 +80,7 @@ int Server::start_loop()
 					}
 					else{
 						buf[buffsize] = '\0';
-						this->clients[i].parse(buf);
+						this->clients[pfdit - pollfds.begin()].parse(buf);
 						printf("Client: %s\n", buf);
 					}
 				}
@@ -115,5 +116,5 @@ int Server::create_channel()
 	//{
 	//	return (-1);
 	//}
-
+	return (0);
 }
