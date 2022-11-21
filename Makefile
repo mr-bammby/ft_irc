@@ -18,7 +18,7 @@ HEADERS = $(patsubst %.cpp,%.hpp,$(CLASSES))
 all: $(NAME)
 
 clean:
-	$(RM) -f $(NAME).dSYM .DS_Store
+	$(RM) -f $(NAME).dSYM
 
 fclean: clean
 	$(RM) -f $(NAME)
