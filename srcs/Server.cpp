@@ -3,7 +3,7 @@
 #define PORT 6667
 
 
-Server::Server(int port, std::string pass): server_port(port), password(pass)
+Server::Server(int port, std::string pass): server_port(port), used_clients(0), password(pass)
 {}
 
 Server::~Server()
@@ -26,14 +26,15 @@ int Server::init()
 
 
 	if (setsockopt(server_fd, SOL_SOCKET,
-					SO_REUSEADDR | SO_REUSEPORT, &opt,
+					SO_REUSEADDR, &opt,
 					sizeof(opt))) {
 		perror("setsockopt");
 		exit(EXIT_FAILURE);
 	}
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(PORT);
+	// changed to port which passed in the begining
+	address.sin_port = htons(server_port);
 
 	// Forcefully attaching socket to the port 6667
 	if (bind(server_fd, (struct sockaddr*)&address,
@@ -65,7 +66,8 @@ int Server::start_loop()
 			{
 				create_client();
 			}
-			for (std::vector<pollfd>::iterator pfdit = pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
+			// changed iterator to start from second position, because first is server and it goes into if condition(gets deleted)
+			for (std::vector<pollfd>::iterator pfdit = ++pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
 			{
 				if (pfdit->revents & POLLIN)
 				{
@@ -73,14 +75,18 @@ int Server::start_loop()
 					int buffsize = read(pfdit->fd, buf, 1024 - 1);
 					if (buffsize == -1 || buffsize == 0)
 					{
-						pfdit->fd = 0;
-						pfdit->events = 0;
-						pfdit->revents = 0;
+						std::cout<<"User disconnected"<<std::endl;
+						// deleting disconected client from map of clients and deleting his pollfd from vector. 
+						// put command break in the end because after erasing iterators could be invalid
+						this->clients.erase(pfdit->fd);
+						this->pollfds.erase(pfdit);
 						this->used_clients--;
+						break ;
 					}
 					else{
 						buf[buffsize] = '\0';
-						this->clients[pfdit - pollfds.begin()].parse(buf);
+						// changed [] operator for function at().
+						this->clients.at(pfdit->fd).parse(buf);
 						printf("Client: %s\n", buf);
 					}
 				}
@@ -105,6 +111,9 @@ int Server::create_client()
 	pollfds.push_back(pollfd());
 	pollfds.back().fd = client_socket;
 	pollfds.back().events = POLLIN | POLLPRI;
+	// creating client class and putting it in a map of clients, where the key is clients fd
+	// std::pair<int, Client> t(client_socket, Client(used_clients, client_socket));
+	clients.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
 	used_clients++;
 
 	return (0);
