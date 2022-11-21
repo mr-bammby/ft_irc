@@ -6,6 +6,8 @@ int main(int argc, char *argv[])
 	if (argc != 3)
 	{
 		Server s(6667, std::string("password1234"));
+		s.init();
+		s.start_loop();
 	}
 	else
 	{

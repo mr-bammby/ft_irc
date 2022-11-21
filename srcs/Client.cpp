@@ -3,7 +3,13 @@
 Client::Client(int index, int cl_fd): id(index), client_fd(cl_fd), nickname(), state(LOCKED)
 {}
 
+Client::Client(): nickname(), state(LOCKED)
+{}
+
 Client::Client(const Client &c): client_fd(c.client_fd)
+{}
+
+Client::~Client()
 {}
 
 int Client::setNickname(std::string name)

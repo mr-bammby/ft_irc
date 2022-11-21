@@ -21,11 +21,11 @@ clean:
 	$(RM) -f $(NAME).dSYM
 
 fclean: clean
-	$(RM) -f (NAME)
+	$(RM) -f $(NAME)
 
 re: fclean all
 
 $(NAME): $(SRCS) $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(SRCS) -I. -o $@
+	$(CXX) $(CXXFLAGS) $(SRCS) -I./srcs -o $@
 
 .PHONY: all clean fclean re
