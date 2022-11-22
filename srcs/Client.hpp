@@ -4,6 +4,17 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <map>
+
+#include <Commands.hpp>
+
+struct Message
+{
+	enum ComCategory command_category;
+	int comand_type;
+	std::vector<std::string> params;
+};
+
 
 class Client
 {
@@ -37,7 +48,7 @@ class Client
 		Client::State	state;
 
 		std::vector<std::string> split(const std::string& str, const std::string& delimiter);
-
+		std::pair<enum ComCategory, int> detectMsgType(const std::string& token);
 };
 
 #endif // CLIENT_HPP
