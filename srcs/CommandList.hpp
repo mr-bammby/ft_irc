@@ -6,6 +6,7 @@
 	You must have operators and regular users.
 		Then, you have to implement the commands that are specific to operators
 */
+#include <string>
 // https://datatracker.ietf.org/doc/html/rfc1459#section-4.1
 enum Commands
 {
@@ -38,4 +39,10 @@ enum Commands
 	// Available to operators and servers
 	KILL,
 	RESTART
+};
+
+struct Message
+{
+	Commands	type;
+	std::string	content;
 };
