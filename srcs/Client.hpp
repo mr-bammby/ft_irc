@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 class Client
 {
@@ -29,13 +30,14 @@ class Client
 		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
 
-		
 	private:
 		int				id;
 		int				client_fd;
 		std::string		nickname;
 		Client::State	state;
-		
+
+		std::vector<std::string> split(const std::string& str, const std::string& delimiter);
+
 };
 
 #endif // CLIENT_HPP
