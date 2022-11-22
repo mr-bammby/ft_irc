@@ -7,7 +7,9 @@ Server::Server(int port, std::string pass): server_port(port), used_clients(0), 
 {}
 
 Server::~Server()
-{}
+{
+	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+}
 
 int Server::init()
 {
@@ -57,8 +59,8 @@ int Server::init()
 
 int Server::start_loop()
 {
-	while (true)
-	{
+	// while (true)
+	// {
 		int pollResult = poll(&pollfds[0], this->used_clients + 1, 5000);
 		if (pollResult > 0)
 		{
@@ -92,9 +94,10 @@ int Server::start_loop()
 				}
 			}
 		}
-	}
+	return (0);
+	// }
 	// closing the listening socket
-	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+
 }
 
 int Server::create_client()
@@ -126,4 +129,11 @@ int Server::create_channel()
 	//	return (-1);
 	//}
 	return (0);
+}
+
+bool	Server::check_password(std::string pass)
+{
+	if (this->password.compare(pass) == 0)
+		return (true);
+	return (false);
 }

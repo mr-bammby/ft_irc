@@ -24,6 +24,7 @@ class Server
 		int init();
 		int start_loop();
 		int create_channel();
+		bool	check_password(std::string pass);
 	private:
 		Server();
 		Server(const Server &s);
