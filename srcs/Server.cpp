@@ -88,6 +88,7 @@ int Server::start_loop()
 					else{
 						buf[buffsize] = '\0';
 						// changed [] operator for function at().
+						messages.push_back(createMessage(buf, &(this->clients.at(pfdit->fd))));
 						this->clients.at(pfdit->fd).parse(buf);
 						printf("Client: %s\n", buf);
 					}
@@ -136,4 +137,19 @@ bool	Server::check_password(std::string pass)
 	if (this->password.compare(pass) == 0)
 		return (true);
 	return (false);
+}
+
+Message *Server::getNextMessage()
+{
+	return &(*(--(this->messages.end())));
+}
+
+int		Server::getBacklogLength()
+{
+	return (this->messages.size());
+}
+
+void	Server::removeLastMessage()
+{
+	this->messages.pop_back();
 }

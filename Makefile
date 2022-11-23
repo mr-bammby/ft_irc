@@ -7,7 +7,8 @@ NAME = ircserv
 CLASSES = \
 	srcs/Server.cpp	\
 	srcs/Client.cpp	\
-	srcs/Channel.cpp
+	srcs/Channel.cpp \
+	srcs/Comms.cpp \
 
 SRCS = \
 	main.cpp \

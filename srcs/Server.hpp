@@ -13,6 +13,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Comms.hpp"
 
 #define MAX_CLIENTS 128
 
@@ -25,6 +26,9 @@ class Server
 		int start_loop();
 		int create_channel();
 		bool	check_password(std::string pass);
+		Message *getNextMessage();
+		int		getBacklogLength();
+		void	removeLastMessage();
 	private:
 		Server();
 		Server(const Server &s);
@@ -38,6 +42,7 @@ class Server
 		std::vector<pollfd> pollfds;
 		std::map<int, Client> clients;
 		std::vector<Channel> channels;
+		std::vector<Message> messages;
 };
 
 

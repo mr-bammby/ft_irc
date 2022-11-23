@@ -1,3 +1,6 @@
+#ifndef COMMANDLIST_HPP
+#define COMMANDLIST_HPP
+
 /*
 	You must be able to authenticate, set a nickname, a username, join a channel,
 		send and receive private messages using your reference client.
@@ -40,9 +43,4 @@ enum Commands
 	KILL,
 	RESTART
 };
-
-struct Message
-{
-	Commands	type;
-	std::string	content;
-};
+#endif
