@@ -49,7 +49,7 @@ std::string Message::buildRawMsg() const
 	return msg;
 }
 
-std::pair<enum ComCategory, int>
+std::pair<enum ComCategory, enum Commands>
 Message::detectMsgType(const std::string& token)
 {
 	const std::string init_commands[] = {"PASS", "NICK", "USER"};
@@ -62,26 +62,33 @@ Message::detectMsgType(const std::string& token)
 	const size_t	  misc_commands_len = 2;
 
 	// TODO: build map only once
-	typedef std::map< std::string, std::pair<enum ComCategory, int> >
+	typedef std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 			   comMapType;
 	comMapType cmd_map;
 	for (size_t i = 0; i < init_commands_len; i++)
-		cmd_map.insert(
-			std::make_pair(init_commands[i], std::make_pair(INIT, i)));
+		cmd_map.insert(std::make_pair(
+			init_commands[i],
+			std::make_pair(INIT, static_cast<Commands>(INIT + i))));
 	for (size_t i = 0; i < msg_commands_len; i++)
-		cmd_map.insert(std::make_pair(msg_commands[i], std::make_pair(MSG, i)));
+		cmd_map.insert(std::make_pair(
+			msg_commands[i],
+			std::make_pair(MSG, static_cast<Commands>(MSG + i))));
 	for (size_t i = 0; i < oper_commands_len; i++)
-		cmd_map.insert(
-			std::make_pair(oper_commands[i], std::make_pair(OPER, i)));
+		cmd_map.insert(std::make_pair(
+			oper_commands[i],
+			std::make_pair(OPER, static_cast<Commands>(OPER + i))));
 	for (size_t i = 0; i < misc_commands_len; i++)
-		cmd_map.insert(
-			std::make_pair(misc_commands[i], std::make_pair(MISC, i)));
+		cmd_map.insert(std::make_pair(
+			misc_commands[i],
+			std::make_pair(MISC, static_cast<Commands>(MISC + i))));
 
 	comMapType::iterator it = cmd_map.find(token);
 	if (it == cmd_map.end())
 	{
 		std::cerr << "Command not supported:" << token << std::endl;
-		return std::make_pair(MISC, -1); // TODO: seperate category for error?
+		return std::make_pair(
+			MISC,
+			static_cast<Commands>(-1)); // TODO: seperate category for error?
 	}
 	return it->second;
 }

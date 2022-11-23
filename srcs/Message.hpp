@@ -41,7 +41,7 @@ private:
 	std::string				 command;
 	std::vector<std::string> params;
 
-	std::pair<enum ComCategory, int> detectMsgType(const std::string& token);
+	std::pair<enum ComCategory, enum Commands> detectMsgType(const std::string& token);
 };
 
 // non-member functions
