@@ -9,6 +9,17 @@
 #include <Commands.hpp>
 #include <utility.hpp>
 
+// TODO: add test for this file
+
+// prefix identifies the sender. Server fills this before realyed to a client
+struct prefix {
+	std::string nick;
+	std::string user;
+	std::string host;
+
+	std::string buildRawPrefix() const;
+};
+
 class Message
 {
 public:
@@ -24,10 +35,10 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
 
 private:
-	// TODO: give prefix a structure
-	std::string				 prefix; // empty in msg from client to server
+	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
 	int						 type;
+	std::string				 command;
 	std::vector<std::string> params;
 
 	std::pair<enum ComCategory, int> detectMsgType(const std::string& token);

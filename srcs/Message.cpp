@@ -1,22 +1,53 @@
 #include <Message.hpp>
 
-Message::Message() : prefix(), category(MISC), type(-1), params() {}
+std::string prefix::buildRawPrefix() const
+{
+	std::string result; // <nick> [ '!' <user ] [ '@' <host> ] <SPACE>
+
+	if (nick.empty())
+		return "";
+	result += user;
+	if (!user.empty())
+		result += "!" + user;
+	if (!host.empty())
+		result += "@" + host;
+	if (!result.empty())
+		result += " ";
+	return result;
+}
+
+Message::Message() : prefix(), category(MISC), type(-1), command(), params() {}
 
 Message::Message(const std::string& raw) : prefix()
 {
 	std::vector<std::string> tokens = split(raw, " ");
 	// TODO: consume tokens to fill Message
 	std::pair<enum ComCategory, int> msgType = detectMsgType(tokens[0]);
-	std::cout << "mstType=" << msgType.first << ", " << msgType.second
+	std::cout << "msgType=" << msgType.first << ", " << msgType.second
 			  << std::endl;
 	this->category = msgType.first;
 	this->type = msgType.second;
+	this->command = tokens[0];
 	tokens.erase(tokens.begin());
 	this->params = tokens;
 	// TODO: check if the params match the type
 }
 
 Message::~Message() {}
+
+std::string Message::buildRawMsg() const
+{
+	std::string msg = prefix.buildRawPrefix() + command + " ";
+	// TODO: care about parameters that include spaces
+	for (std::vector<std::string>::const_iterator it = params.begin();
+		 it != params.end();
+		 ++it)
+	{
+		msg += *it;
+	}
+	msg += "\r\n";
+	return msg;
+}
 
 std::pair<enum ComCategory, int>
 Message::detectMsgType(const std::string& token)
@@ -57,11 +88,17 @@ Message::detectMsgType(const std::string& token)
 
 // non-member functions
 
+/**
+ * @brief Extracts the Messages from the raw contents that the server receives.
+ * Sometimes the server receives more than one message from the same client at
+ * once
+ *
+ * @param raw
+ * @return std::vector<Message>
+ */
 std::vector<Message> getMessages(const std::string& raw)
 {
-	// sometimes the server receives more than one message from the same client
-	// at a time
-	std::vector<Message> messages;
+	std::vector<Message>	 messages;
 	std::vector<std::string> raw_messages;
 	const std::string		 msg_delimiter = "\r\n";
 
@@ -80,8 +117,8 @@ std::vector<Message> getMessages(const std::string& raw)
 std::ostream& operator<<(std::ostream& os, const Message& msg)
 {
 	os << "Message(" << std::endl
-	<< "prefix=" << msg.prefix << std::endl
-	<< "category=" << msg.category << "(";
+	   << "prefix=" << msg.prefix.buildRawPrefix() << std::endl
+	   << "category=" << msg.category << "(";
 	switch (msg.category)
 	{
 	case INIT:
@@ -101,9 +138,10 @@ std::ostream& operator<<(std::ostream& os, const Message& msg)
 		break;
 	}
 	os << ")" << std::endl;
-	os
-	<< "type=" << msg.type << std::endl
-	<< "params=" << msg.params << std::endl;
+	os << "type=" << msg.type << std::endl
+	   << "params=" << msg.params << std::endl
+	   << ") // Message" << std::endl;
+	os << msg.buildRawMsg();
 	return os;
 }
 
@@ -123,9 +161,8 @@ split(const std::string& str, const std::string& delimiter)
 		token = s.substr(0, pos);
 		s.erase(0, pos + delimiter.length());
 		tokens.push_back(token);
-		std::cout << token << ", ";
 	}
-	tokens.push_back(s); // TODO: avoid pushing "empty"/only delimiters
-	std::cout << s << "." << std::endl;
+	if (!s.empty())
+		tokens.push_back(s);
 	return tokens;
 }
