@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#include <Message.hpp>
+
 class Client
 {
 	public:
@@ -29,13 +31,12 @@ class Client
 		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
 
-		
 	private:
 		int				id;
 		int				client_fd;
 		std::string		nickname;
 		Client::State	state;
-		
+
 };
 
 #endif // CLIENT_HPP
