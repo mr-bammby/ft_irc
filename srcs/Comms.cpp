@@ -2,8 +2,8 @@
 
 int	executeCommands(Server &serv)
 {
-	Message *current;
-	int	(*Table[1])(Server &s, Message &a) =
+	MessageStruct *current;
+	int	(*Table[1])(Server &s, MessageStruct &a) =
 	{
 		&passCommand,
 	};
@@ -18,15 +18,15 @@ int	executeCommands(Server &serv)
 	return (0);
 }
 
-Message createMessage(std::string str, Client *cl)
+MessageStruct createMessage(std::string str, Client *cl)
 {
-	Message msg;
+	MessageStruct msg;
 	msg.content = str;
 	msg.sender = cl;
 	return (msg);
 }
 
-int	passCommand(Server &serv, Message &attempt)
+int	passCommand(Server &serv, MessageStruct &attempt)
 {
 	if (serv.check_password(attempt.content) == true)
 		attempt.sender->upgradeState();

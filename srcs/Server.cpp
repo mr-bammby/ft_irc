@@ -141,7 +141,7 @@ bool	Server::check_password(std::string pass)
 	return (false);
 }
 
-Message *Server::getNextMessage()
+MessageStruct *Server::getNextMessage()
 {
 	return &(*(--(this->messages.end())));
 }

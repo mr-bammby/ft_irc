@@ -4,7 +4,7 @@
 
 #include "Client.hpp"
 # include <string>
-struct Message
+struct MessageStruct
 {
 	Commands	type;
 	std::string	content;
@@ -14,8 +14,8 @@ struct Message
 class Server;
 #include "Server.hpp"
 
-Message createMessage(std::string str, Client *cl);
+MessageStruct createMessage(std::string str, Client *cl);
 int	executeCommands(Server &serv);
-int	passCommand(Server &serv, Message &attempt);
+int	passCommand(Server &serv, MessageStruct &attempt);
 
 #endif

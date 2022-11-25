@@ -6,6 +6,8 @@
    users. Then, you have to implement the commands that are specific to
    operators
 */
+#ifndef COMMANDLIST_HPP
+# define COMMANDLIST_HPP
 // https://datatracker.ietf.org/doc/html/rfc1459#section-4.1
 enum Commands
 {
@@ -48,3 +50,4 @@ enum ComCategory
 	OPER,
 	MISC
 };
+#endif
