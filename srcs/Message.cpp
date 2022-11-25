@@ -18,7 +18,7 @@ std::string prefix::buildRawPrefix() const
 
 Message::Message() : prefix(), category(MISC), type(-1), command(), params() {}
 
-Message::Message(const std::string& raw) : prefix()
+Message::Message(const std::string& raw, Client *cl) : prefix(), client(cl)
 {
 	std::vector<std::string> tokens = split(raw, " ");
 	// TODO: consume tokens to fill Message
@@ -103,7 +103,7 @@ Message::detectMsgType(const std::string& token)
  * @param raw
  * @return std::vector<Message>
  */
-std::vector<Message> getMessages(const std::string& raw)
+std::vector<Message> getMessages(const std::string& raw, Client *cl)
 {
 	std::vector<Message>	 messages;
 	std::vector<std::string> raw_messages;
@@ -116,7 +116,7 @@ std::vector<Message> getMessages(const std::string& raw)
 		 it != raw_messages.end();
 		 ++it)
 	{
-		messages.push_back(Message(*it)); // TODO: avoid construct empty Msg
+		messages.push_back(Message(*it, cl)); // TODO: avoid construct empty Msg
 	}
 	return messages;
 }

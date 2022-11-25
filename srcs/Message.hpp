@@ -8,7 +8,9 @@
 
 #include <CommandList.hpp>
 #include <utility.hpp>
+#include <Client.hpp>
 
+class Client;
 // TODO: add test for this file
 
 // prefix identifies the sender. Server fills this before realyed to a client
@@ -24,7 +26,7 @@ class Message
 {
 public:
 	Message();
-	Message(const std::string& rawMsg);
+	Message(const std::string& rawMsg, Client *cl = NULL);
 	// Message(const Message& other);
 	~Message();
 
@@ -38,6 +40,7 @@ public:
 	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
 	int						 type;
+	Client					 *client;
 	std::string				 command;
 	std::vector<std::string> params;
 
@@ -46,7 +49,7 @@ public:
 
 // non-member functions
 
-std::vector<Message> getMessages(const std::string& raw);
+std::vector<Message> getMessages(const std::string& raw, Client *fd);
 
 std::ostream& operator<<(std::ostream& os, const Message& msg);
 

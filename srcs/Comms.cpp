@@ -7,13 +7,21 @@ int	executeCommands(Server &serv)
 	{
 		&passCommand,
 	};
+	const char *ComList[] =
+	{
+		"PASS", "NICK", "USER", "JOIN", \
+		"PRIVMSG", "NOTICE", "KICK", "MODE", \
+		"INVITE", "TOPIC", "KILL", "RESTART", NULL};
 	while (serv.getBacklogLength() > 0)
 	{
 		current = serv.getNextMessage();
 		std::cout << RED;
 		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
-		if (current->command == "PASS")
-			Table[0](serv, *current);
+		for (int i = 0; ComList[i] != NULL; i++)
+		{
+			if (current->command == ComList[i])
+				Table[i](serv, *current);
+		}
 		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
@@ -30,10 +38,15 @@ int	executeCommands(Server &serv)
 
 int	passCommand(Server &serv, Message &attempt)
 {
+	if (attempt.client->getState() != 0)
+	{
+		std::cout << "Error for double password here" << std::endl;
+		return (1);
+	}
 	if (serv.check_password(attempt.params[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
-
+		attempt.client->upgradeState();
 	}
 	else
 		std::cout << "Failed!" << std::endl;

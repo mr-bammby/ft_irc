@@ -36,13 +36,10 @@ const Client::State& Client::getState()
 
 int Client::parse(std::string command)
 {
-	std::vector<Message> msgs = getMessages(command);
+	std::vector<Message> msgs = getMessages(command, this);
 	std::cout << "In parsing" << msgs << std::endl;
 
-	if (this->state == LOCKED)
-		command.compare("PASS");
-	std::cout << "Command for <"
-			  << "> was: " << command << std::endl;
+	std::cout << "Command for <" << this->client_fd << "> was: " << command << std::endl;
 	return (0);
 }
 

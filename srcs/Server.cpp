@@ -89,7 +89,7 @@ int Server::start_loop()
 						buf[buffsize] = '\0';
 						// changed [] operator for function at().
 						//probably leaking
-						std::vector<Message> current = getMessages(buf);
+						std::vector<Message> current = getMessages(buf, &(this->clients.at(pfdit->fd)));
 						messages.insert(messages.begin(), current.rbegin(), current.rend());
 						current.clear();
 						// this->clients.at(pfdit->fd).parse(buf);
