@@ -6,14 +6,14 @@
 /*   By: sbienias <sbienias@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 16:15:32 by sbienias          #+#    #+#             */
-/*   Updated: 2022/06/02 09:42:32 by sbienias         ###   ########.fr       */
+/*   Updated: 2022/11/25 12:20:21 by sbienias         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef COLOR_H
 # define COLOR_H
 
-# define BLANK "\e[0m"
+# define BLANK "\033[0m"
 # define BLACK "\033[0;30m"
 # define RED "\033[0;31m"
 # define GR "\033[0;32m"

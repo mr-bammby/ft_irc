@@ -14,7 +14,7 @@ int	executeCommands(Server &serv)
 		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
 		if (current->command == "PASS")
 			Table[0](serv, *current);
-		std::cout << WH;
+		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
 	return (0);
@@ -33,10 +33,10 @@ int	passCommand(Server &serv, Message &attempt)
 	if (serv.check_password(attempt.params[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
-		
+
 	}
 	else
 		std::cout << "Failed!" << std::endl;
-	std::cout << WH;
+	std::cout << BLANK;
 	return (0);
 }
