@@ -88,8 +88,11 @@ int Server::start_loop()
 					else{
 						buf[buffsize] = '\0';
 						// changed [] operator for function at().
-						messages.push_back(createMessage(buf, &(this->clients.at(pfdit->fd))));
-						this->clients.at(pfdit->fd).parse(buf);
+						//probably leaking
+						std::vector<Message> current = getMessages(buf);
+						messages.insert(messages.begin(), current.rbegin(), current.rend());
+						current.clear();
+						// this->clients.at(pfdit->fd).parse(buf);
 						printf("Client: %s\n", buf);
 					}
 				}
@@ -137,11 +140,10 @@ bool	Server::check_password(std::string pass)
 	std::cout << "In check pass: " << pass << " and " << password << std::endl;
 	if (password == pass)
 		return (true);
-	std::cout << "In check pass: " << pass << std::endl;
 	return (false);
 }
 
-MessageStruct *Server::getNextMessage()
+Message *Server::getNextMessage()
 {
 	return &(*(--(this->messages.end())));
 }

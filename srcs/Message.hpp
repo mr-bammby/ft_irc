@@ -33,8 +33,8 @@ public:
 	std::string buildRawMsg() const;
 
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
-
-private:
+//temporary
+public:
 	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
 	int						 type;

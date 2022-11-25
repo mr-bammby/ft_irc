@@ -26,7 +26,7 @@ class Server
 		int start_loop();
 		int create_channel();
 		bool	check_password(std::string pass);
-		MessageStruct *getNextMessage();
+		Message *getNextMessage();
 		int		getBacklogLength();
 		void	removeLastMessage();
 	private:
@@ -42,7 +42,7 @@ class Server
 		std::vector<pollfd> pollfds;
 		std::map<int, Client> clients;
 		std::vector<Channel> channels;
-		std::vector<MessageStruct> messages;
+		std::vector<Message> messages;
 };
 
 

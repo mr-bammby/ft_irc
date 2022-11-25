@@ -3,19 +3,20 @@
 # include "CommandList.hpp"
 
 #include "Client.hpp"
+#include "color.h"
 # include <string>
-struct MessageStruct
-{
-	Commands	type;
-	std::string	content;
-	Client		*sender;
-};
+// struct Message
+// {
+// 	Commands	type;
+// 	std::string	content;
+// 	Client		*sender;
+// };
 
 class Server;
 #include "Server.hpp"
 
-MessageStruct createMessage(std::string str, Client *cl);
+Message createMessage(std::string str, Client *cl);
 int	executeCommands(Server &serv);
-int	passCommand(Server &serv, MessageStruct &attempt);
+int	passCommand(Server &serv, Message &attempt);
 
 #endif
