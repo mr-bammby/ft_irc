@@ -33,6 +33,7 @@ class Client
 		}
 		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
+		void					upgradeState();
 
 		
 	private:

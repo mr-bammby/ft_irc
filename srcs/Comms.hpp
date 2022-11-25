@@ -16,6 +16,6 @@ class Server;
 
 Message createMessage(std::string str, Client *cl);
 int	executeCommands(Server &serv);
-int	passCommand(Message &attempt);
+int	passCommand(Server &serv, Message &attempt);
 
 #endif

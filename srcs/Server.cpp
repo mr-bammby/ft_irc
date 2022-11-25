@@ -134,8 +134,10 @@ int Server::create_channel()
 
 bool	Server::check_password(std::string pass)
 {
-	if (this->password.compare(pass) == 0)
+	std::cout << "In check pass: " << pass << " and " << password << std::endl;
+	if (password == pass)
 		return (true);
+	std::cout << "In check pass: " << pass << std::endl;
 	return (false);
 }
 

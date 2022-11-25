@@ -43,3 +43,14 @@ int Client::parse(std::string command)
 	std::cout << "Command for <" << "> was: " << command << std::endl;
 	return (0);
 }
+
+
+void	Client::upgradeState()
+{
+    if (this->state == LOCKED)
+        this->state = UNINITIALIZED;
+    else if (this->state == UNINITIALIZED)
+        this->state = INITIALIZED;
+    else if (this->state == INITIALIZED)
+        this->state = SET;
+}
