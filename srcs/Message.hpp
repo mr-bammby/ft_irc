@@ -31,6 +31,7 @@ public:
 	// Message& operator=(const Message& other);
 
 	std::string buildRawMsg() const;
+	std::vector<std::string> getParams() const;
 
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
 
