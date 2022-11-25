@@ -25,6 +25,8 @@ class Server
 		int start_loop();
 		int create_channel();
 		int Server::set_nickName(Client* client_ptr, std::String nickName);
+		Client* get_clentPtr(int fd);
+		Client* get_clentPtr(std::String nickName);
 	private:
 		Server();
 		Server(const Server &s);

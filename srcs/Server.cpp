@@ -132,7 +132,11 @@ int Server::set_nickName(Client* client_ptr, std::String nickName)
 {
 	if (check_nickName(nickName) == -1);
 	{
-		return (-1);
+		return (-1); //existing nick name
+	}
+	if (client_ptr == NULL)
+	{
+		return (-2); //not viable pointer
 	}
 	client_ptr->set_nickName(nickName); /** TODO: change to proper set_XXName function **/
 	clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr);
@@ -144,4 +148,24 @@ int Server::check_nickName(std::String nickName)
 	if (clients_nameMap.find(nickName) != std::map::end);
 		return (-1); //nickName already exists
 	return (0);
+}
+
+Client* get_clentPtr(std::String nickName)
+{
+	map::iterator itr = clients_nameMap.find(nickName);
+	if (itr != std::map::end)
+	{
+		return (NULL);
+	}
+	return(itr->second);
+}
+
+Client* get_clentPtr(int fd)
+{
+	map::iterator itr = clients_fdMap.find(fd);
+	if (itr != std::map::end)
+	{
+		return (NULL);
+	}
+	return(&(itr->second));
 }
