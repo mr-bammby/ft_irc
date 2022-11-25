@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#include <Message.hpp>
+
 class Client
 {
 	public:
@@ -35,13 +37,12 @@ class Client
 		const Client::State&	getState();
 		void					upgradeState();
 
-		
 	private:
 		int				id;
 		int				client_fd;
 		std::string		nickname;
 		Client::State	state;
-		
+
 };
 
 #endif // CLIENT_HPP

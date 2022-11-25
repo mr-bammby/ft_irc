@@ -1,29 +1,27 @@
 #include "Client.hpp"
 
-Client::Client(int index, int cl_fd): id(index), client_fd(cl_fd), nickname(), state(LOCKED)
+Client::Client(int index, int cl_fd)
+	: id(index), client_fd(cl_fd), nickname(), state(LOCKED)
 {}
 
-Client::Client(): nickname(), state(LOCKED)
-{}
+Client::Client() : nickname(), state(LOCKED) {}
 
-Client::Client(const Client &c): client_fd(c.client_fd)
-{}
+Client::Client(const Client& c) : client_fd(c.client_fd) {}
 
-Client::~Client()
-{}
+Client::~Client() {}
 
 int Client::setNickname(std::string name)
 {
-    if (state == LOCKED)
-    {
-        return (-1);
-    }
+	if (state == LOCKED)
+	{
+		return (-1);
+	}
 	nickname = name;
-    if (UNINITIALIZED)
-    {
-        state = INITIALIZED;
-    }
-    return (0);
+	if (UNINITIALIZED)
+	{
+		state = INITIALIZED;
+	}
+	return (0);
 }
 
 const std::string& Client::getNickname()
@@ -38,9 +36,13 @@ const Client::State& Client::getState()
 
 int Client::parse(std::string command)
 {
+	std::vector<Message> msgs = getMessages(command);
+	std::cout << msgs << std::endl;
+
 	if (this->state == LOCKED)
 		command.compare("PASS");
-	std::cout << "Command for <" << "> was: " << command << std::endl;
+	std::cout << "Command for <"
+			  << "> was: " << command << std::endl;
 	return (0);
 }
 
