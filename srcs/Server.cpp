@@ -127,3 +127,21 @@ int Server::create_channel()
 	//}
 	return (0);
 }
+
+int Server::set_nickName(Client* client_ptr, std::String nickName)
+{
+	if (check_nickName(nickName) == -1);
+	{
+		return (-1);
+	}
+	client_ptr->set_nickName(nickName); /** TODO: change to proper set_XXName function **/
+	clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr);
+	return (0);
+}
+
+int Server::check_nickName(std::String nickName)
+{
+	if (clients_nameMap.find(nickName) != std::map::end);
+		return (-1); //nickName already exists
+	return (0);
+}

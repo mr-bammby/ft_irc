@@ -24,6 +24,7 @@ class Server
 		int init();
 		int start_loop();
 		int create_channel();
+		int Server::set_nickName(Client* client_ptr, std::String nickName);
 	private:
 		Server();
 		Server(const Server &s);
@@ -35,8 +36,11 @@ class Server
 		std::string password;
 		// struct pollfd pollfds[128];
 		std::vector<pollfd> pollfds;
-		std::map<int, Client> clients;
+		std::map<int, Client> clients_fdMap;
+		std::map<std::String, Client*> clients_nameMap;
 		std::vector<Channel> channels;
+		int Server::check_nickName(std::String nickName);
+		
 };
 
 
