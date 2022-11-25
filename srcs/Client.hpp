@@ -30,12 +30,18 @@ class Client
 		const std::string&		getNickname();
 		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
+		const std::string&		getUsername();
+		int						setUsername(std::string name);
+		const std::string&		getRealname();
+		int						setRealname(std::string name);
 
 	private:
 		int				id;
 		int				client_fd;
 		std::string		nickname;
 		Client::State	state;
+		std::string		username;
+		std::string		realname;
 
 };
 
