@@ -50,7 +50,7 @@ int						Client::setUsername(std::string name)
 		return (-1); //ERR_ALREADYREGISTERED
 	}
 	username = name;
-	if (INITIALIZED)
+	if (state == INITIALIZED)
 	{
 		state = SET;
 		// send RPL_WELCOME message to client(Register connection)
@@ -100,4 +100,9 @@ int Client::parse(std::string command)
 		it++;
 	}
 	return (0);
+}
+
+int Client::getFd()
+{
+	return (client_fd);
 }
