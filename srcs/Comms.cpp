@@ -3,9 +3,9 @@
 int	executeCommands(Server &serv)
 {
 	Message *current;
-	int	(*Table[1])(Server &s, Message &a) =
+	int	(*Table[])(Server &s, Message &a) =
 	{
-		&passCommand, NULL, &userCommand
+		&passCommand, &nickCommand, &userCommand
 	};
 	const char *ComList[] =
 	{
@@ -50,6 +50,26 @@ int	passCommand(Server &serv, Message &attempt)
 	}
 	else
 		std::cout << "Failed!" << std::endl;
+	std::cout << BLANK;
+	return (0);
+}
+
+int	nickCommand(Server &serv, Message &attempt)
+{
+	(void)serv;
+	(void)attempt;
+	std::string	test(":localhost 001 enju");
+	test.append(" :Welcome to the Internet Relay Network enju!enju@localhost\n");
+	std::cout << BL << "How many sent: ";
+	std::cout << send(attempt.client->getFd(), test.c_str(), test.length(), MSG_CONFIRM) << std::endl;
+	std::cout << BLANK;
+	return (0);
+}
+
+int	userCommand(Server &serv, Message &attempt)
+{
+	(void)serv;
+	(void)attempt;
 	std::cout << BLANK;
 	return (0);
 }
