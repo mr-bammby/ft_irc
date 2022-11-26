@@ -78,7 +78,7 @@ int Server::start_loop()
 						std::cout<<"User disconnected"<<std::endl;
 						// deleting disconected client from map of clients and deleting his pollfd from vector. 
 						// put command break in the end because after erasing iterators could be invalid
-						this->clients.erase(pfdit->fd);
+						this->clients_fdMap.erase(pfdit->fd);
 						this->pollfds.erase(pfdit);
 						this->used_clients--;
 						break ;
@@ -86,7 +86,7 @@ int Server::start_loop()
 					else{
 						buf[buffsize] = '\0';
 						// changed [] operator for function at().
-						this->clients.at(pfdit->fd).parse(buf);
+						clients_fdMap.at(pfdit->fd).parse(buf);
 						printf("Client: %s\n", buf);
 					}
 				}
@@ -113,7 +113,7 @@ int Server::create_client()
 	pollfds.back().events = POLLIN | POLLPRI;
 	// creating client class and putting it in a map of clients, where the key is clients fd
 	// std::pair<int, Client> t(client_socket, Client(used_clients, client_socket));
-	clients.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
+	clients_fdMap.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
 	used_clients++;
 
 	return (0);
@@ -128,42 +128,54 @@ int Server::create_channel()
 	return (0);
 }
 
-int Server::set_nickName(Client* client_ptr, std::String nickName)
+int Server::set_nickName(Client* client_ptr, std::string nickName)
 {
-	if (check_nickName(nickName) == -1);
+	std::pair<std::map<std::string, Client*>::iterator, bool> temp;
+
+	if (nickName.empty())
 	{
-		return (-1); //existing nick name
+		return (-3); // nickname is empty
 	}
 	if (client_ptr == NULL)
 	{
-		return (-2); //not viable pointer
+		return (-2); // client_ptr is not viable pointer
 	}
-	client_ptr->set_nickName(nickName); /** TODO: change to proper set_XXName function **/
-	clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr);
+	std::map<int, Client>::iterator itr = clients_fdMap.find(client_ptr->getFd());
+	if (itr == clients_fdMap.end())
+	{
+		temp = clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr));
+		if (!temp.second)
+		{
+			return (-1); // nick anme alredy exist
+		}
+		client_ptr->setNickname(nickName);
+	}
+	else
+	{
+		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
+		if (itr2 != clients_nameMap.end())
+		{
+			return (-1); // nick anme alredy exist
+		}
+	}
+	
 	return (0);
 }
 
-int Server::check_nickName(std::String nickName)
+Client* Server::get_clientPtr(std::string nickName)
 {
-	if (clients_nameMap.find(nickName) != std::map::end);
-		return (-1); //nickName already exists
-	return (0);
-}
-
-Client* get_clentPtr(std::String nickName)
-{
-	map::iterator itr = clients_nameMap.find(nickName);
-	if (itr != std::map::end)
+	std::map<std::string, Client*>::iterator itr = clients_nameMap.find(nickName);
+	if (itr == clients_nameMap.end())
 	{
 		return (NULL);
 	}
 	return(itr->second);
 }
 
-Client* get_clentPtr(int fd)
+Client* Server::get_clientPtr(int fd)
 {
-	map::iterator itr = clients_fdMap.find(fd);
-	if (itr != std::map::end)
+	std::map<int, Client>::iterator itr = clients_fdMap.find(fd);
+	if (itr == clients_fdMap.end())
 	{
 		return (NULL);
 	}
