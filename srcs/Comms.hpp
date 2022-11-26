@@ -1,6 +1,6 @@
 #ifndef COMMS_HPP
 # define COMMS_HPP
-# include "CommandList.hpp"
+# include "Commands.hpp"
 
 #include "Client.hpp"
 #include "color.h"
