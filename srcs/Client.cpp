@@ -79,7 +79,8 @@ int						Client::setRealname(std::string name)
 
 int Client::parse(std::string command)
 {
-	std::vector<Message> msgs = getMessages(command);
+	Message::commandMap = Message::createCommandMap();
+	std::vector<Message> msgs = getMessages(command, this);
 	std::cout << msgs << std::endl;
 
 	std::vector<Message>::iterator it = msgs.begin();

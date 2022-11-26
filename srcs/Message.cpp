@@ -16,24 +16,107 @@ std::string prefix::buildRawPrefix() const
 	return result;
 }
 
-Message::Message() : prefix(), category(MISC), type(-1), command(), params() {}
+Message::Message()
+	: prefix(), category(MISC), type(static_cast<enum Commands>(-1)), command(),
+	  params(), sender(NULL)
+{}
 
-Message::Message(const std::string& raw) : prefix()
+Message::Message(const std::string& raw, Client* sending_client) : prefix()
 {
-	std::vector<std::string> tokens = split(raw, " ");
+	std::vector<std::string> tokens = split(
+		raw, " "); // TODO: sometimes params are allowed to have whitespace
 	// TODO: consume tokens to fill Message
 	std::pair<enum ComCategory, int> msgType = detectMsgType(tokens[0]);
 	std::cout << "msgType=" << msgType.first << ", " << msgType.second
 			  << std::endl;
 	this->category = msgType.first;
-	this->type = msgType.second;
+	this->type = static_cast<enum Commands>(msgType.second);
 	this->command = tokens[0];
 	tokens.erase(tokens.begin());
 	this->params = tokens;
+	this->setSender(sending_client);
 	// TODO: check if the params match the type
 }
 
 Message::~Message() {}
+
+// Getters
+
+const struct prefix& Message::getPrefix() const
+{
+	return prefix;
+}
+
+enum ComCategory Message::getComCategory() const
+{
+	return category;
+}
+
+enum Commands Message::getType() const
+{
+	return type;
+}
+
+const std::string& Message::getCommand() const
+{
+	return command;
+}
+
+const std::vector<std::string>& Message::getParams() const
+{
+	return params;
+}
+
+Client* Message::getSender() const
+{
+	return sender;
+}
+
+// Setters
+
+void Message::setCommand(enum Commands cmd_type, const std::string& cmd_str)
+{
+	if (!cmd_str.empty())
+	{
+		std::pair<enum ComCategory, enum Commands> cmd_cat_type =
+			detectMsgType(cmd_str);
+		// sanity check
+		if (cmd_cat_type.second != cmd_type)
+		{
+			throw std::logic_error(
+				"Command String does not match the Command number!");
+		}
+		this->command = cmd_str;
+	}
+	this->type = cmd_type;
+	this->category = static_cast<enum ComCategory>(cmd_type % 10);
+	// sanity check
+	if (Message::commandMap.empty())
+	{
+		throw std::runtime_error("Command map not intitalized!");
+	}
+	this->command = Message::getCommandStr(cmd_type);
+}
+
+/**
+ * @brief copies the params into the Message class
+ *
+ */
+void Message::setParams(const std::vector<std::string>& parameters)
+{
+	this->params = parameters; // TODO: verify that this is a copy
+}
+
+void Message::setSender(Client* sending_client)
+{
+	this->sender = sending_client;
+	if (!sending_client)
+		return;
+	prefix.nick = sending_client->getNickname();
+	prefix.user = sending_client->getUsername();
+	// TODO: gethostname dynamically
+	prefix.host = "localhost";
+}
 
 std::string Message::buildRawMsg() const
 {
@@ -49,8 +132,10 @@ std::string Message::buildRawMsg() const
 	return msg;
 }
 
-std::pair<enum ComCategory, enum Commands>
-Message::detectMsgType(const std::string& token)
+// static member functions
+
+std::map< std::string, std::pair<enum ComCategory, enum Commands> >
+Message::createCommandMap()
 {
 	const std::string init_commands[] = {"PASS", "NICK", "USER"};
 	const size_t	  init_commands_len = 3;
@@ -61,7 +146,7 @@ Message::detectMsgType(const std::string& token)
 	const std::string misc_commands[] = {"KILL", "RESTART"};
 	const size_t	  misc_commands_len = 2;
 
-	// TODO: build map only once
+	// TODO: build similar map for nb# of parameters for a given cmd
 	typedef std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 			   comMapType;
 	comMapType cmd_map;
@@ -81,9 +166,20 @@ Message::detectMsgType(const std::string& token)
 		cmd_map.insert(std::make_pair(
 			misc_commands[i],
 			std::make_pair(MISC, static_cast<Commands>(MISC + i))));
+	return cmd_map;
+}
 
-	comMapType::iterator it = cmd_map.find(token);
-	if (it == cmd_map.end())
+std::pair<enum ComCategory, enum Commands>
+Message::detectMsgType(const std::string& token)
+{
+	// sanity check
+	if (commandMap.empty())
+	{
+		throw std::runtime_error("Command map not intitalized!");
+	}
+	std::map< std::string, std::pair<enum ComCategory, enum Commands> >::
+		iterator it = commandMap.find(token);
+	if (it == commandMap.end())
 	{
 		std::cerr << "Command not supported:" << token << std::endl;
 		return std::make_pair(
@@ -91,6 +187,56 @@ Message::detectMsgType(const std::string& token)
 			static_cast<Commands>(-1)); // TODO: seperate category for error?
 	}
 	return it->second;
+}
+
+const std::string Message::getCommandStr(enum Commands cmd_type)
+{
+	switch (cmd_type)
+	{
+	case PASS:
+		return "PASS";
+	case NICK:
+		return "NICK";
+	case USER:
+		return "USER";
+	case JOIN:
+		return "JOIN";
+	case PRIVMSG:
+		return "PRIVMSG";
+	case NOTICE:
+		return "NOTICE";
+	case KICK:
+		return "KICK";
+	case MODE:
+		return "MODE";
+	case INVITE:
+		return "INVITE";
+	case TOPIC:
+		return "TOPIC";
+	case KILL:
+		return "KILL";
+	case RESTART:
+		return "RESTART";
+	default:
+		return "UNKOWN";
+	}
+}
+
+const std::string Message::getCommandCategoryStr(enum ComCategory cmd_category)
+{
+	switch (cmd_category)
+	{
+	case INIT:
+		return "INIT";
+	case MSG:
+		return "MSG";
+	case OPER:
+		return "OPER";
+	case MISC:
+		return "MISC";
+	default:
+		return "UNKOWN";
+	}
 }
 
 // non-member functions
@@ -103,7 +249,7 @@ Message::detectMsgType(const std::string& token)
  * @param raw
  * @return std::vector<Message>
  */
-std::vector<Message> getMessages(const std::string& raw)
+std::vector<Message> getMessages(const std::string& raw, Client* sender)
 {
 	std::vector<Message>	 messages;
 	std::vector<std::string> raw_messages;
@@ -116,36 +262,21 @@ std::vector<Message> getMessages(const std::string& raw)
 		 it != raw_messages.end();
 		 ++it)
 	{
-		messages.push_back(Message(*it)); // TODO: avoid construct empty Msg
+		messages.push_back(
+			Message(*it, sender)); // TODO: avoid construct empty Msg
 	}
 	return messages;
 }
 
 std::ostream& operator<<(std::ostream& os, const Message& msg)
 {
+	// TODO: use getters and remove friend
 	os << "Message(" << std::endl
 	   << "prefix=" << msg.prefix.buildRawPrefix() << std::endl
-	   << "category=" << msg.category << "(";
-	switch (msg.category)
-	{
-	case INIT:
-		os << "INIT";
-		break;
-	case MSG:
-		os << "MSG";
-		break;
-	case OPER:
-		os << "OPER";
-		break;
-	case MISC:
-		os << "MISC";
-		break;
-	default:
-		os << "UNKOWN";
-		break;
-	}
-	os << ")" << std::endl;
-	os << "type=" << msg.type << std::endl
+	   << "category=" << msg.category << "("
+	   << Message::getCommandCategoryStr(msg.category) << ")" << std::endl
+	   << "type=" << msg.type << "(" << Message::getCommandStr(msg.type) << ")"
+	   << std::endl
 	   << "params=" << msg.params << std::endl
 	   << ") // Message" << std::endl;
 	os << msg.buildRawMsg();
@@ -162,6 +293,7 @@ split(const std::string& str, const std::string& delimiter)
 
 	// TODO: see what happens if the delimiter is not there
 	// or appears more than once
+	// TODO: dont split after :
 
 	while ((pos = s.find(delimiter)) != std::string::npos)
 	{
