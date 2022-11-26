@@ -50,7 +50,7 @@ int						Client::setUsername(std::string name)
 		return (-1); //ERR_ALREADYREGISTERED
 	}
 	username = name;
-	if (INITIALIZED)
+	if (state == INITIALIZED)
 	{
 		state = SET;
 		// send RPL_WELCOME message to client(Register connection)
@@ -86,7 +86,7 @@ int Client::parse(std::string command)
 	while (it != msgs.end())
 	{
 		if (this->state == LOCKED)
-			command.compare("PASS"); 
+			command.compare("PASS");
 		std::cout << "Command for <"
 					<< "> was: " << command << std::endl;
 
