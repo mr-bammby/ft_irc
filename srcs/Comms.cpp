@@ -7,21 +7,18 @@ int	executeCommands(Server &serv)
 	{
 		&passCommand, &nickCommand, &userCommand
 	};
-	const char *ComList[] =
-	{
-		"PASS", "NICK", "USER", "JOIN", \
-		"PRIVMSG", "NOTICE", "KICK", "MODE", \
-		"INVITE", "TOPIC", "KILL", "RESTART", NULL};
+	// TODO: get the actual's message type
+	// const char *ComList[] =
+	// {
+	// 	"PASS", "NICK", "USER", "JOIN",
+	// 	"PRIVMSG", "NOTICE", "KICK", "MODE",
+	// 	"INVITE", "TOPIC", "KILL", "RESTART", NULL};
 	while (serv.getBacklogLength() > 0)
 	{
 		current = serv.getNextMessage();
 		std::cout << RED;
 		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
-		for (int i = 0; ComList[i] != NULL; i++)
-		{
-			if (current->command == ComList[i])
-				Table[i](serv, *current);
-		}
+		Table[current->category](serv, *current);
 		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
