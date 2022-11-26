@@ -28,11 +28,6 @@ class Client
 
 		int 					parse(std::string command);
 		const std::string&		getNickname();
-		// DEBUG
-		int			getFd()
-		{
-			return (client_fd);
-		}
 		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
 		const std::string&		getUsername();
@@ -40,6 +35,7 @@ class Client
 		const std::string&		getRealname();
 		int						setRealname(std::string name);
 		void					upgradeState();
+		int						getFd();
 
 	private:
 		int				id;

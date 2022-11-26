@@ -102,6 +102,10 @@ int Client::parse(std::string command)
 	return (0);
 }
 
+int Client::getFd()
+{
+	return (client_fd);
+}
 
 void	Client::upgradeState()
 {
