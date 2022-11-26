@@ -134,6 +134,8 @@ std::string Message::buildRawMsg() const
 
 // static member functions
 
+std::map< std::string, std::pair<enum ComCategory, enum Commands> > Message::commandMap;
+
 std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 Message::createCommandMap()
 {
