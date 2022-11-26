@@ -5,7 +5,7 @@ int	executeCommands(Server &serv)
 	Message *current;
 	int	(*Table[1])(Server &s, Message &a) =
 	{
-		&passCommand,
+		&passCommand, NULL, &userCommand
 	};
 	const char *ComList[] =
 	{
