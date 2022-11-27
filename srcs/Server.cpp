@@ -7,7 +7,9 @@ Server::Server(int port, std::string pass): server_port(port), used_clients(0), 
 {}
 
 Server::~Server()
-{}
+{
+	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+}
 
 int Server::init()
 {
@@ -57,8 +59,8 @@ int Server::init()
 
 int Server::start_loop()
 {
-	while (true)
-	{
+	// while (true)
+	// {
 		int pollResult = poll(&pollfds[0], this->used_clients + 1, 5000);
 		if (pollResult > 0)
 		{
@@ -86,15 +88,20 @@ int Server::start_loop()
 					else{
 						buf[buffsize] = '\0';
 						// changed [] operator for function at().
-						clients_fdMap.at(pfdit->fd).parse(buf);
+						//probably leaking
+						std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)));
+						messages.insert(messages.begin(), current.rbegin(), current.rend());
+						current.clear();
+						// this->clients.at(pfdit->fd).parse(buf);
 						printf("Client: %s\n", buf);
 					}
 				}
 			}
 		}
-	}
+	return (0);
+	// }
 	// closing the listening socket
-	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+
 }
 
 int Server::create_client()
@@ -128,6 +135,28 @@ int Server::create_channel()
 	return (0);
 }
 
+bool	Server::check_password(std::string pass)
+{
+	std::cout << "In check pass: " << pass << " and " << password << std::endl;
+	if (password == pass)
+		return (true);
+	return (false);
+}
+
+Message *Server::getNextMessage()
+{
+	return &(*(--(this->messages.end())));
+}
+
+int		Server::getBacklogLength()
+{
+	return (this->messages.size());
+}
+
+void	Server::removeLastMessage()
+{
+	this->messages.pop_back();
+}
 int Server::set_nickName(Client* client_ptr, std::string nickName)
 {
 	std::pair<std::map<std::string, Client*>::iterator, bool> temp;

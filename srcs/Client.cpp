@@ -79,8 +79,8 @@ int						Client::setRealname(std::string name)
 
 int Client::parse(std::string command)
 {
-	std::vector<Message> msgs = getMessages(command);
-	std::cout << msgs << std::endl;
+	std::vector<Message> msgs = getMessages(command, this);
+	std::cout << "In parsing" << msgs << std::endl;
 
 	std::vector<Message>::iterator it = msgs.begin();
 	while (it != msgs.end())
@@ -105,4 +105,14 @@ int Client::parse(std::string command)
 int Client::getFd()
 {
 	return (client_fd);
+}
+
+void	Client::upgradeState()
+{
+    if (this->state == LOCKED)
+        this->state = UNINITIALIZED;
+    else if (this->state == UNINITIALIZED)
+        this->state = INITIALIZED;
+    else if (this->state == INITIALIZED)
+        this->state = SET;
 }
