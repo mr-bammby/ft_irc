@@ -79,8 +79,4 @@ std::vector<Message> getMessages(const std::string& raw, Client* sender);
 
 std::ostream& operator<<(std::ostream& os, const Message& msg);
 
-// TODO: maybe move to utility file?
-std::vector<std::string>
-split(const std::string& str, const std::string& delimiter);
-
 #endif // MESSAGE_HPP

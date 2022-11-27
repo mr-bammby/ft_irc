@@ -120,12 +120,13 @@ void Message::setSender(Client* sending_client)
 
 std::string Message::buildRawMsg() const
 {
-	std::string msg = prefix.buildRawPrefix() + command + " ";
+	std::string msg = prefix.buildRawPrefix() + command ;
 	// TODO: care about parameters that include spaces
 	for (std::vector<std::string>::const_iterator it = params.begin();
 		 it != params.end();
 		 ++it)
 	{
+		msg += " ";
 		msg += *it;
 	}
 	msg += "\r\n";
@@ -285,25 +286,4 @@ std::ostream& operator<<(std::ostream& os, const Message& msg)
 	return os;
 }
 
-std::vector<std::string>
-split(const std::string& str, const std::string& delimiter)
-{
-	std::vector<std::string> tokens;
-	std::string				 token;
-	std::string				 s(str);
-	size_t					 pos = 0;
 
-	// TODO: see what happens if the delimiter is not there
-	// or appears more than once
-	// TODO: dont split after :
-
-	while ((pos = s.find(delimiter)) != std::string::npos)
-	{
-		token = s.substr(0, pos);
-		s.erase(0, pos + delimiter.length());
-		tokens.push_back(token);
-	}
-	if (!s.empty())
-		tokens.push_back(s);
-	return tokens;
-}
