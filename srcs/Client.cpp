@@ -12,16 +12,16 @@ Client::~Client() {}
 
 int Client::setNickname(std::string name)
 {
-	if (state == LOCKED)
+	if (state == LOCKED || state == UNINITIALIZED)
 	{
-		return (-1);//ERR_NOTREGISTERED
+		return (-8);//ERR_NOTREGISTERED
 	}
 	nickname = name;
-	if (UNINITIALIZED)
+	if (state == INITIALIZED)
 	{
-		state = INITIALIZED;
+		state = SET;
 	}
-	return (0);
+	return (-5);
 }
 
 const std::string& Client::getNickname()
@@ -41,21 +41,22 @@ const std::string&		Client::getUsername()
 
 int						Client::setUsername(std::string name)
 {
-	if (state == LOCKED || state == UNINITIALIZED)
+	if (name.empty())
 	{
-		return (-1);//ERR_NOTREGISTERED
+		return (-1);//ERR_NEEDMOREPARAMS 
 	}
-	if (state == SET)
+	if (state == LOCKED)
 	{
-		return (-1); //ERR_ALREADYREGISTERED
+		return (-2);//ERR_NOTREGISTERED
+	}
+	if (state == SET || state == INITIALIZED)
+	{
+		return (-3); //ERR_ALREADYREGISTERED
 	}
 	username = name;
-	if (state == INITIALIZED)
-	{
-		state = SET;
-		// send RPL_WELCOME message to client(Register connection)
-	}
-	return (0);
+	state = INITIALIZED;
+	return (-4);
+
 }
 
 const std::string&		Client::getRealname()

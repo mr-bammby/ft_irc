@@ -20,5 +20,8 @@ int	executeCommands(Server &serv);
 int	passCommand(Server &serv, Message &attempt);
 int	nickCommand(Server &serv, Message &attempt);
 int	userCommand(Server &serv, Message &attempt);
+int	joinCommand(Server &serv, Message &attempt);
+int	privmsgCommand(Server &serv, Message &attempt);
+int	noticeCommand(Server &serv, Message &attempt);
 
 #endif

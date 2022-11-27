@@ -157,17 +157,36 @@ void	Server::removeLastMessage()
 {
 	this->messages.pop_back();
 }
+
+int Server::checkNickGrammar(std::string nick)
+{
+	std::string allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdrfghijklmnopqrstuvwxyz0123456789-[]\\`^{}";
+	int i = 0;
+	while (nick[i])
+	{
+		if (allowedChar.find(nick[i]) == std::string::npos)
+			return (-1);
+		i++;
+	}
+
+	return (0);
+}
+
 int Server::set_nickName(Client* client_ptr, std::string nickName)
 {
 	std::pair<std::map<std::string, Client*>::iterator, bool> temp;
 
 	if (nickName.empty())
 	{
-		return (-3); // nickname is empty
+		return (-1); // nickname is empty
 	}
 	if (client_ptr == NULL)
 	{
 		return (-2); // client_ptr is not viable pointer
+	}
+	if (checkNickGrammar(nickName) == -1)
+	{
+		return (-3); //sending ERR_ERRONEUSNICKNAME
 	}
 	std::map<int, Client>::iterator itr = clients_fdMap.find(client_ptr->getFd());
 	if (itr == clients_fdMap.end())
@@ -175,17 +194,22 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 		temp = clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr));
 		if (!temp.second)
 		{
-			return (-1); // nick anme alredy exist
+			return (-4); // nick anme alredy exist
 		}
-		client_ptr->setNickname(nickName);
+		else
+		{
+			return (client_ptr->setNickname(nickName));
+		}
 	}
 	else
 	{
 		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
 		if (itr2 != clients_nameMap.end())
 		{
-			return (-1); // nick anme alredy exist
+			return (-6); // nick anme alredy exist ERR_NICKNAMEINUSE
 		}
+		else
+			return (-7);// probably have to send message "old nicname" changed his nickname to "new nickname"
 	}
 	
 	return (0);
@@ -205,6 +229,16 @@ Client* Server::get_clientPtr(int fd)
 {
 	std::map<int, Client>::iterator itr = clients_fdMap.find(fd);
 	if (itr == clients_fdMap.end())
+	{
+		return (NULL);
+	}
+	return(&(itr->second));
+}
+
+Channel* Server::get_channelPtr(std::string chan)
+{
+	std::map<std::string, Channel>::iterator itr = channels.find(chan);
+	if (itr == channels.end())
 	{
 		return (NULL);
 	}
