@@ -10,6 +10,8 @@ CLASSES = \
 	Channel.cpp \
 	Message.cpp \
 	Comms.cpp
+	utility.cpp
+
 
 SRCS = \
 	main.cpp \

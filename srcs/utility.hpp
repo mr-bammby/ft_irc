@@ -1,8 +1,9 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
-#include <ostream>
+#include <iostream>
 #include <vector>
+#include <string>
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
@@ -20,5 +21,8 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
 	}
 	return os;
 }
+
+std::vector<std::string>
+split(const std::string& str, const std::string& delimiter);
 
 #endif // UTILITY_HPP
