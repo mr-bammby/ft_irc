@@ -17,7 +17,7 @@ int Client::setNickname(std::string name)
 		return (-1);//ERR_NOTREGISTERED
 	}
 	nickname = name;
-	if (UNINITIALIZED)
+	if (state == UNINITIALIZED)
 	{
 		state = INITIALIZED;
 	}
