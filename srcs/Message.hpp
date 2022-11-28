@@ -14,12 +14,16 @@ class Client;
 // TODO: add test for this file
 
 // prefix identifies the sender. Server fills this before realyed to a client
+// <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
 struct prefix {
+	std::string severname;
+
 	std::string nick;
 	std::string user;
 	std::string host;
 
-	std::string buildRawPrefix() const;
+	std::string buildShortPrefix() const;
+	std::string buildLongPrefix() const;
 };
 
 // forward declaration to break include cycle
@@ -52,6 +56,8 @@ public:
 	void setParams(const std::vector<std::string>& params);
 	void setSender(Client* sender);
 
+	// void setHostname(const std::string& hostname)
+
 	std::string buildRawMsg() const;
 
 	static std::map< std::string, std::pair<enum ComCategory, enum Commands> >
@@ -60,7 +66,7 @@ public:
 	createCommandMap();
 
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
-	
+
 private:
 	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
