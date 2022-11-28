@@ -18,6 +18,10 @@ SRCS = \
 
 HEADERS = $(patsubst %.cpp,%.hpp,$(addprefix srcs/,$(CLASSES)))
 
+TEST = tests
+TESTS = $(wildcard $(TEST)/*.cpp)
+TESTBINS = $(patsubst $(TEST)/%.cpp,$(TEST)/bin/%,$(TESTS))
+
 all: $(NAME)
 
 clean:
@@ -25,10 +29,20 @@ clean:
 
 fclean: clean
 	$(RM) -f $(NAME)
+	$(RM) -fr $(TEST)/bin
 
 re: fclean all
 
 $(NAME): $(SRCS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -I./srcs -o $@
 
-.PHONY: all clean fclean re
+test: $(TEST)/bin $(TESTBINS)
+	for test in $(TESTBINS) ; do ./$$test ; done
+
+$(TEST)/bin/%: $(TEST)/%.cpp $(addprefix srcs/,$(CLASSES)) | $(TEST)/bin
+	$(CXX) $(CXXFLAGS) $< $(addprefix srcs/,$(CLASSES)) -I./srcs -o $@
+
+$(TEST)/bin:
+	mkdir $@
+
+.PHONY: all clean fclean re test

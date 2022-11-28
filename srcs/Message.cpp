@@ -6,7 +6,7 @@ std::string prefix::buildRawPrefix() const
 
 	if (nick.empty())
 		return "";
-	result += user;
+	result += nick;
 	if (!user.empty())
 		result += "!" + user;
 	if (!host.empty())
@@ -25,6 +25,9 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix()
 {
 	std::vector<std::string> tokens = split(
 		raw, " "); // TODO: sometimes params are allowed to have whitespace
+	// TODO: indicate error when no CRLF was found
+	if (tokens.empty())
+		throw std::runtime_error("No CRLF in Message found!");
 	// TODO: consume tokens to fill Message
 	std::pair<enum ComCategory, int> msgType = detectMsgType(tokens[0]);
 	std::cout << "msgType=" << msgType.first << ", " << msgType.second
@@ -36,6 +39,14 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix()
 	this->params = tokens;
 	this->setSender(sending_client);
 	// TODO: check if the params match the type
+}
+
+Message::Message(enum Commands cmd_type,
+		const std::vector<std::string>& parameters,
+		Client*							sending_client) : params(parameters)
+{
+	this->setCommand(cmd_type);
+	this->setSender(sending_client);
 }
 
 Message::~Message() {}

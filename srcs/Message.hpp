@@ -9,7 +9,6 @@
 #include <Client.hpp>
 #include <Commands.hpp>
 #include <utility.hpp>
-#include <Client.hpp>
 
 class Client;
 // TODO: add test for this file
@@ -30,7 +29,13 @@ class Message
 {
 public:
 	Message();
-	Message(const std::string& rawMsg, Client* sender);
+	// parse incomming Message
+	Message(const std::string& rawMsg, Client* sender = NULL);
+	// create outgoing message (response)
+	Message(
+		enum Commands cmdType,
+		const std::vector<std::string>& params,
+		Client*							sender);
 	// Message(const Message& other);
 	~Message();
 
@@ -55,15 +60,14 @@ public:
 	createCommandMap();
 
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
-//temporary
-public:
+	
+private:
 	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
 	enum Commands			 type;
 	std::string				 command;
 	std::vector<std::string> params;
 	Client*					 sender; // NULL in msg from server to client
-
 
 	// string -> enum (e.g. PASS -> 0)
 	static std::pair<enum ComCategory, enum Commands>
@@ -72,7 +76,8 @@ public:
 	// enum -> string (e.g. 0 -> PASS)
 	static const std::string getCommandStr(enum Commands cmd_type);
 
-	static const std::string getCommandCategoryStr(enum ComCategory cmd_category);
+	static const std::string
+	getCommandCategoryStr(enum ComCategory cmd_category);
 };
 
 // non-member functions

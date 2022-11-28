@@ -17,8 +17,8 @@ int	executeCommands(Server &serv)
 	{
 		current = serv.getNextMessage();
 		std::cout << RED;
-		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
-		Table[current->category](serv, *current);
+		std::cout << "Executing: " << current->getCommand() << " with: " << current->getParams()[0] << std::endl;
+		Table[current->getType()](serv, *current);
 		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
@@ -35,15 +35,15 @@ int	executeCommands(Server &serv)
 
 int	passCommand(Server &serv, Message &attempt)
 {
-	if (attempt.sender->getState() != 0)
+	if (attempt.getSender()->getState() != 0)
 	{
 		std::cout << "Error for double password here" << std::endl;
 		return (1);
 	}
-	if (serv.check_password(attempt.params[0]) == true)
+	if (serv.check_password(attempt.getParams()[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
-		attempt.sender->upgradeState();
+		attempt.getSender()->upgradeState();
 	}
 	else
 		std::cout << "Failed!" << std::endl;
@@ -58,7 +58,7 @@ int	nickCommand(Server &serv, Message &attempt)
 	std::string	test(":localhost 001 enju");
 	test.append(" :Welcome to the Internet Relay Network enju!enju@localhost\n");
 	std::cout << BL << "How many sent: ";
-	std::cout << send(attempt.sender->getFd(), test.c_str(), test.length(), MSG_CONFIRM) << std::endl;
+	std::cout << send(attempt.getSender()->getFd(), test.c_str(), test.length(), MSG_CONFIRM) << std::endl;
 	std::cout << BLANK;
 	return (0);
 }
