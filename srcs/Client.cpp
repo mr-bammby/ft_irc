@@ -102,3 +102,18 @@ int Client::parse(std::string command)
 	}
 	return (0);
 }
+
+int Client::getFd()
+{
+	return (client_fd);
+}
+
+void	Client::upgradeState()
+{
+    if (this->state == LOCKED)
+        this->state = UNINITIALIZED;
+    else if (this->state == UNINITIALIZED)
+        this->state = INITIALIZED;
+    else if (this->state == INITIALIZED)
+        this->state = SET;
+}

@@ -9,7 +9,9 @@
 #include <Client.hpp>
 #include <Commands.hpp>
 #include <utility.hpp>
+#include <Client.hpp>
 
+class Client;
 // TODO: add test for this file
 
 // prefix identifies the sender. Server fills this before realyed to a client
@@ -53,8 +55,8 @@ public:
 	createCommandMap();
 
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
-
-private:
+//temporary
+public:
 	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
 	enum Commands			 type;
