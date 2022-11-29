@@ -1,12 +1,21 @@
 #include <Message.hpp>
 
-std::string prefix::buildRawPrefix() const
+std::string prefix::buildShortPrefix() const
+{
+	std::string result; // <servername>
+
+	result = severname;
+
+	return result;
+}
+
+std::string prefix::buildLongPrefix() const
 {
 	std::string result; // <nick> [ '!' <user ] [ '@' <host> ] <SPACE>
 
 	if (nick.empty())
 		return "";
-	result += user;
+	result += nick;
 	if (!user.empty())
 		result += "!" + user;
 	if (!host.empty())
@@ -27,10 +36,11 @@ Message::Message()
 // Message::Message(const std::string& raw, Client *cl) : prefix(), client(cl)
 
 Message::Message(const std::string& raw, Client* sending_client) : prefix()
-
 {
-	commandMap = createCommandMap();
 	std::vector<std::string> tokens = split(raw, " "); // TODO: sometimes params are allowed to have whitespace
+	// TODO: indicate error when no CRLF was found
+	if (tokens.empty())
+		throw std::runtime_error("No CRLF in Message found!");
 	// TODO: consume tokens to fill Message
 	std::pair<enum ComCategory, int> msgType = detectMsgType(tokens[0]);
 	std::cout << "msgType=" << msgType.first << ", " << msgType.second
@@ -42,6 +52,14 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix()
 	this->params = tokens;
 	this->setSender(sending_client);
 	// TODO: check if the params match the type
+}
+
+Message::Message(enum Commands cmd_type,
+		const std::vector<std::string>& parameters,
+		Client*							sending_client) : params(parameters)
+{
+	this->setCommand(cmd_type);
+	this->setSender(sending_client);
 }
 
 Message::~Message() {}
@@ -95,7 +113,7 @@ void Message::setCommand(enum Commands cmd_type, const std::string& cmd_str)
 		this->command = cmd_str;
 	}
 	this->type = cmd_type;
-	this->category = static_cast<enum ComCategory>(cmd_type % 10);
+	this->category = static_cast<enum ComCategory>(cmd_type / 10);
 	// sanity check
 	if (Message::commandMap.empty())
 	{
@@ -122,11 +140,20 @@ void Message::setSender(Client* sending_client)
 	prefix.user = sending_client->getUsername();
 	// TODO: gethostname dynamically
 	prefix.host = "localhost";
+	prefix.severname = "<servername>";
 }
 
 std::string Message::buildRawMsg() const
 {
-	std::string msg = prefix.buildRawPrefix() + command ;
+	std::string msg(":");
+	if (category == RESPONSE)
+		msg += prefix.buildShortPrefix();
+	else
+	{
+		msg	+= prefix.buildLongPrefix();
+		msg += command;
+	}
+
 	// TODO: care about parameters that include spaces
 	for (std::vector<std::string>::const_iterator it = params.begin();
 		 it != params.end();
@@ -152,6 +179,8 @@ Message::createCommandMap()
 	const size_t	  msg_commands_len = 2;
 	const std::string oper_commands[] = {"KICK", "MODE", "INVITE", "TOPIC"};
 	const size_t	  oper_commands_len = 4;
+	const std::string response_commands[] = {"CMD_RESPONSE", "ERROR_RESPONSE"};
+	const size_t	  response_commands_len = 2;
 	const std::string misc_commands[] = {"KILL", "RESTART"};
 	const size_t	  misc_commands_len = 2;
 
@@ -162,19 +191,23 @@ Message::createCommandMap()
 	for (size_t i = 0; i < init_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			init_commands[i],
-			std::make_pair(INIT, static_cast<Commands>(INIT + i))));
+			std::make_pair(INIT, static_cast<Commands>(INIT * 10 + i))));
 	for (size_t i = 0; i < msg_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			msg_commands[i],
-			std::make_pair(MSG, static_cast<Commands>(MSG + i))));
+			std::make_pair(MSG, static_cast<Commands>(MSG * 10 + i))));
 	for (size_t i = 0; i < oper_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			oper_commands[i],
-			std::make_pair(OPER, static_cast<Commands>(OPER + i))));
+			std::make_pair(OPER, static_cast<Commands>(OPER * 10 + i))));
+	for (size_t i = 0; i < response_commands_len; i++)
+		cmd_map.insert(std::make_pair(
+			response_commands[i],
+			std::make_pair(RESPONSE, static_cast<Commands>(RESPONSE * 10 + i))));
 	for (size_t i = 0; i < misc_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			misc_commands[i],
-			std::make_pair(MISC, static_cast<Commands>(MISC + i))));
+			std::make_pair(MISC, static_cast<Commands>(MISC * 10 + i))));
 	return cmd_map;
 }
 
@@ -222,6 +255,10 @@ const std::string Message::getCommandStr(enum Commands cmd_type)
 		return "INVITE";
 	case TOPIC:
 		return "TOPIC";
+	case CMD_RESPONSE:
+		return "CMD_RESPONSE";
+	case ERROR_RESPONSE:
+		return "ERROR_RESPONSE";
 	case KILL:
 		return "KILL";
 	case RESTART:
@@ -241,6 +278,8 @@ const std::string Message::getCommandCategoryStr(enum ComCategory cmd_category)
 		return "MSG";
 	case OPER:
 		return "OPER";
+	case RESPONSE:
+		return "RESPONSE";
 	case MISC:
 		return "MISC";
 	default:
@@ -259,10 +298,7 @@ const std::string Message::getCommandCategoryStr(enum ComCategory cmd_category)
  * @return std::vector<Message>
  */
 
-// std::vector<Message> getMessages(const std::string& raw, Client *cl)
-
 std::vector<Message> getMessages(const std::string& raw, Client* sender)
-
 {
 	std::vector<Message>	 messages;
 	std::vector<std::string> raw_messages;
@@ -284,7 +320,7 @@ std::ostream& operator<<(std::ostream& os, const Message& msg)
 {
 	// TODO: use getters and remove friend
 	os << "Message(" << std::endl
-	   << "prefix=" << msg.prefix.buildRawPrefix() << std::endl
+	   << "prefix=" << msg.prefix.buildLongPrefix() << std::endl
 	   << "category=" << msg.category << "("
 	   << Message::getCommandCategoryStr(msg.category) << ")" << std::endl
 	   << "type=" << msg.type << "(" << Message::getCommandStr(msg.type) << ")"

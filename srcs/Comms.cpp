@@ -20,8 +20,13 @@ int	executeCommands(Server &serv)
 		std::cout<<"Type: "<<current->type<<std::endl;
 		std::cout<<"Category: "<<current->category<<std::endl;
 		std::cout << RED;
+<<<<<<< HEAD
 		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
 		Table[current->type](serv, *current);
+=======
+		std::cout << "Executing: " << current->getCommand() << " with: " << current->getParams()[0] << std::endl;
+		Table[current->getType()](serv, *current);
+>>>>>>> e536dbeddb36a18da159f26ef0846d334c9d4261
 		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
@@ -38,17 +43,19 @@ int	executeCommands(Server &serv)
 
 int	passCommand(Server &serv, Message &attempt)
 {
+
 	std::cout<<"provided pass: "<<attempt.params[0]<<std::endl;
 	std::cout<<"Status: "<<attempt.sender->getState()<<std::endl;
-	if (attempt.sender->getState() != 0)
+	if (attempt.getSender()->getState() != 0)
 	{
 		std::cout << "Error for double password here" << std::endl;
 		return (1);
 	}
-	if (serv.check_password(attempt.params[0]) == true)
+	if (serv.check_password(attempt.getParams()[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
-		attempt.sender->upgradeState();
+
+		attempt.getSender()->upgradeState();
 	}
 	else
 		std::cout << "Failed!" << std::endl;

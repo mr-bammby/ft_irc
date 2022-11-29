@@ -84,7 +84,6 @@ int						Client::setRealname(std::string name)
 
 int Client::parse(std::string command)
 {
-
 	// std::vector<Message> msgs = getMessages(command, this);
 	// std::cout << "In parsing" << msgs << std::endl;
 
