@@ -10,10 +10,11 @@ CLASSES = \
 	Channel.cpp \
 	Message.cpp \
 	utility.cpp \
-	Comms.cpp
+	Comms.cpp \
+	ServerResponse.cpp
 
 SRCS = \
-	main.cpp \
+	test.cpp \
 	$(addprefix srcs/,$(CLASSES))
 
 HEADERS = $(patsubst %.cpp,%.hpp,$(addprefix srcs/,$(CLASSES)))
