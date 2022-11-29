@@ -225,3 +225,22 @@ int	noticeCommand(Server &serv, Message &attempt)
 
 	return (0);
 }
+
+int	inviteCommand(Server &serv, Message &attempt)
+{
+	Channel* chn = serv.get_channelPtr(attempt.params[1]);
+	Client* cln = serv.get_clientPtr(attempt.params[0]);
+	if (cln == NULL)
+	{
+		return (-1); //Unknown server
+ 	}
+	
+	if (chn == NULL)
+	{
+		return (-2); //Unknown server
+ 	}
+	// send invite fro channel chn to client cln
+	return (0);
+
+
+}
