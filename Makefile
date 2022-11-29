@@ -14,7 +14,7 @@ CLASSES = \
 	ServerResponse.cpp
 
 SRCS = \
-	test.cpp \
+	main.cpp \
 	$(addprefix srcs/,$(CLASSES))
 
 HEADERS = $(patsubst %.cpp,%.hpp,$(addprefix srcs/,$(CLASSES)))
