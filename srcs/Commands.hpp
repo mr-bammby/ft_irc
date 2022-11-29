@@ -43,7 +43,8 @@ enum Commands
 	ERROR_RESPONSE,
 	// https://datatracker.ietf.org/doc/html/rfc1459#section-4.6
 	// Available to operators and servers
-	KILL = 40,
+	PING = 40,
+	KILL = 50,
 	RESTART
 };
 
@@ -54,6 +55,7 @@ enum ComCategory
 	MSG,
 	OPER,
 	RESPONSE,
+	IGNORE,
 	MISC
 };
 #endif
