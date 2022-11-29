@@ -1,12 +1,12 @@
 #include "Client.hpp"
 
-Client::Client(int index, int cl_fd)
-	: id(index), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname()
+Client::Client(int _id, int cl_fd)
+	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname()
 {}
 
-Client::Client() : nickname(), state(LOCKED), username(), realname() {}
+Client::Client() : id(), nickname(), state(LOCKED), username(), realname() {}
 
-Client::Client(const Client& c) : client_fd(c.client_fd) {}
+// Client::Client(const Client& c) : client_fd(c.client_fd) {}
 
 Client::~Client() {}
 
@@ -84,7 +84,6 @@ int						Client::setRealname(std::string name)
 
 int Client::parse(std::string command)
 {
-
 	// std::vector<Message> msgs = getMessages(command, this);
 	// std::cout << "In parsing" << msgs << std::endl;
 

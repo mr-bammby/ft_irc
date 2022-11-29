@@ -1,4 +1,5 @@
 #include "Comms.hpp"
+#include <sstream>
 
 int	executeCommands(Server &serv)
 {
@@ -16,9 +17,11 @@ int	executeCommands(Server &serv)
 	while (serv.getBacklogLength() > 0)
 	{
 		current = serv.getNextMessage();
+		std::cout<<"Type: "<<current->getType()<<std::endl;
+		std::cout<<"Category: "<<current->getComCategory()<<std::endl;
 		std::cout << RED;
-		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
-		Table[current->category](serv, *current);
+		std::cout << "Executing: " << current->getCommand() << " with: " << current->getParams()[0] << std::endl;
+		Table[current->getType()](serv, *current);
 		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
@@ -35,16 +38,19 @@ int	executeCommands(Server &serv)
 
 int	passCommand(Server &serv, Message &attempt)
 {
-	std::cout<<"provided pass: "<<attempt.params[0]<<std::endl;
-	if (attempt.client->getState() != 0)
+
+	std::cout<<"provided pass: "<<attempt.getParams()[0]<<std::endl;
+	std::cout<<"Status: "<<attempt.getSender()->getState()<<std::endl;
+	if (attempt.getSender()->getState() != 0)
 	{
 		std::cout << "Error for double password here" << std::endl;
 		return (1);
 	}
-	if (serv.check_password(attempt.params[0]) == true)
+	if (serv.check_password(attempt.getParams()[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
-		attempt.client->upgradeState();
+
+		attempt.getSender()->upgradeState();
 	}
 	else
 		std::cout << "Failed!" << std::endl;
@@ -52,10 +58,20 @@ int	passCommand(Server &serv, Message &attempt)
 	return (0);
 }
 
+void introducing(Client *sender)
+{
+	std::string	message;
+	message = "001 * :- Welcome to <servername> server, " + sender->getNickname() + "\r\n";
+	message += ":<servername> 375 " + sender->getNickname() + " :- <servername> Message of the Day -\r\n";
+	message += ":<servername> 372 " + sender->getNickname() + " Welcome to <servername> Server!\r\n";
+	message += ":<servername> 376 " + sender->getNickname() + " :End of /MOTD command.\r\n";
+	send(sender->getFd(), message.c_str(), message.length(), 0);
+}
 
 int	nickCommand(Server &serv, Message &attempt)
 {
-	int res = serv.set_nickName(attempt.client, attempt.params[0]);
+	int res = serv.set_nickName(attempt.getSender(), attempt.getParams()[0]);
+	// std::cout<<"res: "<<res<<std::endl;
 	switch(res)
 	{
 		case -1:
@@ -68,9 +84,10 @@ int	nickCommand(Server &serv, Message &attempt)
 			//sending ERR_ERRONEUSNICKNAME
 			break;
 		case -4:
-			//sending ERR_NICKCOLLISION
+			//sending ERR_NICKNAMEINUSE
 			break;
 		case -5:
+			introducing(attempt.getSender());
 			//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
 		case -6:
@@ -90,7 +107,7 @@ int	nickCommand(Server &serv, Message &attempt)
 int	userCommand(Server &serv, Message &attempt)
 {
 	(void)serv;
-	int res = attempt.client->setUsername(attempt.params[0]);
+	int res = attempt.getSender()->setUsername(attempt.getParams()[0]);
 	switch (res)
 	{
 		case -1:
@@ -103,7 +120,7 @@ int	userCommand(Server &serv, Message &attempt)
 			//sending ERR_ALREADYREGISTERED
 			break;
 		case -4:
-			attempt.client->setRealname(attempt.params.back());
+			attempt.getSender()->setRealname(attempt.getParams().back());
 			break;
 	}
 
@@ -112,12 +129,12 @@ int	userCommand(Server &serv, Message &attempt)
 
 int	joinCommand(Server &serv, Message &attempt)
 {
-	if (attempt.params.size() == 0)
+	if (attempt.getParams().size() == 0)
 		return (-1); // sending ERR_NEEDMOREPARAMS 
 
 	//extracting channels and passwords
-	std::vector<std::string> channels = split(attempt.params[0], ",");
-	std::vector<std::string> passwords = split(attempt.params[1], ",");
+	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
+	std::vector<std::string> passwords = split(attempt.getParams()[1], ",");
 
 	//checking if channel exists, if not it should be created and creator becomes operator of that channel
 	std::string currentPass; // will contain current password in while loop, because first password should be used for first channel and so on and so on
@@ -155,12 +172,12 @@ int	joinCommand(Server &serv, Message &attempt)
 
 int	privmsgCommand(Server &serv, Message &attempt)
 {
-	if (attempt.params.size() == 0)
+	if (attempt.getParams().size() == 0)
 		return (-1); // sending ERR_NORECIPIENT
-	if (attempt.params.size() == 1)
+	if (attempt.getParams().size() == 1)
 		return (-2); // sending ERR_NOTEXTTOSEND
 	
-	std::vector<std::string> recipients = split(attempt.params[0], ",");
+	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
 	// iterating thorough all the recipients whom to send message
 	std::vector<std::string>::iterator it = recipients.begin();
 	while (it != recipients.end())
@@ -193,12 +210,12 @@ int	privmsgCommand(Server &serv, Message &attempt)
 int	noticeCommand(Server &serv, Message &attempt)
 {
 	// How I understand, NOTICE is the same as PRIVMSG, it just dont send any replies, even if some errors occur 
-	if (attempt.params.size() == 0)
+	if (attempt.getParams().size() == 0)
 		return (-1); 
-	if (attempt.params.size() == 1)
+	if (attempt.getParams().size() == 1)
 		return (-2);
 	
-	std::vector<std::string> recipients = split(attempt.params[0], ",");
+	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
 	// iterating thorough all the recipients whom to send message
 	std::vector<std::string>::iterator it = recipients.begin();
 	while (it != recipients.end())
@@ -235,6 +252,7 @@ int	inviteCommand(Server &serv, Message &attempt)
 		return (-1); //Unknown server
  	}
 	
+
 	if (chn == NULL)
 	{
 		return (-2); //Unknown server
@@ -243,4 +261,27 @@ int	inviteCommand(Server &serv, Message &attempt)
 	return (0);
 
 
+}
+
+int	killCommand(Server &serv, Message &attempt)
+{
+	// if (attempt.getSender() is not operator)
+	// 	return (-1); //sending ERR_NOPRIVILEGES
+	if (attempt.getParams().empty())
+		return (-2); // sending ERR_NEEDMOREPARAMS
+	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]);
+	if (tmp == NULL)
+		return (-3); // sending ERR_NOSUCHNICK
+
+	// TODO: delete client form all the channels
+	serv.deleteUser(tmp);
+	return (0);
+}
+
+int	quitCommand(Server &serv, Message &attempt)
+{
+	// TODO: delete client form all the channels
+	serv.deleteUser(attempt.getSender());
+
+	return (0);
 }

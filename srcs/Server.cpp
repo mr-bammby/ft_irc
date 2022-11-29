@@ -54,6 +54,7 @@ int Server::init()
 	pollfds.push_back(pollfd());
 	pollfds[0].fd = server_fd;
 	pollfds[0].events = POLLIN | POLLPRI;
+
 	return 0;
 }
 
@@ -80,9 +81,12 @@ int Server::start_loop()
 						std::cout<<"User disconnected"<<std::endl;
 						// deleting disconected client from map of clients and deleting his pollfd from vector. 
 						// put command break in the end because after erasing iterators could be invalid
+						Client *tmp = get_clientPtr(pfdit->fd);
 						this->clients_fdMap.erase(pfdit->fd);
 						this->pollfds.erase(pfdit);
+						this->clients_nameMap.erase(tmp->getNickname());
 						this->used_clients--;
+						shutdown(pfdit->fd, SHUT_RDWR);
 						break ;
 					}
 					else{
@@ -188,18 +192,16 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 	{
 		return (-3); //sending ERR_ERRONEUSNICKNAME
 	}
-	std::map<int, Client>::iterator itr = clients_fdMap.find(client_ptr->getFd());
-	if (itr == clients_fdMap.end())
+	std::map<std::string, Client*>::iterator itr = clients_nameMap.find(nickName);
+	if (itr == clients_nameMap.end())
 	{
+		if (client_ptr->setNickname(nickName) == -8)
+			return (-8);
 		temp = clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr));
 		if (!temp.second)
-		{
-			return (-4); // nick anme alredy exist
-		}
+			return (-4); // nick name alredy exist
 		else
-		{
-			return (client_ptr->setNickname(nickName));
-		}
+			return (-5);
 	}
 	else
 	{
@@ -243,4 +245,16 @@ Channel* Server::get_channelPtr(std::string chan)
 		return (NULL);
 	}
 	return(&(itr->second));
+}
+
+void	 Server::deleteUser(Client *user)
+{
+	std::vector<pollfd>::iterator it = pollfds.begin();
+	while (it->fd != user->getFd())
+		it++;
+	shutdown(it->fd, SHUT_RDWR);
+	this->pollfds.erase(it);
+	this->clients_fdMap.erase(user->getFd());
+	this->clients_nameMap.erase(user->getNickname());
+	used_clients--;
 }

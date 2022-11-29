@@ -1,4 +1,7 @@
 a.out
 .vscode
 .DS_Store
+
+# executables
 ircserv
+tests/bin/
