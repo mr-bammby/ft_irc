@@ -257,7 +257,7 @@ int	inviteCommand(Server &serv, Message &attempt)
 	{
 		return (-2); //Unknown server
  	}
-	// send invite fro channel chn to client cln
+	// send invite for channel chn to client cln
 	return (0);
 
 
