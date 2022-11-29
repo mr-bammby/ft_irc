@@ -16,6 +16,7 @@
 #include "Comms.hpp"
 
 #define MAX_CLIENTS 128
+#define TIMEOUT 	180
 
 class Server
 {
@@ -34,6 +35,7 @@ class Server
 		Client* 							get_clientPtr(int fd);
 		Client* 							get_clientPtr(std::string nickName);
 		Channel* 							get_channelPtr(std::string chan);
+		void								pingClients();
 	private:
 		Server();
 		Server(const Server &s);

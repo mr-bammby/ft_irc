@@ -9,7 +9,7 @@ CLASSES = \
 	Client.cpp	\
 	Channel.cpp \
 	Message.cpp \
-	Comms.cpp
+	Comms.cpp \
 	utility.cpp
 
 

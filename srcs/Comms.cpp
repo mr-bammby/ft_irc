@@ -1,4 +1,5 @@
 #include "Comms.hpp"
+#include <sstream>
 
 int	executeCommands(Server &serv)
 {
@@ -16,9 +17,11 @@ int	executeCommands(Server &serv)
 	while (serv.getBacklogLength() > 0)
 	{
 		current = serv.getNextMessage();
+		std::cout<<"Type: "<<current->type<<std::endl;
+		std::cout<<"Category: "<<current->category<<std::endl;
 		std::cout << RED;
 		std::cout << "Executing: " << current->command << " with: " << current->params[0] << std::endl;
-		Table[current->category](serv, *current);
+		Table[current->type](serv, *current);
 		std::cout << BLANK;
 		serv.removeLastMessage();
 	}
@@ -36,7 +39,8 @@ int	executeCommands(Server &serv)
 int	passCommand(Server &serv, Message &attempt)
 {
 	std::cout<<"provided pass: "<<attempt.params[0]<<std::endl;
-	if (attempt.client->getState() != 0)
+	std::cout<<"Status: "<<attempt.sender->getState()<<std::endl;
+	if (attempt.sender->getState() != 0)
 	{
 		std::cout << "Error for double password here" << std::endl;
 		return (1);
@@ -44,7 +48,7 @@ int	passCommand(Server &serv, Message &attempt)
 	if (serv.check_password(attempt.params[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
-		attempt.client->upgradeState();
+		attempt.sender->upgradeState();
 	}
 	else
 		std::cout << "Failed!" << std::endl;
@@ -55,7 +59,8 @@ int	passCommand(Server &serv, Message &attempt)
 
 int	nickCommand(Server &serv, Message &attempt)
 {
-	int res = serv.set_nickName(attempt.client, attempt.params[0]);
+	int res = serv.set_nickName(attempt.sender, attempt.params[0]);
+	std::cout<<"res: "<<res<<std::endl;
 	switch(res)
 	{
 		case -1:
@@ -71,6 +76,7 @@ int	nickCommand(Server &serv, Message &attempt)
 			//sending ERR_NICKCOLLISION
 			break;
 		case -5:
+			send(attempt.sender->getFd(), "001 * :- Welcome to irc server, bobo\r\n:irc 375 bobo :- irc Message of the Day -\r\n:irc 372 bobo Welcome to irc Server!\r\n:irc 376 bobo :End of /MOTD command.\r\n", 158, 0);
 			//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
 		case -6:
@@ -90,7 +96,7 @@ int	nickCommand(Server &serv, Message &attempt)
 int	userCommand(Server &serv, Message &attempt)
 {
 	(void)serv;
-	int res = attempt.client->setUsername(attempt.params[0]);
+	int res = attempt.sender->setUsername(attempt.params[0]);
 	switch (res)
 	{
 		case -1:
@@ -103,7 +109,7 @@ int	userCommand(Server &serv, Message &attempt)
 			//sending ERR_ALREADYREGISTERED
 			break;
 		case -4:
-			attempt.client->setRealname(attempt.params.back());
+			attempt.sender->setRealname(attempt.params.back());
 			break;
 	}
 

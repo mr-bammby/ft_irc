@@ -19,7 +19,9 @@ std::string prefix::buildRawPrefix() const
 Message::Message()
 	: prefix(), category(MISC), type(static_cast<enum Commands>(-1)), command(),
 	  params(), sender(NULL)
-{}
+{
+	commandMap = createCommandMap();
+}
 
 
 // Message::Message(const std::string& raw, Client *cl) : prefix(), client(cl)
@@ -27,8 +29,8 @@ Message::Message()
 Message::Message(const std::string& raw, Client* sending_client) : prefix()
 
 {
-	std::vector<std::string> tokens = split(
-		raw, " "); // TODO: sometimes params are allowed to have whitespace
+	commandMap = createCommandMap();
+	std::vector<std::string> tokens = split(raw, " "); // TODO: sometimes params are allowed to have whitespace
 	// TODO: consume tokens to fill Message
 	std::pair<enum ComCategory, int> msgType = detectMsgType(tokens[0]);
 	std::cout << "msgType=" << msgType.first << ", " << msgType.second
@@ -144,8 +146,8 @@ std::map< std::string, std::pair<enum ComCategory, enum Commands> > Message::com
 std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 Message::createCommandMap()
 {
-	const std::string init_commands[] = {"PASS", "NICK", "USER"};
-	const size_t	  init_commands_len = 3;
+	const std::string init_commands[] = {"PASS", "NICK", "USER", "JOIN"};
+	const size_t	  init_commands_len = 4;
 	const std::string msg_commands[] = {"PRIVMSG", "NOTICE"};
 	const size_t	  msg_commands_len = 2;
 	const std::string oper_commands[] = {"KICK", "MODE", "INVITE", "TOPIC"};
@@ -268,14 +270,12 @@ std::vector<Message> getMessages(const std::string& raw, Client* sender)
 
 	std::cout << "Messages: " << std::endl; // DEBUG
 	raw_messages = split(raw, msg_delimiter);
-
 	for (std::vector<std::string>::const_iterator it = raw_messages.begin();
 		 it != raw_messages.end();
 		 ++it)
 	{
 		// messages.push_back(Message(*it, cl)); // TODO: avoid construct empty Msg
-		messages.push_back(
-			Message(*it, sender)); // TODO: avoid construct empty Msg
+		messages.push_back(Message(*it, sender)); // TODO: avoid construct empty Msg
 	}
 	return messages;
 }

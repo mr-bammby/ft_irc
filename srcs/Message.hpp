@@ -64,7 +64,7 @@ public:
 	struct prefix			 prefix; // empty in msg from client to server
 	enum ComCategory		 category;
 
-	Client					 *client;
+	// Client					 *client;
 
 	enum Commands			 type;
 
