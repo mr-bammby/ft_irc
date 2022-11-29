@@ -39,6 +39,8 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix()
 {
 	std::vector<std::string> tokens = split(raw, " "); // TODO: sometimes params are allowed to have whitespace
 	// TODO: indicate error when no CRLF was found
+	std::cout<< "RAW: "<< raw <<std::endl;
+	std::cout<< "Tokens: "<< tokens <<std::endl;
 	if (tokens.empty())
 		throw std::runtime_error("No CRLF in Message found!");
 	// TODO: consume tokens to fill Message
@@ -310,7 +312,6 @@ std::vector<Message> getMessages(const std::string& raw, Client* sender)
 		 it != raw_messages.end();
 		 ++it)
 	{
-		// messages.push_back(Message(*it, cl)); // TODO: avoid construct empty Msg
 		messages.push_back(Message(*it, sender)); // TODO: avoid construct empty Msg
 	}
 	return messages;

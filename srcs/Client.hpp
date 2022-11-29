@@ -19,7 +19,7 @@ class Client
 
 
 	public:
-		Client(int client_fd);
+		Client(int _id, int client_fd);
 		Client();
 		// Client(const Client &c);
 		~Client();
@@ -36,17 +36,14 @@ class Client
 		int						setRealname(std::string name);
 		void					upgradeState();
 		int						getFd();
-		std::time_t				getTimestamp();
-		void					setTimestamp();
 
 	private:
-		// int				id;
+		int				id;
 		int				client_fd;
 		std::string		nickname;
 		Client::State	state;
 		std::string		username;
 		std::string		realname;
-		std::time_t		_timestamp;
 
 };
 

@@ -1,10 +1,10 @@
 #include "Client.hpp"
 
-Client::Client(int cl_fd)
-	: client_fd(cl_fd), nickname(), state(LOCKED), username(), realname(), _timestamp(std::time(NULL))
+Client::Client(int _id, int cl_fd)
+	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname()
 {}
 
-Client::Client() : nickname(), state(LOCKED), username(), realname(), _timestamp(std::time(NULL)) {}
+Client::Client() : id(), nickname(), state(LOCKED), username(), realname() {}
 
 // Client::Client(const Client& c) : client_fd(c.client_fd) {}
 

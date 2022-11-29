@@ -4,7 +4,7 @@
 
 #include "Client.hpp"
 #include "color.h"
-# include <string>
+#include <string>
 // struct Message
 // {
 // 	Commands	type;
@@ -23,5 +23,7 @@ int	userCommand(Server &serv, Message &attempt);
 int	joinCommand(Server &serv, Message &attempt);
 int	privmsgCommand(Server &serv, Message &attempt);
 int	noticeCommand(Server &serv, Message &attempt);
+int	killCommand(Server &serv, Message &attempt);
+int	quitCommand(Server &serv, Message &attempt);
 
 #endif

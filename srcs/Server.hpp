@@ -36,6 +36,7 @@ class Server
 		Client* 							get_clientPtr(std::string nickName);
 		Channel* 							get_channelPtr(std::string chan);
 		void								pingClients();
+		void								deleteUser(Client *user);
 	private:
 		Server();
 		Server(const Server &s);
