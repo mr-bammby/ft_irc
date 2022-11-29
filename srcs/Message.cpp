@@ -4,18 +4,18 @@ std::string prefix::buildShortPrefix() const
 {
 	std::string result; // <servername>
 
-	result = severname;
+	result = ":" + severname;
 
 	return result;
 }
 
 std::string prefix::buildLongPrefix() const
 {
-	std::string result; // <nick> [ '!' <user ] [ '@' <host> ] <SPACE>
+	std::string result; // :<nick> [ '!' <user ] [ '@' <host> ] <SPACE>
 
 	if (nick.empty())
 		return "";
-	result += nick;
+	result += ":" + nick;
 	if (!user.empty())
 		result += "!" + user;
 	if (!host.empty())
@@ -141,7 +141,7 @@ void Message::setSender(Client* sending_client)
 
 std::string Message::buildRawMsg() const
 {
-	std::string msg(":");
+	std::string msg;
 	if (category == RESPONSE)
 		msg += prefix.buildShortPrefix();
 	else
