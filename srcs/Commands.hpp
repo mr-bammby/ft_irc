@@ -36,9 +36,15 @@ enum Commands
 	MODE,	   // Change the channel's mode
 	INVITE,	   // Invite a client to an invite-only channel (mode +i)
 	TOPIC,	   // Change the channel topic in a mode +t channel
+	// responses diffrent from other commands: no command after prefix
+	// 200 -> 3XX
+	CMD_RESPONSE = 30,
+	// 400 -> 5XX
+	ERROR_RESPONSE,
 	// https://datatracker.ietf.org/doc/html/rfc1459#section-4.6
 	// Available to operators and servers
-	KILL = 30,
+	PING = 40,
+	KILL = 50,
 	RESTART
 };
 
@@ -48,6 +54,8 @@ enum ComCategory
 	INIT,
 	MSG,
 	OPER,
+	RESPONSE,
+	IGNORE,
 	MISC
 };
 #endif

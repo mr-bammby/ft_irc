@@ -17,7 +17,7 @@ int Client::setNickname(std::string name)
 		return (-1);//ERR_NOTREGISTERED
 	}
 	nickname = name;
-	if (UNINITIALIZED)
+	if (state == UNINITIALIZED)
 	{
 		state = INITIALIZED;
 	}
@@ -79,14 +79,15 @@ int						Client::setRealname(std::string name)
 
 int Client::parse(std::string command)
 {
+	Message::commandMap = Message::createCommandMap();
 	std::vector<Message> msgs = getMessages(command, this);
-	std::cout << "In parsing" << msgs << std::endl;
+	std::cout << msgs << std::endl;
 
 	std::vector<Message>::iterator it = msgs.begin();
 	while (it != msgs.end())
 	{
 		if (this->state == LOCKED)
-			command.compare("PASS"); 
+			command.compare("PASS");
 		std::cout << "Command for <"
 					<< "> was: " << command << std::endl;
 
