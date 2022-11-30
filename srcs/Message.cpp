@@ -4,18 +4,18 @@ std::string prefix::buildShortPrefix() const
 {
 	std::string result; // <servername>
 
-	result = severname;
+	result = ":" + severname;
 
 	return result;
 }
 
 std::string prefix::buildLongPrefix() const
 {
-	std::string result; // <nick> [ '!' <user ] [ '@' <host> ] <SPACE>
+	std::string result; // :<nick> [ '!' <user ] [ '@' <host> ] <SPACE>
 
 	if (nick.empty())
 		return "";
-	result += nick;
+	result += ":" + nick;
 	if (!user.empty())
 		result += "!" + user;
 	if (!host.empty())
@@ -56,9 +56,11 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix()
 	// TODO: check if the params match the type
 }
 
-Message::Message(enum Commands cmd_type,
-		const std::vector<std::string>& parameters,
-		Client*							sending_client) : params(parameters)
+Message::Message(
+	enum Commands					cmd_type,
+	const std::vector<std::string>& parameters,
+	Client*							sending_client)
+	: params(parameters)
 {
 	this->setCommand(cmd_type);
 	this->setSender(sending_client);
@@ -147,12 +149,12 @@ void Message::setSender(Client* sending_client)
 
 std::string Message::buildRawMsg() const
 {
-	std::string msg(":");
+	std::string msg;
 	if (category == RESPONSE)
 		msg += prefix.buildShortPrefix();
 	else
 	{
-		msg	+= prefix.buildLongPrefix();
+		msg += prefix.buildLongPrefix();
 		msg += command;
 	}
 
@@ -170,7 +172,8 @@ std::string Message::buildRawMsg() const
 
 // static member functions
 
-std::map< std::string, std::pair<enum ComCategory, enum Commands> > Message::commandMap;
+std::map< std::string, std::pair<enum ComCategory, enum Commands> >
+	Message::commandMap;
 
 std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 Message::createCommandMap()
@@ -183,6 +186,8 @@ Message::createCommandMap()
 	const size_t	  oper_commands_len = 4;
 	const std::string response_commands[] = {"CMD_RESPONSE", "ERROR_RESPONSE"};
 	const size_t	  response_commands_len = 2;
+	const std::string ignore_commands[] = {"PING"};
+	const size_t	  ignore_commands_len = 1;
 	const std::string misc_commands[] = {"KILL", "RESTART"};
 	const size_t	  misc_commands_len = 2;
 
@@ -205,7 +210,12 @@ Message::createCommandMap()
 	for (size_t i = 0; i < response_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			response_commands[i],
-			std::make_pair(RESPONSE, static_cast<Commands>(RESPONSE * 10 + i))));
+			std::make_pair(
+				RESPONSE, static_cast<Commands>(RESPONSE * 10 + i))));
+	for (size_t i = 0; i < ignore_commands_len; i++)
+		cmd_map.insert(std::make_pair(
+			ignore_commands[i],
+			std::make_pair(IGNORE, static_cast<Commands>(IGNORE * 10 + i))));
 	for (size_t i = 0; i < misc_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			misc_commands[i],
@@ -261,6 +271,8 @@ const std::string Message::getCommandStr(enum Commands cmd_type)
 		return "CMD_RESPONSE";
 	case ERROR_RESPONSE:
 		return "ERROR_RESPONSE";
+	case PING:
+		return "PING";
 	case KILL:
 		return "KILL";
 	case RESTART:
@@ -282,6 +294,8 @@ const std::string Message::getCommandCategoryStr(enum ComCategory cmd_category)
 		return "OPER";
 	case RESPONSE:
 		return "RESPONSE";
+	case IGNORE:
+		return "IGNORE";
 	case MISC:
 		return "MISC";
 	default:
@@ -331,5 +345,3 @@ std::ostream& operator<<(std::ostream& os, const Message& msg)
 	os << msg.buildRawMsg();
 	return os;
 }
-
-
