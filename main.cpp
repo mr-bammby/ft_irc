@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Comms.hpp"
 
 int checkPort(char* argv)
 {
@@ -31,7 +32,12 @@ int main(int argc, char *argv[])
 			return (1);
 		Server s(port, argv[2]);
 		s.init();
-		s.start_loop();
+		Message::commandMap = Message::createCommandMap();
+		while (true)
+		{
+			s.start_loop();
+			executeCommands(s);
+		}
 	}
 	else
 	{

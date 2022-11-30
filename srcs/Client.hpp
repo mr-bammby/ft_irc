@@ -34,6 +34,8 @@ class Client
 		int						setUsername(std::string name);
 		const std::string&		getRealname();
 		int						setRealname(std::string name);
+		void					upgradeState();
+		int						getFd();
 
 	private:
 		int				id;

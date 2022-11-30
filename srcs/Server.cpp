@@ -7,7 +7,9 @@ Server::Server(int port, std::string pass): server_port(port), used_clients(0), 
 {}
 
 Server::~Server()
-{}
+{
+	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+}
 
 int Server::init()
 {
@@ -57,8 +59,8 @@ int Server::init()
 
 int Server::start_loop()
 {
-	while (true)
-	{
+	// while (true)
+	// {
 		int pollResult = poll(&pollfds[0], this->used_clients + 1, 5000);
 		if (pollResult > 0)
 		{
@@ -78,7 +80,7 @@ int Server::start_loop()
 						std::cout<<"User disconnected"<<std::endl;
 						// deleting disconected client from map of clients and deleting his pollfd from vector. 
 						// put command break in the end because after erasing iterators could be invalid
-						this->clients.erase(pfdit->fd);
+						this->clients_fdMap.erase(pfdit->fd);
 						this->pollfds.erase(pfdit);
 						this->used_clients--;
 						break ;
@@ -86,15 +88,20 @@ int Server::start_loop()
 					else{
 						buf[buffsize] = '\0';
 						// changed [] operator for function at().
-						this->clients.at(pfdit->fd).parse(buf);
+						//probably leaking
+						std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)));
+						messages.insert(messages.begin(), current.rbegin(), current.rend());
+						current.clear();
+						// this->clients.at(pfdit->fd).parse(buf);
 						printf("Client: %s\n", buf);
 					}
 				}
 			}
 		}
-	}
+	return (0);
+	// }
 	// closing the listening socket
-	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+
 }
 
 int Server::create_client()
@@ -113,7 +120,7 @@ int Server::create_client()
 	pollfds.back().events = POLLIN | POLLPRI;
 	// creating client class and putting it in a map of clients, where the key is clients fd
 	// std::pair<int, Client> t(client_socket, Client(used_clients, client_socket));
-	clients.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
+	clients_fdMap.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
 	used_clients++;
 
 	return (0);
@@ -126,4 +133,80 @@ int Server::create_channel()
 	//	return (-1);
 	//}
 	return (0);
+}
+
+bool	Server::check_password(std::string pass)
+{
+	std::cout << "In check pass: " << pass << " and " << password << std::endl;
+	if (password == pass)
+		return (true);
+	return (false);
+}
+
+Message *Server::getNextMessage()
+{
+	return &(*(--(this->messages.end())));
+}
+
+int		Server::getBacklogLength()
+{
+	return (this->messages.size());
+}
+
+void	Server::removeLastMessage()
+{
+	this->messages.pop_back();
+}
+int Server::set_nickName(Client* client_ptr, std::string nickName)
+{
+	std::pair<std::map<std::string, Client*>::iterator, bool> temp;
+
+	if (nickName.empty())
+	{
+		return (-3); // nickname is empty
+	}
+	if (client_ptr == NULL)
+	{
+		return (-2); // client_ptr is not viable pointer
+	}
+	std::map<int, Client>::iterator itr = clients_fdMap.find(client_ptr->getFd());
+	if (itr == clients_fdMap.end())
+	{
+		temp = clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr));
+		if (!temp.second)
+		{
+			return (-1); // nick anme alredy exist
+		}
+		client_ptr->setNickname(nickName);
+	}
+	else
+	{
+		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
+		if (itr2 != clients_nameMap.end())
+		{
+			return (-1); // nick anme alredy exist
+		}
+	}
+	
+	return (0);
+}
+
+Client* Server::get_clientPtr(std::string nickName)
+{
+	std::map<std::string, Client*>::iterator itr = clients_nameMap.find(nickName);
+	if (itr == clients_nameMap.end())
+	{
+		return (NULL);
+	}
+	return(itr->second);
+}
+
+Client* Server::get_clientPtr(int fd)
+{
+	std::map<int, Client>::iterator itr = clients_fdMap.find(fd);
+	if (itr == clients_fdMap.end())
+	{
+		return (NULL);
+	}
+	return(&(itr->second));
 }
