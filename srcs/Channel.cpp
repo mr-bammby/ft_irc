@@ -1,7 +1,10 @@
 #include "Channel.hpp"
 
-Channel::Channel(int id, Client *c): chanop(op)
-{}
+Channel::Channel(std::string name, Client &c)
+{
+	this->clients.insert(std::make_pair<int, Client*>(c.getFd(), &c));
+	this->chanop = c.getNickname();
+}
 
 Channel::Channel(const Channel &c): name(c.name)
 {}
@@ -56,7 +59,13 @@ int Channel::disconnect(int fd)
  */
 int	Channel::cmd_kick(std::string nickname)
 {
-	if (it == invited_users.end())
+	std::map<int, Client*>::iterator it = clients.begin();
+	for (; it != clients.end(); ++it)
+	{
+		if (it->second->getNickname() == nickname)
+			break;
+	}
+	if (it == clients.end())
 			return (-1);
 	this->clients.erase(it->first);
 	return (0);
@@ -79,4 +88,9 @@ bool Channel::is_op(Client &c)
 	if (c.getUsername() == chanop)
 		return (true);
 	return (false);
+}
+
+std::string Channel::get_topic()
+{
+	return(topic);
 }

@@ -5,7 +5,7 @@ int	executeCommands(Server &serv)
 	Message *current;
 	int	(*Table[])(Server &s, Message &a) =
 	{
-		&passCommand, &nickCommand, &userCommand
+		&passCommand, &nickCommand, &userCommand, &joinCommand
 	};
 	// TODO: get the actual's message type
 	// const char *ComList[] =
@@ -69,4 +69,12 @@ int	userCommand(Server &serv, Message &attempt)
 	(void)attempt;
 	std::cout << BLANK;
 	return (0);
+}
+
+int joinCommand(Server &serv, Message &attempt)
+{
+	(void)serv;
+	(void) attempt;
+	std::vector<std::string> list = attempt.getParams();
+	
 }

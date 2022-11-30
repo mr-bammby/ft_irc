@@ -4,12 +4,13 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <sys/socket.h>
 #include "Client.hpp"
 
 class Channel
 {
 	public:
-		Channel(Client &c);
+		Channel(std::string name, Client &c);
 		Channel(const Channel &c);
 		~Channel();
 
@@ -22,6 +23,8 @@ class Channel
 		// int cmd_mode();
 		int	cmd_invite(std::string nickname);
 		int	cmd_topic(std::string topic);
+
+		std::string	get_topic();
 
 		bool	is_op(Client &c);
 
