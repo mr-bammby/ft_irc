@@ -30,3 +30,4 @@ $(NAME): $(SRCS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -I./srcs -o $@
 
 .PHONY: all clean fclean re
+q

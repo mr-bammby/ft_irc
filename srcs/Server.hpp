@@ -24,6 +24,7 @@ class Server
 		int init();
 		int start_loop();
 		int create_channel();
+
 	private:
 		Server();
 		Server(const Server &s);
