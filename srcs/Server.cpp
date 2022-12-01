@@ -11,14 +11,51 @@ Server::~Server()
 	shutdown(this->pollfds[0].fd, SHUT_RDWR);
 }
 
+void Server::initExecutor()
+{
+	exeCommands.insert(std::pair<std::string, fun>("PASS", &passCommand));
+	exeCommands.insert(std::pair<std::string, fun>("USER", &userCommand));
+	exeCommands.insert(std::pair<std::string, fun>("NICK", &nickCommand));
+	exeCommands.insert(std::pair<std::string, fun>("PRIVMSG", &privmsgCommand));
+	exeCommands.insert(std::pair<std::string, fun>("NOTICE", &noticeCommand));
+	exeCommands.insert(std::pair<std::string, fun>("KILL", &killCommand));
+	exeCommands.insert(std::pair<std::string, fun>("QUIT", &quitCommand));
+	exeCommands.insert(std::pair<std::string, fun>("PING", NULL));
+}
+
+void Server::executor()
+{
+	Message *current;
+
+	while (messages.size() > 0)
+	{
+		current = getNextMessage();
+		std::cout << RED;
+		std::cout << "Executing: " << current->getCommand()  << " TXT: "<<current->getText()<< std::endl;
+		std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
+		if (it == exeCommands.end())
+		{
+			std::cout<<"Command not found"<<std::endl;
+			std::string msg = ":<servername> 421 " + current->getSender()->getNickname() + " " + current->getCommand() + " :Unknown command\r\n";
+			send(current->getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		}
+		else
+		{
+			if (it->second != NULL)
+				it->second(*this, *current);
+		}
+		std::cout << BLANK;
+		removeLastMessage();
+	}
+}
+
+
+
 int Server::init()
 {
 	int server_fd;
 	struct sockaddr_in address;
 	int opt = 1;
-	// int addrlen = sizeof(address);
-	// char buffer[1024] = { 0 };
-	// char* hello = "Hello from server";
 
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -50,57 +87,56 @@ int Server::init()
 		exit(EXIT_FAILURE);
 	}
 
-	// struct pollfd pollfds[10] = {0};
 	pollfds.push_back(pollfd());
 	pollfds[0].fd = server_fd;
 	pollfds[0].events = POLLIN | POLLPRI;
+	initExecutor();
 	return 0;
 }
 
 int Server::start_loop()
 {
-	// while (true)
-	// {
-		int pollResult = poll(&pollfds[0], this->used_clients + 1, 5000);
-		if (pollResult > 0)
+	int pollResult = poll(&pollfds[0], this->used_clients + 1, 5000);
+	if (pollResult > 0)
+	{
+		if (pollfds[0].revents & POLLIN)
 		{
-			if (pollfds[0].revents & POLLIN)
+			create_client();
+		}
+		// changed iterator to start from second position, because first is server and it goes into if condition(gets deleted)
+		for (std::vector<pollfd>::iterator pfdit = ++pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
+		{
+			if (pfdit->revents & POLLIN)
 			{
-				create_client();
-			}
-			// changed iterator to start from second position, because first is server and it goes into if condition(gets deleted)
-			for (std::vector<pollfd>::iterator pfdit = ++pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
-			{
-				if (pfdit->revents & POLLIN)
+				char buf[1024];
+				int buffsize = read(pfdit->fd, buf, 1024 - 1);
+				if (buffsize == -1 || buffsize == 0)
 				{
-					char buf[1024];
-					int buffsize = read(pfdit->fd, buf, 1024 - 1);
-					if (buffsize == -1 || buffsize == 0)
-					{
-						std::cout<<"User disconnected"<<std::endl;
-						// deleting disconected client from map of clients and deleting his pollfd from vector. 
-						// put command break in the end because after erasing iterators could be invalid
-						this->clients_fdMap.erase(pfdit->fd);
-						this->pollfds.erase(pfdit);
-						this->used_clients--;
-						break ;
-					}
-					else{
-						buf[buffsize] = '\0';
-						// changed [] operator for function at().
-						//probably leaking
-						std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)));
-						messages.insert(messages.begin(), current.rbegin(), current.rend());
-						current.clear();
-						// this->clients.at(pfdit->fd).parse(buf);
-						printf("Client: %s\n", buf);
-					}
+					std::cout<<"User disconnected"<<std::endl;
+					// deleting disconected client from map of clients and deleting his pollfd from vector. 
+					// put command break in the end because after erasing iterators could be invalid
+					Client *tmp = get_clientPtr(pfdit->fd);
+					this->clients_fdMap.erase(pfdit->fd);
+					this->pollfds.erase(pfdit);
+					this->clients_nameMap.erase(tmp->getNickname());
+					this->used_clients--;
+					shutdown(pfdit->fd, SHUT_RDWR);
+					break ;
+				}
+				else{
+					buf[buffsize] = '\0';
+					// changed [] operator for function at().
+					//probably leaking
+					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)));
+					messages.insert(messages.begin(), current.rbegin(), current.rend());
+					current.clear();
+					// this->clients.at(pfdit->fd).parse(buf);
+					printf("Client: %s\n", buf);
 				}
 			}
 		}
+	}
 	return (0);
-	// }
-	// closing the listening socket
 
 }
 
@@ -157,35 +193,57 @@ void	Server::removeLastMessage()
 {
 	this->messages.pop_back();
 }
+
+int Server::checkNickGrammar(std::string nick)
+{
+	std::string allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdrfghijklmnopqrstuvwxyz0123456789-[]\\`^{}";
+	int i = 0;
+	while (nick[i])
+	{
+		if (allowedChar.find(nick[i]) == std::string::npos)
+			return (-1);
+		i++;
+	}
+
+	return (0);
+}
+
 int Server::set_nickName(Client* client_ptr, std::string nickName)
 {
 	std::pair<std::map<std::string, Client*>::iterator, bool> temp;
 
 	if (nickName.empty())
 	{
-		return (-3); // nickname is empty
+		return (-1); // nickname is empty
 	}
 	if (client_ptr == NULL)
 	{
 		return (-2); // client_ptr is not viable pointer
 	}
-	std::map<int, Client>::iterator itr = clients_fdMap.find(client_ptr->getFd());
-	if (itr == clients_fdMap.end())
+	if (checkNickGrammar(nickName) == -1)
 	{
+		return (-3); //sending ERR_ERRONEUSNICKNAME
+	}
+	std::map<std::string, Client*>::iterator itr = clients_nameMap.find(nickName);
+	if (itr == clients_nameMap.end())
+	{
+		if (client_ptr->setNickname(nickName) == -8)
+			return (-8);
 		temp = clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr));
 		if (!temp.second)
-		{
-			return (-1); // nick anme alredy exist
-		}
-		client_ptr->setNickname(nickName);
+			return (-4); // nick name alredy exist
+		else
+			return (-5);
 	}
 	else
 	{
 		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
 		if (itr2 != clients_nameMap.end())
 		{
-			return (-1); // nick anme alredy exist
+			return (-6); // nick anme alredy exist ERR_NICKNAMEINUSE
 		}
+		else
+			return (-7);// probably have to send message "old nicname" changed his nickname to "new nickname"
 	}
 	
 	return (0);
@@ -209,4 +267,26 @@ Client* Server::get_clientPtr(int fd)
 		return (NULL);
 	}
 	return(&(itr->second));
+}
+
+Channel* Server::get_channelPtr(std::string chan)
+{
+	std::map<std::string, Channel>::iterator itr = channels.find(chan);
+	if (itr == channels.end())
+	{
+		return (NULL);
+	}
+	return(&(itr->second));
+}
+
+void	 Server::deleteUser(Client *user)
+{
+	std::vector<pollfd>::iterator it = pollfds.begin();
+	while (it->fd != user->getFd())
+		it++;
+	shutdown(it->fd, SHUT_RDWR);
+	this->pollfds.erase(it);
+	this->clients_fdMap.erase(user->getFd());
+	this->clients_nameMap.erase(user->getNickname());
+	used_clients--;
 }

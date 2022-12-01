@@ -33,26 +33,19 @@ class Message
 {
 public:
 	Message();
-	// parse incomming Message
-	Message(const std::string& rawMsg, Client* sender = NULL);
-	// create outgoing message (response)
+	Message(const std::string& rawMsg, Client* sender);
 	Message(
-		enum Commands cmdType,
 		const std::vector<std::string>& params,
 		Client*							sender);
-	// Message(const Message& other);
 	~Message();
 
-	// Message& operator=(const Message& other);
 
 	const struct prefix&			getPrefix() const;
-	enum ComCategory				getComCategory() const;
-	enum Commands					getType() const;
 	const std::string&				getCommand() const;
 	const std::vector<std::string>& getParams() const;
 	Client*							getSender() const;
+	std::string						getText() const;
 
-	void setCommand(enum Commands cmd, const std::string& cmd_str = "");
 	void setParams(const std::vector<std::string>& params);
 	void setSender(Client* sender);
 
@@ -60,17 +53,11 @@ public:
 
 	std::string buildRawMsg() const;
 
-	static std::map< std::string, std::pair<enum ComCategory, enum Commands> >
-		commandMap;
-	static std::map< std::string, std::pair<enum ComCategory, enum Commands> >
-	createCommandMap();
-
 	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
 
 private:
 	struct prefix			 prefix; // empty in msg from client to server
-	enum ComCategory		 category;
-	enum Commands			 type;
+	std::string				 text;
 	std::string				 command;
 	std::vector<std::string> params;
 	Client*					 sender; // NULL in msg from server to client

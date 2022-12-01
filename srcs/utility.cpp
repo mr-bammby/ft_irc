@@ -11,7 +11,10 @@ split(const std::string& str, const std::string& delimiter)
 	// TODO: see what happens if the delimiter is not there
 	// or appears more than once
 	if (pos == std::string::npos)
+	{
+		tokens.push_back(s);
 		return tokens;
+	}
 	// TODO: dont split after :
 
 	while ((pos = s.find(delimiter)) != std::string::npos && s[0] != ':')

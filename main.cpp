@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
 			return (1);
 		Server s(port, argv[2]);
 		s.init();
-		Message::commandMap = Message::createCommandMap();
+		// Message::commandMap = Message::createCommandMap();
 		while (true)
 		{
 			s.start_loop();
-			executeCommands(s);
+			s.executor();
 		}
 	}
 	else

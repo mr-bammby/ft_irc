@@ -11,7 +11,7 @@ namespace Reply
 		params.push_back(":Welcome to the Internet Relay Network");
 		params.push_back(user->getNickname() + "!" + \
 			user->getUsername() + "@" + "PLACEHOLDER SERVER");
-		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string motd(Client *user)
@@ -21,7 +21,7 @@ namespace Reply
 		params.push_back("372");
 		params.push_back(user->getNickname());
 		params.push_back(": fancy cool ascii image plus rules list");
-		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 }
 namespace Error
@@ -34,7 +34,7 @@ namespace Error
 		params.push_back(user->getNickname());
 		params.push_back(":No recipient given");
 		params.push_back("(" + cmd + ")");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string notexttosend(Client *user)
@@ -44,7 +44,7 @@ namespace Error
 		params.push_back("412 *");
 		params.push_back(user->getNickname());
 		params.push_back(":No text to send");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string unknowncommand(Client *user, std::string errCmd)
@@ -55,7 +55,7 @@ namespace Error
 		params.push_back(user->getNickname());
 		params.push_back(errCmd);
 		params.push_back("Unknown command");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string erroneousnickname(std::string errNick)
@@ -65,7 +65,7 @@ namespace Error
 		params.push_back("432 *");
 		params.push_back(errNick);
 		params.push_back(":Erroneous Nickname");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string nicknameinuse(std::string errNick)
@@ -75,7 +75,7 @@ namespace Error
 		params.push_back("433 *");
 		params.push_back(errNick);
 		params.push_back(":Nickname is already in use.");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string needmoreparams(std::string errCmd)
@@ -85,7 +85,7 @@ namespace Error
 		params.push_back("461 *");
 		params.push_back(errCmd);
 		params.push_back(":Not enough parameters");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 	
 	std::string notregistered()
@@ -94,7 +94,7 @@ namespace Error
 		std::vector<std::string> params;
 		params.push_back("462 *");
 		params.push_back(":You have not registered");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string passwdmismatch()
@@ -103,7 +103,7 @@ namespace Error
 		std::vector<std::string> params;
 		params.push_back("464 *");
 		params.push_back(":Password incorrect");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 
 	std::string nopriveleges(Client *user)
@@ -113,6 +113,6 @@ namespace Error
 		params.push_back("481 *");
 		params.push_back(user->getNickname());
 		params.push_back(":Permission Denied- You're not an IRC operator");
-		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+		return(Message(params, &server).buildRawMsg());
 	}
 }
