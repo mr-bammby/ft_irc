@@ -3,6 +3,7 @@
 # include "Commands.hpp"
 
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "color.h"
 #include <string>
 // struct Message
@@ -23,6 +24,7 @@ int	userCommand(Server &serv, Message &attempt);
 int	joinCommand(Server &serv, Message &attempt);
 int	privmsgCommand(Server &serv, Message &attempt);
 int	noticeCommand(Server &serv, Message &attempt);
+int inviteCommand(Server &serv, Message &attempt);
 int	killCommand(Server &serv, Message &attempt);
 int	quitCommand(Server &serv, Message &attempt);
 

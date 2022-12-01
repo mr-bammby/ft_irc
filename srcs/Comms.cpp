@@ -243,6 +243,51 @@ int	noticeCommand(Server &serv, Message &attempt)
 	return (0);
 }
 
+int	inviteCommand(Server &serv, Message &attempt)
+{
+	if (attempt.getParams().size() < 2)
+	{
+		return (-3);//ERR_NEEDMOREPARAMS
+	}
+	Channel* chn = serv.get_channelPtr(attempt.getParams()[1]);
+	Client* cln = serv.get_clientPtr(attempt.getParams()[0]);
+	if (cln == NULL)
+	{
+		return (-1); //Unknown server
+ 	}
+
+	if (chn == NULL)
+	{
+		return (-2); //Unknown server
+ 	}
+	/*
+	int chn_resp = chn.can_invite(*chn, *cln);
+	if (chn_resp == 0)
+	{
+		//send invite
+	}
+	else if (chn_resp == CHN_ERR_INVITE_NOT_IN_CHN)
+	{
+		//ERR_NOTONCHANNEL
+	}
+	else if (chn_resp == CHN_ERR_INVITE_NO_PRIV)
+	{
+		//ERR_CHANOPRIVSNEEDED
+	}
+	else if (chn_resp == CHN_ERR_INVITE_ALREADY_INVITED)
+	{
+		//ERR_USERONCHANNEL
+	}
+	else
+	{
+		//UNKNOWN_ERR
+	}
+	*/
+	return (0);
+
+
+}
+
 int	killCommand(Server &serv, Message &attempt)
 {
 	// if (attempt.getSender() is not operator)

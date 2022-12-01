@@ -34,6 +34,7 @@ int main()
 											// and &bar using key foobar
 	str_to_msg("JOIN #foo,&bar\r\n");		// join channels #foo and &bar
 	// TODO: test other messages
+	str_to_msg("PING :randomnbr");
 
 	// build Message
 
