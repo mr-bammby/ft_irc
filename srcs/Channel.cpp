@@ -88,9 +88,14 @@ int	Channel::cmd_topic(std::string topic)
 	return (0);
 }
 
-bool Channel::is_op(Client &c)
+bool Channel::is_op(const Client &c)
 {
-	if (c.getNickname() == chanop)
+	return (is_op(c.getNickname));
+}
+
+bool Channel::is_op(std::String nickname)
+{
+	if (nickname == chanop)
 		return (true);
 	return (false);
 }
@@ -98,4 +103,46 @@ bool Channel::is_op(Client &c)
 std::string Channel::get_topic()
 {
 	return(topic);
+}
+
+
+bool Channel::is_member(std::string nickname)
+{
+	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
+	if (itr != clients_nameMap.end())
+	{
+		return (true);
+	}
+	return (false);
+}
+
+bool Channel::is_member(const Client &c)
+{
+	return (is_member(c.getNickname()));
+}
+
+/*
+Checks if client can invite to this channel
+*/
+bool Channel::can_invite(std::string nickname)
+{
+	if (is_op(nickname))
+	{
+		return (true);
+	}
+	if (invite_only)
+	{
+		return (false);
+	}
+	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
+	if (itr != clients_nameMap.end())
+	{
+		return (true);
+	}
+	return (false);
+}
+
+bool Channel::can_invite(const Client &c)
+{
+	return (can_invite(c.getNickname()));
 }
