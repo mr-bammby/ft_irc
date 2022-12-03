@@ -86,7 +86,8 @@ int	removeUserFromChannels(Server &serv, std::string nickname)
 	iter = serv.getChannels().begin();
 	while (iter != serv.getChannels().end())
 	{
-
+		iter->disconnect(nickname);
+		++iter;
 	}
 	return (0);
 }
