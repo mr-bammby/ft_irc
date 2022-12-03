@@ -28,7 +28,7 @@ class Channel
 		std::string	get_topic();
 
 		bool	is_op(const Client &c);
-		bool	is_op(std::String nickname);
+		bool	is_op(std::string nickname);
 		bool	is_member(const Client &c);
 		bool	is_member(std::string nickname);
 		bool	can_invite(const Client &c);

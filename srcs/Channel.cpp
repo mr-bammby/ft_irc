@@ -9,8 +9,9 @@ name(name)
 
 Channel::Channel(const Channel &c): name(c.name)
 {
-	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
-	this->chanop = c.getNickname();
+	// this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
+	this->clients.insert(c.clients.begin(), c.clients.end());
+	this->chanop = c.clients.begin()->first;
 }
 
 Channel::~Channel()
@@ -90,10 +91,10 @@ int	Channel::cmd_topic(std::string topic)
 
 bool Channel::is_op(const Client &c)
 {
-	return (is_op(c.getNickname));
+	return (is_op(c.getNickname()));
 }
 
-bool Channel::is_op(std::String nickname)
+bool Channel::is_op(std::string nickname)
 {
 	if (nickname == chanop)
 		return (true);
