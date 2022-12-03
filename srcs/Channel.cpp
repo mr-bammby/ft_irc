@@ -1,13 +1,17 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, Client &c)
+Channel::Channel(std::string name, const Client &c):
+name(name)
 {
-	this->clients.insert(std::make_pair<int, Client*>(c.getFd(), &c));
+	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
 	this->chanop = c.getNickname();
 }
 
 Channel::Channel(const Channel &c): name(c.name)
-{}
+{
+	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
+	this->chanop = c.getNickname();
+}
 
 Channel::~Channel()
 {}
@@ -29,7 +33,7 @@ int Channel::broadcast(std::string message)
 	return (0);
 }
 
-int	Channel::connect(int fd, Client &c)
+int	Channel::connect(const Client &c)
 {
 	if (this->invite_only)
 	{
@@ -37,13 +41,21 @@ int	Channel::connect(int fd, Client &c)
 		if (it == invited_users.end())
 			return (-1);
 	}
-	clients.insert(std::pair<int, Client*>(fd, &c));
+	clients.insert(std::pair<std::string, Client*>(c.getNickname(), &c));
 	return (0);
 }
 
-int Channel::disconnect(int fd)
+int Channel::disconnect(const Client &c)
 {
-	clients.erase(fd);
+	clients.erase(c.getNickname());
+	if (clients.empty())
+		return (1);
+	return (0);
+}
+
+int Channel::disconnect(std::string nickname)
+{
+	clients.erase(nickname);
 	if (clients.empty())
 		return (1);
 	return (0);
@@ -59,15 +71,8 @@ int Channel::disconnect(int fd)
  */
 int	Channel::cmd_kick(std::string nickname)
 {
-	std::map<int, Client*>::iterator it = clients.begin();
-	for (; it != clients.end(); ++it)
-	{
-		if (it->second->getNickname() == nickname)
-			break;
-	}
-	if (it == clients.end())
-			return (-1);
-	this->clients.erase(it->first);
+
+	this->clients.erase(nickname);
 	return (0);
 }
 
@@ -83,9 +88,14 @@ int	Channel::cmd_topic(std::string topic)
 	return (0);
 }
 
-bool Channel::is_op(Client &c)
+bool Channel::is_op(const Client &c)
 {
-	if (c.getUsername() == chanop)
+	return (is_op(c.getNickname));
+}
+
+bool Channel::is_op(std::String nickname)
+{
+	if (nickname == chanop)
 		return (true);
 	return (false);
 }
@@ -93,4 +103,46 @@ bool Channel::is_op(Client &c)
 std::string Channel::get_topic()
 {
 	return(topic);
+}
+
+
+bool Channel::is_member(std::string nickname)
+{
+	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
+	if (itr != clients_nameMap.end())
+	{
+		return (true);
+	}
+	return (false);
+}
+
+bool Channel::is_member(const Client &c)
+{
+	return (is_member(c.getNickname()));
+}
+
+/*
+Checks if client can invite to this channel
+*/
+bool Channel::can_invite(std::string nickname)
+{
+	if (is_op(nickname))
+	{
+		return (true);
+	}
+	if (invite_only)
+	{
+		return (false);
+	}
+	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
+	if (itr != clients_nameMap.end())
+	{
+		return (true);
+	}
+	return (false);
+}
+
+bool Channel::can_invite(const Client &c)
+{
+	return (can_invite(c.getNickname()));
 }
