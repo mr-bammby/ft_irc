@@ -76,5 +76,5 @@ int joinCommand(Server &serv, Message &attempt)
 	(void)serv;
 	(void) attempt;
 	std::vector<std::string> list = attempt.getParams();
-	
+	return (0);
 }

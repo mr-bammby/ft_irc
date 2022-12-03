@@ -10,7 +10,7 @@
 class Channel
 {
 	public:
-		Channel(std::string name, const Client &c);
+		Channel(std::string ch_name, Client *c);
 		Channel(const Channel &c);
 		~Channel();
 
@@ -38,7 +38,7 @@ class Channel
 		std::string						name;
 		std::string						chanop;
 		std::string						topic;
-		std::map<std::string, Client*>	clients;
+		std::map<const std::string, Client *>	clients;
 		bool							invite_only;
 		std::vector<std::string>		invited_users;
 };

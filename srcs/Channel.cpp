@@ -1,15 +1,14 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, const Client &c):
-name(name)
+Channel::Channel(std::string ch_name, Client *c): name(ch_name)
 {
-	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
-	this->chanop = c.getNickname();
+	this->clients.insert(std::make_pair<const std::string, Client *>(c->getNickname(), c));
+	this->chanop = c->getNickname();
 }
 
 Channel::Channel(const Channel &c): name(c.name)
 {
-	// this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
+	// this->clients.insert(std::make_pair<const std::string, Client *>(c.getNickname(), &c));
 	this->clients.insert(c.clients.begin(), c.clients.end());
 	this->chanop = c.clients.begin()->first;
 }
@@ -25,7 +24,7 @@ Channel &Channel::operator=(const Channel &c)
 
 int Channel::broadcast(std::string message)
 {
-	std::map<int, Client*>::iterator it;
+	std::map<const std::string, Client*>::iterator it;
 	std::cout << message << std::endl;
 	for (it = clients.begin(); it != clients.end(); it++)
 	{
@@ -34,15 +33,15 @@ int Channel::broadcast(std::string message)
 	return (0);
 }
 
-int	Channel::connect(const Client &c)
+int	Channel::connect(Client *c)
 {
 	if (this->invite_only)
 	{
-		std::vector<std::string>::iterator it = std::find(invited_users.begin(), invited_users.end(), c.getUsername());
+		std::vector<std::string>::iterator it = std::find(invited_users.begin(), invited_users.end(), c->getUsername());
 		if (it == invited_users.end())
 			return (-1);
 	}
-	clients.insert(std::pair<std::string, Client*>(c.getNickname(), &c));
+	clients.insert(std::pair<const std::string, Client *>(c->getNickname(), c));
 	return (0);
 }
 
@@ -83,9 +82,9 @@ int	Channel::cmd_invite(std::string nickname)
 	return (0);
 }
 
-int	Channel::cmd_topic(std::string topic)
+int	Channel::cmd_topic(std::string ch_topic)
 {
-	this->topic = topic;
+	this->topic = ch_topic;
 	return (0);
 }
 
@@ -109,8 +108,8 @@ std::string Channel::get_topic()
 
 bool Channel::is_member(std::string nickname)
 {
-	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
-	if (itr != clients_nameMap.end())
+	std::map<const std::string, Client *>::iterator itr = clients.find(nickname);
+	if (itr != clients.end())
 	{
 		return (true);
 	}
@@ -135,8 +134,8 @@ bool Channel::can_invite(std::string nickname)
 	{
 		return (false);
 	}
-	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
-	if (itr != clients_nameMap.end())
+	std::map<const std::string, Client *>::iterator itr = clients.find(nickname);
+	if (itr != clients.end())
 	{
 		return (true);
 	}
@@ -147,3 +146,18 @@ bool Channel::can_invite(const Client &c)
 {
 	return (can_invite(c.getNickname()));
 }
+
+// int	Channel::removeUser(Client &client)
+// {
+// 	std::vector<Client>::iterator	first = this->clients.begin();
+// 	while (first != this->clients.end())
+// 	{
+// 		if (*first == client)
+// 		{
+// 			this->clients.erase(first);
+// 			return (0);
+// 		}
+// 		++first;
+// 	}
+// 	return (1);
+// }
