@@ -1,6 +1,31 @@
 #include "Comms.hpp"
 #include <sstream>
 
+// int	executeCommands(Server &serv)
+// {
+// 	Message *current;
+// 	int	(*Table[])(Server &s, Message &a) =
+// 	{
+// 		&passCommand, &nickCommand, &userCommand, &joinCommand
+// 	};
+// 	// TODO: get the actual's message type
+// 	// const char *ComList[] =
+// 	// {
+// 	// 	"PASS", "NICK", "USER", "JOIN",
+// 	// 	"PRIVMSG", "NOTICE", "KICK", "MODE",
+// 	// 	"INVITE", "TOPIC", "KILL", "RESTART", NULL};
+// 	while (serv.getBacklogLength() > 0)
+// 	{
+// 		current = serv.getNextMessage();
+// 		std::cout << RED;
+// 		std::cout << "Executing: " << current->getCommand() << " with: " << current->getParams()[0] << std::endl;
+// 		Table[current->getType()](serv, *current);
+// 		std::cout << BLANK;
+// 		serv.removeLastMessage();
+// 	}
+// 	return (0);
+// }
+
 // Message createMessage(std::string str, Client *cl)
 // {
 // 	Message msg;
@@ -303,4 +328,12 @@ int	quitCommand(Server &serv, Message &attempt)
 	serv.deleteUser(attempt.getSender());
 
 	return (0);
+}
+
+int joinCommand(Server &serv, Message &attempt)
+{
+	(void)serv;
+	(void) attempt;
+	std::vector<std::string> list = attempt.getParams();
+	
 }
