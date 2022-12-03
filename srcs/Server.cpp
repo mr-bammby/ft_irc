@@ -21,6 +21,7 @@ void Server::initExecutor()
 	exeCommands.insert(std::pair<std::string, fun>("KILL", &killCommand));
 	exeCommands.insert(std::pair<std::string, fun>("QUIT", &quitCommand));
 	exeCommands.insert(std::pair<std::string, fun>("PING", NULL));
+	exeCommands.insert(std::pair<std::string, fun>("JOIN", &joinCommand));
 }
 
 void Server::executor()
@@ -162,12 +163,9 @@ int Server::create_client()
 	return (0);
 }
 
-int Server::create_channel()
+int Server::create_channel(std::string name, Client& c)
 {
-	//if (check_channel_name());
-	//{
-	//	return (-1);
-	//}
+	this->channels.insert(std::pair<std::string, Channel>(name, Channel(name, c)));
 	return (0);
 }
 

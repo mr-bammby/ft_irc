@@ -10,28 +10,30 @@
 class Channel
 {
 	public:
-		Channel(std::string name, const Client &c);
-		Channel(const Channel &c);
+		Channel(std::string name, Client &c);
+		// Channel(const Channel &c);
 		~Channel();
 
 		Channel &operator=(const Channel &c);
 
 		int	broadcast(std::string message);
-		int	connect(const Client &c);
-		int	disconnect(const Client &c);
+		int	connect(Client &c);
+		int	disconnect(Client &c);
 		int	disconnect(std::string nickname);
 		int	cmd_kick(std::string nickname);
 		// int cmd_mode();
 		int	cmd_invite(std::string nickname);
-		int	cmd_topic(std::string topic);
+		int	cmd_topic(std::string top);
+		int	cmd_names(Client& sender);
 
 		std::string	get_topic();
+		std::string	get_name();
 
-		bool	is_op(const Client &c);
-		bool	is_op(std::String nickname);
-		bool	is_member(const Client &c);
+		bool	is_op(Client &c);
+		bool	is_op(std::string nickname);
+		bool	is_member(Client &c);
 		bool	is_member(std::string nickname);
-		bool	can_invite(const Client &c);
+		bool	can_invite(Client &c);
 		bool	can_invite(std::string nickname);
 
 	private:

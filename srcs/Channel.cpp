@@ -1,17 +1,18 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, const Client &c):
+Channel::Channel(std::string name, Client &c):
 name(name)
 {
-	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
+	this->clients.insert(std::pair<std::string, Client*>(c.getNickname(), &c));
 	this->chanop = c.getNickname();
+	this->invite_only = false;
 }
 
-Channel::Channel(const Channel &c): name(c.name)
-{
-	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
-	this->chanop = c.getNickname();
-}
+// Channel::Channel(const Channel &c): name(c.name)
+// {
+// 	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
+// 	this->chanop = c.getNickname();
+// }
 
 Channel::~Channel()
 {}
@@ -24,16 +25,17 @@ Channel &Channel::operator=(const Channel &c)
 
 int Channel::broadcast(std::string message)
 {
-	std::map<int, Client*>::iterator it;
+	std::map<std::string, Client*>::iterator it;
 	std::cout << message << std::endl;
 	for (it = clients.begin(); it != clients.end(); it++)
 	{
 		// send message to all Clients depends of the implementation
+		send(it->second->getFd(), message.c_str(), message.length(), 0);
 	}
 	return (0);
 }
 
-int	Channel::connect(const Client &c)
+int	Channel::connect(Client &c)
 {
 	if (this->invite_only)
 	{
@@ -45,7 +47,7 @@ int	Channel::connect(const Client &c)
 	return (0);
 }
 
-int Channel::disconnect(const Client &c)
+int Channel::disconnect(Client &c)
 {
 	clients.erase(c.getNickname());
 	if (clients.empty())
@@ -82,18 +84,38 @@ int	Channel::cmd_invite(std::string nickname)
 	return (0);
 }
 
-int	Channel::cmd_topic(std::string topic)
+int	Channel::cmd_topic(std::string top)
 {
-	this->topic = topic;
+	this->topic = top;
 	return (0);
 }
 
-bool Channel::is_op(const Client &c)
+int	Channel::cmd_names(Client& sender)
 {
-	return (is_op(c.getNickname));
+	std::string listUsers = ":<servername> 353 " + sender.getNickname() + " = " + get_name() + " :";
+	for (std::map<std::string, Client*>::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		if (is_op(*it->second))
+			listUsers += "@";
+		listUsers += it->second->getNickname();
+		std::map<std::string, Client*>::iterator it1 = it;
+		if ((++it1) != clients.end())
+			listUsers += " ";
+	}
+	listUsers += "\r\n";
+	send(sender.getFd(), listUsers.c_str(), listUsers.length(), 0);
+	std::string endMsg = ":<servername> 366 " + sender.getNickname() + " " + get_name() + " End of /NAMES list. \r\n";
+	send(sender.getFd(), endMsg.c_str(), endMsg.length(), 0);
+
+	return (0);
 }
 
-bool Channel::is_op(std::String nickname)
+bool Channel::is_op(Client &c)
+{
+	return (is_op(c.getNickname()));
+}
+
+bool Channel::is_op(std::string nickname)
 {
 	if (nickname == chanop)
 		return (true);
@@ -105,18 +127,23 @@ std::string Channel::get_topic()
 	return(topic);
 }
 
+std::string	Channel::get_name()
+{
+	return (name);
+}
+
 
 bool Channel::is_member(std::string nickname)
 {
 	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
-	if (itr != clients_nameMap.end())
+	if (itr != clients.end())
 	{
 		return (true);
 	}
 	return (false);
 }
 
-bool Channel::is_member(const Client &c)
+bool Channel::is_member(Client &c)
 {
 	return (is_member(c.getNickname()));
 }
@@ -135,14 +162,14 @@ bool Channel::can_invite(std::string nickname)
 		return (false);
 	}
 	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
-	if (itr != clients_nameMap.end())
+	if (itr != clients.end())
 	{
 		return (true);
 	}
 	return (false);
 }
 
-bool Channel::can_invite(const Client &c)
+bool Channel::can_invite(Client &c)
 {
 	return (can_invite(c.getNickname()));
 }

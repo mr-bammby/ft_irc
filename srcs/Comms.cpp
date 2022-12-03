@@ -138,6 +138,7 @@ int	joinCommand(Server &serv, Message &attempt)
 	//checking if channel exists, if not it should be created and creator becomes operator of that channel
 	std::string currentPass; // will contain current password in while loop, because first password should be used for first channel and so on and so on
 	std::size_t i = 0;
+	std::cout<<"Pre while, channels size: "<<channels.size()<<std::endl;
 	while (i < channels.size())
 	{
 		if (i < passwords.size())
@@ -147,9 +148,11 @@ int	joinCommand(Server &serv, Message &attempt)
 		Channel* tmp = serv.get_channelPtr(channels[i]);
 		if (tmp == NULL)//channel not exists and creating new
 		{
-			if (channels[i][0] != '#' || channels[i][0] != '&')
+			if (channels[i][0] != '#' && channels[i][0] != '&')
 				return (-3); // sending ERR_NOSUCHCHANNEL
-			// creating channel with channells[i] as a name and making client as a operator
+			// creating channel with channels[i] as a name and making client as a operator
+			serv.create_channel(channels[i], *attempt.getSender());
+			std::cout<<"Channels created"<<std::endl;
 		}
 		else //channel exists and trying to connect to it
 		{
@@ -162,6 +165,11 @@ int	joinCommand(Server &serv, Message &attempt)
 			// If a JOIN is successful, the user is then sent the channel's topic
 			//(using RPL_TOPIC) and the list of users who are on the channel (using
 			//RPL_NAMREPLY), which must include the user joining.
+			std::cout<<"Channel exists, name: "<<tmp->get_name()<<std::endl;
+			tmp->connect(*attempt.getSender());
+			std::string msg = ":" + attempt.getSender()->getNickname() + " JOIN" + " :" + tmp->get_name() + "\r\n";
+			tmp->broadcast(msg);
+			tmp->cmd_names(*attempt.getSender());
 		}
 		i++;
 	}
@@ -193,6 +201,13 @@ int	privmsgCommand(Server &serv, Message &attempt)
 			else
 			{
 				//sending to channel
+				std::string	message;
+				// message = ":boriss PRIVMSG bobo :aaaa\r\n";
+				message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp2->get_name() + " :" + attempt.getText() + "\r\n";
+				std::cout<<"Sending message: "<<message<<std::endl;
+				tmp2->broadcast(message);
+				// send(tmp->getFd(), message.c_str(), message.length(), 0);
+				message.clear();
 			}
 		}
 		else
@@ -328,12 +343,4 @@ int	quitCommand(Server &serv, Message &attempt)
 	serv.deleteUser(attempt.getSender());
 
 	return (0);
-}
-
-int joinCommand(Server &serv, Message &attempt)
-{
-	(void)serv;
-	(void) attempt;
-	std::vector<std::string> list = attempt.getParams();
-	
 }
