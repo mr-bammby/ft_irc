@@ -210,3 +210,8 @@ Client* Server::get_clientPtr(int fd)
 	}
 	return(&(itr->second));
 }
+
+std::vector<Channel>	&Server::getChannels()
+{
+	return (this->channels);
+}

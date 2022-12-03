@@ -78,3 +78,15 @@ int joinCommand(Server &serv, Message &attempt)
 	std::vector<std::string> list = attempt.getParams();
 	return (0);
 }
+
+int	removeUserFromChannels(Server &serv, std::string nickname)
+{
+	std::vector<Channel>::iterator	iter;
+
+	iter = serv.getChannels().begin();
+	while (iter != serv.getChannels().end())
+	{
+
+	}
+	return (0);
+}

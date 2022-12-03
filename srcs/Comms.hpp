@@ -22,4 +22,5 @@ int	nickCommand(Server &serv, Message &attempt);
 int	userCommand(Server &serv, Message &attempt);
 int joinCommand(Server &serv, Message &attempt);
 
+int	removeUserFromChannels(Server &serv, std::string nickname);
 #endif

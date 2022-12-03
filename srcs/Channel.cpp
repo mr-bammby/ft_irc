@@ -146,18 +146,3 @@ bool Channel::can_invite(const Client &c)
 {
 	return (can_invite(c.getNickname()));
 }
-
-// int	Channel::removeUser(Client &client)
-// {
-// 	std::vector<Client>::iterator	first = this->clients.begin();
-// 	while (first != this->clients.end())
-// 	{
-// 		if (*first == client)
-// 		{
-// 			this->clients.erase(first);
-// 			return (0);
-// 		}
-// 		++first;
-// 	}
-// 	return (1);
-// }
