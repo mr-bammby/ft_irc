@@ -16,7 +16,7 @@ class Channel
 
 		Channel &operator=(const Channel &c);
 
-		int	broadcast(std::string message);
+		int	broadcast(std::string message, int sender);
 		int	connect(Client &c);
 		int	disconnect(Client &c);
 		int	disconnect(std::string nickname);

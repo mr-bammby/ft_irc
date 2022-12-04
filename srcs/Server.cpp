@@ -133,6 +133,13 @@ int Server::start_loop()
 					current.clear();
 					// this->clients.at(pfdit->fd).parse(buf);
 					printf("Client: %s\n", buf);
+					std::cout<<"Connected and reg. clients are: "<<std::endl;
+					for (std::map<std::string, Client*>::iterator it = clients_nameMap.begin(); it != clients_nameMap.end(); it++)
+					{
+						std::cout<<"Nick: "<<it->second->getNickname()<<std::endl;
+						std::cout<<"FD: "<<it->second->getFd()<<std::endl;
+					}
+					std::cout<<"End of clients-------------"<<std::endl;
 				}
 			}
 		}
@@ -159,7 +166,7 @@ int Server::create_client()
 	// std::pair<int, Client> t(client_socket, Client(used_clients, client_socket));
 	clients_fdMap.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
 	used_clients++;
-
+	std::cout<<"-----------------------------Clients fd in create a client: "<<client_socket<<std::endl;
 	return (0);
 }
 
@@ -194,7 +201,7 @@ void	Server::removeLastMessage()
 
 int Server::checkNickGrammar(std::string nick)
 {
-	std::string allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdrfghijklmnopqrstuvwxyz0123456789-[]\\`^{}";
+	std::string allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-[]\\`^{}";
 	int i = 0;
 	while (nick[i])
 	{
@@ -208,6 +215,8 @@ int Server::checkNickGrammar(std::string nick)
 
 int Server::set_nickName(Client* client_ptr, std::string nickName)
 {
+	std::cout<<"\n"<<"Set nick, nick: "<<nickName<<std::endl;
+	std::cout<<"Set nick, FD: "<<client_ptr->getFd()<<"\n"<<std::endl;
 	std::pair<std::map<std::string, Client*>::iterator, bool> temp;
 
 	if (nickName.empty())

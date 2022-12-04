@@ -23,14 +23,15 @@ Channel &Channel::operator=(const Channel &c)
 	return (*this);
 }
 
-int Channel::broadcast(std::string message)
+int Channel::broadcast(std::string message, int sender)
 {
 	std::map<std::string, Client*>::iterator it;
 	std::cout << message << std::endl;
 	for (it = clients.begin(); it != clients.end(); it++)
 	{
 		// send message to all Clients depends of the implementation
-		send(it->second->getFd(), message.c_str(), message.length(), 0);
+		if (sender != it->second->getFd())
+			send(it->second->getFd(), message.c_str(), message.length(), 0);
 	}
 	return (0);
 }
@@ -43,7 +44,9 @@ int	Channel::connect(Client &c)
 		if (it == invited_users.end())
 			return (-1);
 	}
+	std::cout<<"before insert to channel"<<std::endl;
 	clients.insert(std::pair<std::string, Client*>(c.getNickname(), &c));
+	std::cout<<"after insert to channel"<<std::endl;
 	return (0);
 }
 

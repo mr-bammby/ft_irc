@@ -69,6 +69,8 @@ void introducing(Client *sender)
 int	nickCommand(Server &serv, Message &attempt)
 {
 	int res = serv.set_nickName(attempt.getSender(), attempt.getParams()[0]);
+	std::cout<<"Res: "<<res<<std::endl;
+	std::cout<<std::endl;
 	switch(res)
 	{
 		case -1:
@@ -130,11 +132,12 @@ int	joinCommand(Server &serv, Message &attempt)
 		return (-1); //sending ERR_NOTREGISTERED
 	if (attempt.getParams().size() == 0)
 		return (-2); // sending ERR_NEEDMOREPARAMS 
-
 	//extracting channels and passwords
-	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
-	std::vector<std::string> passwords = split(attempt.getParams()[1], ",");
-
+	std::vector<std::string> channels;
+	std::vector<std::string> passwords;
+	channels = split(attempt.getParams()[0], ",");
+	if (attempt.getParams().size() > 1)
+		passwords = split(attempt.getParams()[1], ",");
 	//checking if channel exists, if not it should be created and creator becomes operator of that channel
 	std::string currentPass; // will contain current password in while loop, because first password should be used for first channel and so on and so on
 	std::size_t i = 0;
@@ -167,8 +170,8 @@ int	joinCommand(Server &serv, Message &attempt)
 			//RPL_NAMREPLY), which must include the user joining.
 			std::cout<<"Channel exists, name: "<<tmp->get_name()<<std::endl;
 			tmp->connect(*attempt.getSender());
-			std::string msg = ":" + attempt.getSender()->getNickname() + " JOIN" + " :" + tmp->get_name() + "\r\n";
-			tmp->broadcast(msg);
+			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp->get_name() + "\r\n";
+			tmp->broadcast(msg, 0);
 			tmp->cmd_names(*attempt.getSender());
 		}
 		i++;
@@ -205,7 +208,7 @@ int	privmsgCommand(Server &serv, Message &attempt)
 				// message = ":boriss PRIVMSG bobo :aaaa\r\n";
 				message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp2->get_name() + " :" + attempt.getText() + "\r\n";
 				std::cout<<"Sending message: "<<message<<std::endl;
-				tmp2->broadcast(message);
+				tmp2->broadcast(message, attempt.getSender()->getFd());
 				// send(tmp->getFd(), message.c_str(), message.length(), 0);
 				message.clear();
 			}
