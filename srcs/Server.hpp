@@ -25,7 +25,7 @@ class Server
 		~Server();
 		int 								init();
 		int 								start_loop();
-		int 								create_channel(std::string name, Client& c);
+		Channel* 							create_channel(std::string name, Client& c);
 		bool								check_password(std::string pass);
 		Message 							*getNextMessage();
 		int									getBacklogLength();

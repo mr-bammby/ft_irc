@@ -154,7 +154,10 @@ int	joinCommand(Server &serv, Message &attempt)
 			if (channels[i][0] != '#' && channels[i][0] != '&')
 				return (-3); // sending ERR_NOSUCHCHANNEL
 			// creating channel with channels[i] as a name and making client as a operator
-			serv.create_channel(channels[i], *attempt.getSender());
+			Channel* tmp2 = serv.create_channel(channels[i], *attempt.getSender());
+			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp2->get_name() + "\r\n";
+			tmp2->broadcast(msg, 0);
+			tmp2->cmd_names(*attempt.getSender());
 			std::cout<<"Channels created"<<std::endl;
 		}
 		else //channel exists and trying to connect to it
@@ -345,5 +348,29 @@ int	quitCommand(Server &serv, Message &attempt)
 	// TODO: delete client form all the channels
 	serv.deleteUser(attempt.getSender());
 
+	return (0);
+}
+
+int	partCommand(Server &serv, Message &attempt)
+{
+	if (attempt.getSender()->getState() != 3)
+		return (-1); //sending ERR_NOTREGISTERED
+	if (attempt.getParams().size() == 0)
+		return (-2); // sending ERR_NEEDMOREPARAMS 
+	//extracting channels and passwords
+	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
+	std::size_t i = 0;
+	while (i < channels.size())
+	{
+		Channel* tmp = serv.get_channelPtr(channels[i]);
+		if (tmp == NULL)//channel not exists and creating new
+			return (-3); //sending ERR_NOSUCHCHANNEL
+		else if (!tmp->is_member(attempt.getSender()->getNickname()))
+			return (-4); //sending ERR_NOTONCHANNEL
+		std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost PART " + channels[i] + "\r\n";
+		tmp->broadcast(msg, 0);
+		tmp->disconnect(attempt.getSender()->getNickname());
+		i++;
+	}
 	return (0);
 }
