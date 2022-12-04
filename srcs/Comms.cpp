@@ -343,9 +343,10 @@ int	killCommand(Server &serv, Message &attempt)
 
 int	quitCommand(Server &serv, Message &attempt)
 {
-	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	// if (attempt.getSender()->getState() != 3)
+	// 	return (-1); //sending ERR_NOTREGISTERED
 	// TODO: delete client form all the channels
+	std::cout<<"heljo from quit: "<<std::endl;
 	serv.deleteUser(attempt.getSender());
 
 	return (0);

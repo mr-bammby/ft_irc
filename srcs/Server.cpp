@@ -292,9 +292,18 @@ void	 Server::deleteUser(Client *user)
 	std::vector<pollfd>::iterator it = pollfds.begin();
 	while (it->fd != user->getFd())
 		it++;
+	for (std::map<std::string, Channel>::iterator it1 = channels.begin(); it1 != channels.end(); it1++)
+	{
+		if (it1->second.is_member(user->getNickname()))
+		{
+			std::string msg = ":" + user->getNickname() + "!" + user->getUsername() + "@localhost PART " + it1->second.get_name() + "\r\n";
+			it1->second.broadcast(msg, 0);
+		}
+		it1->second.disconnect(user->getNickname());
+	}
 	shutdown(it->fd, SHUT_RDWR);
 	this->pollfds.erase(it);
-	this->clients_fdMap.erase(user->getFd());
 	this->clients_nameMap.erase(user->getNickname());
+	this->clients_fdMap.erase(user->getFd());
 	used_clients--;
 }
