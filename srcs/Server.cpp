@@ -123,7 +123,7 @@ int Server::start_loop()
 					this->clients_nameMap.erase(tmp->getNickname());
 					this->used_clients--;
 					shutdown(pfdit->fd, SHUT_RDWR);
-					break ;
+					// break ;
 				}
 				else{
 					buf[buffsize] = '\0';
@@ -139,6 +139,7 @@ int Server::start_loop()
 					// this->clients.at(pfdit->fd).parse(buf);
 					printf("Client: %s\n", buf);
 				}
+				break ;
 			}
 		}
 	}
