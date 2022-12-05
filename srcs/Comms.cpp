@@ -36,7 +36,8 @@
 
 int	passCommand(Server &serv, Message &attempt)
 {
-
+	if (attempt.getText().size() == 0)
+		return (-1); // sending ERR_NEEDMOREPARAMS 
 	std::cout<<"provided pass: "<<attempt.getText()<<std::endl;
 	std::cout<<"Status: "<<attempt.getSender()->getState()<<std::endl;
 	if (attempt.getSender()->getState() != 0)
@@ -68,6 +69,8 @@ void introducing(Client *sender)
 
 int	nickCommand(Server &serv, Message &attempt)
 {
+	if (attempt.getParams().size() == 0)
+		return (-1); // sending ERR_NEEDMOREPARAMS 
 	int res = serv.set_nickName(attempt.getSender(), attempt.getParams()[0]);
 	std::cout<<"Res: "<<res<<std::endl;
 	std::cout<<std::endl;
@@ -106,6 +109,8 @@ int	nickCommand(Server &serv, Message &attempt)
 int	userCommand(Server &serv, Message &attempt)
 {
 	(void)serv;
+	if (attempt.getParams().size() == 0)
+		return (-2); // sending ERR_NEEDMOREPARAMS 
 	int res = attempt.getSender()->setUsername(attempt.getParams()[0]);
 	switch (res)
 	{
@@ -141,7 +146,6 @@ int	joinCommand(Server &serv, Message &attempt)
 	//checking if channel exists, if not it should be created and creator becomes operator of that channel
 	std::string currentPass; // will contain current password in while loop, because first password should be used for first channel and so on and so on
 	std::size_t i = 0;
-	std::cout<<"Pre while, channels size: "<<channels.size()<<std::endl;
 	while (i < channels.size())
 	{
 		if (i < passwords.size())
@@ -336,7 +340,6 @@ int	killCommand(Server &serv, Message &attempt)
 	if (tmp == NULL)
 		return (-3); // sending ERR_NOSUCHNICK
 
-	// TODO: delete client form all the channels
 	serv.deleteUser(tmp);
 	return (0);
 }
@@ -345,8 +348,6 @@ int	quitCommand(Server &serv, Message &attempt)
 {
 	// if (attempt.getSender()->getState() != 3)
 	// 	return (-1); //sending ERR_NOTREGISTERED
-	// TODO: delete client form all the channels
-	std::cout<<"heljo from quit: "<<std::endl;
 	serv.deleteUser(attempt.getSender());
 
 	return (0);
