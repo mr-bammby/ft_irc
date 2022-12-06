@@ -124,7 +124,7 @@ int	userCommand(Server &serv, Message &attempt)
 			//sending ERR_ALREADYREGISTERED
 			break;
 		case -4:
-			attempt.getSender()->setRealname(attempt.getParams().back());
+			attempt.getSender()->setRealname(attempt.getText());
 			break;
 	}
 
@@ -263,6 +263,12 @@ int	noticeCommand(Server &serv, Message &attempt)
 			else
 			{
 				//sending to channel
+				std::string	message;
+				message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp2->get_name() + " :" + attempt.getText() + "\r\n";
+				std::cout<<"Sending message: "<<message<<std::endl;
+				tmp2->broadcast(message, attempt.getSender()->getFd());
+				// send(tmp->getFd(), message.c_str(), message.length(), 0);
+				message.clear();
 			}
 		}
 		else
@@ -373,6 +379,104 @@ int	partCommand(Server &serv, Message &attempt)
 		tmp->broadcast(msg, 0);
 		tmp->disconnect(attempt.getSender()->getNickname());
 		i++;
+	}
+	return (0);
+}
+
+int	kickCommand(Server &serv, Message &attempt)
+{
+	if (attempt.getSender()->getState() != 3)
+		return (-1); //sending ERR_NOTREGISTERED
+	if (attempt.getParams().size() < 2)
+		return (-2); // sending ERR_NEEDMOREPARAMS 
+	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
+	std::vector<std::string> users = split(attempt.getParams()[1], ",");
+	std::size_t i = 0;
+	while (i < channels.size())
+	{
+		Channel* tmp = serv.get_channelPtr(channels[i]);
+		if (tmp == NULL)
+			return (-3); // sending ERR_NOSUCHCHANNEL
+		else if (!tmp->is_member(attempt.getSender()->getNickname()))
+			return (-4); // sending ERR_NOTONCHANNEL
+		else if(!tmp->is_op(attempt.getSender()->getNickname()))
+			return (-5); // sending ERR_CHANOPRIVSNEEDED
+		else if (i >= users.size())
+			return (-6); // sending ERR_NEEDMOREPARAMS
+		else if (!tmp->is_member(users[i]))
+			return (-7); // sending ERR_USERNOTINCHANNEL
+		std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost KICK " + channels[i] + " " + users[i] + " :" + attempt.getSender()->getNickname() + "\r\n";
+		tmp->broadcast(msg, 0);
+		tmp->disconnect(users[i]);
+		i++;
+	}
+	return (0);
+}
+
+int	whoCommand(Server &serv, Message &attempt)
+{
+	if (attempt.getSender()->getState() != 3)
+		return (-1); //sending ERR_NOTREGISTERED
+	if (attempt.getParams().size() < 1)
+		return (-2); // sending ERR_NEEDMOREPARAMS 
+	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
+	if (tmp == NULL)
+		return (-3); //sending ERR_NOSUCHCHANNEL
+	tmp->cmd_who(*attempt.getSender());
+	return (0);
+}
+
+int	namesCommand(Server &serv, Message &attempt)
+{
+	if (attempt.getSender()->getState() != 3)
+		return (-1); //sending ERR_NOTREGISTERED
+	if (attempt.getParams().size() == 0)
+	{
+		serv.cmd_namesAllchannels(attempt.getSender());
+		return (0);
+	}
+	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
+	std::size_t i = 0;
+	while (i < channels.size())
+	{
+		Channel* tmp = serv.get_channelPtr(channels[i]);
+		if (tmp != NULL)
+			tmp->cmd_names(*attempt.getSender());
+		i++;
+	}
+	return (0);
+}
+
+int	topicCommand(Server &serv, Message &attempt)
+{
+	if (attempt.getSender()->getState() != 3)
+		return (-1); //sending ERR_NOTREGISTERED
+	if (attempt.getParams().size() == 0)
+		return (-2); //sending ERR_NEEDMOREPARAMS 
+	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
+	if (tmp == NULL)
+		return (-3); // sending ERR_NOTONCHANNEL
+	else if (!tmp->is_member(attempt.getSender()->getNickname()))
+		return (-4); // sending ERR_NOTONCHANNEL
+	if (attempt.getText().size() == 0)
+	{
+		if (tmp->get_topic().size() == 0)
+		{
+			std::string msg = ":<servername> 331 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :No topic is set\r\n";
+			send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+			return (0);
+		}
+		std::string msg = ":<servername> 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
+		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+	}
+	else
+	{
+		if (!tmp->is_op(attempt.getSender()->getNickname()))
+			return (-5); // sending ERR_CHANOPRIVSNEEDED
+		tmp->cmd_topic(attempt.getText());
+		std::string msg = ":<servername> 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
+		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		return (0);
 	}
 	return (0);
 }

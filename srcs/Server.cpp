@@ -23,6 +23,10 @@ void Server::initExecutor()
 	exeCommands.insert(std::pair<std::string, fun>("PING", NULL));
 	exeCommands.insert(std::pair<std::string, fun>("JOIN", &joinCommand));
 	exeCommands.insert(std::pair<std::string, fun>("PART", &partCommand));
+	exeCommands.insert(std::pair<std::string, fun>("KICK", &kickCommand));
+	exeCommands.insert(std::pair<std::string, fun>("WHO", &whoCommand));
+	exeCommands.insert(std::pair<std::string, fun>("NAMES", &namesCommand));
+	exeCommands.insert(std::pair<std::string, fun>("TOPIC", &topicCommand));
 }
 
 void Server::executor()
@@ -166,6 +170,12 @@ int Server::create_client()
 	clients_fdMap.insert(std::pair<int, Client>(client_socket, Client(used_clients, client_socket)));
 	used_clients++;
 	return (0);
+}
+
+void	Server::cmd_namesAllchannels(Client* c)
+{
+	for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); it++)
+		it->second.cmd_names(*c);
 }
 
 Channel* Server::create_channel(std::string name, Client& c)

@@ -28,7 +28,7 @@ std::string prefix::buildLongPrefix() const
 Message::Message(const std::string& raw, Client* sending_client) : prefix()
 {
 	std::string tmp(raw);
-	std::size_t found = raw.find_last_of(":");
+	std::size_t found = raw.find(":", 1);
 	if (found == std::string::npos || found == 0)
 		this->text = "";
 	else

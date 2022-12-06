@@ -39,6 +39,7 @@ class Server
 		void								deleteUser(Client *user);
 		void 								initExecutor();
 		void 								executor();
+		void								cmd_namesAllchannels(Client* c);
 		typedef int (*fun)(Server&, Message&);
 	private:
 		Server();

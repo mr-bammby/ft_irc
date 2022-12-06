@@ -113,6 +113,21 @@ int	Channel::cmd_names(Client& sender)
 	return (0);
 }
 
+int Channel::cmd_who(Client& sender)
+{
+	for (std::map<std::string, Client*>::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		std::string listUsers = ":<servername> 352 " + sender.getNickname() + " " + get_name() + " " + it->second->getUsername() + "localhost <servername> " + it->second->getNickname() + " H";
+		if (is_op(*it->second))
+			listUsers += "@";
+		listUsers += " :0 " + it->second->getRealname() + "\r\n";
+		send(sender.getFd(), listUsers.c_str(), listUsers.length(), 0);
+	}
+	std::string msg = ":<servername> 315 " + sender.getNickname() + " " + get_name() + " :End of /WHO list\r\n";
+	send(sender.getFd(), msg.c_str(), msg.length(), 0);
+	return (0);
+}
+
 bool Channel::is_op(Client &c)
 {
 	return (is_op(c.getNickname()));

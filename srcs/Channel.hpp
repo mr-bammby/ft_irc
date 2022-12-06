@@ -25,6 +25,7 @@ class Channel
 		int	cmd_invite(std::string nickname);
 		int	cmd_topic(std::string top);
 		int	cmd_names(Client& sender);
+		int cmd_who(Client& sender);
 
 		std::string	get_topic();
 		std::string	get_name();

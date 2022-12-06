@@ -47,9 +47,7 @@ int						Client::setUsername(std::string name)
 	{
 		return (-2);//ERR_NOTREGISTERED
 	}
-
-	username = name;
-	if (state == INITIALIZED)
+	if (state == INITIALIZED || state == SET)
 	{
 		return (-3); //ERR_ALREADYREGISTERED
 	}
