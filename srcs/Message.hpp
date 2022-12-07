@@ -33,8 +33,13 @@ class Message
 {
 public:
 	Message();
+
+	// Message(const std::string& rawMsg, Client *cl = NULL);
+
+	Message(const std::string& rawMsg, Client* sender);
+
 	// parse incomming Message
-	Message(const std::string& rawMsg, Client* sender = NULL);
+	// Message(const std::string& rawMsg, Client* sender = NULL);
 	// create outgoing message (response)
 	Message(
 		enum Commands cmdType,
