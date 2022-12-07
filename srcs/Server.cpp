@@ -162,7 +162,7 @@ void	Server::cmd_namesAllchannels(Client* c)
 
 Channel* Server::create_channel(std::string name, Client& c)
 {
-	return (&this->channels.insert(std::pair<std::string, Channel>(name, Channel(name, c))).first->second);
+	return (&this->channels.insert(std::make_pair<std::string, Channel>(name, Channel(name, c))).first->second);
 	// return (0);
 }
 

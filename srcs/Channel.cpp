@@ -1,18 +1,20 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, Client &c):
-name(name)
+Channel::Channel(std::string ch_name, Client &c):
+name(ch_name)
 {
 	this->clients.insert(std::pair<std::string, Client*>(c.getNickname(), &c));
 	this->chanop = c.getNickname();
 	this->invite_only = false;
 }
 
-Channel::Channel(const Channel &c): name(c.name)
+// Needed for pair functionality
+Channel::Channel(const Channel &c): name(c.get_name())
 {
+	Client	*op = c.get_op();
 	; //Implement if needed
-	//this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
-	//this->chanop = c.getNickname();
+	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
+	this->chanop = op->getNickname();
 }
 
 Channel::~Channel()
@@ -146,11 +148,15 @@ std::string Channel::get_topic()
 	return(topic);
 }
 
-std::string	Channel::get_name()
+std::string	Channel::get_name() const
 {
 	return (name);
 }
 
+Client	*Channel::get_op() const
+{
+	return (this->clients[chanop]);
+}
 
 bool Channel::is_member(std::string nickname)
 {

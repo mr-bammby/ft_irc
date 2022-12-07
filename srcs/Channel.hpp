@@ -11,6 +11,7 @@ class Channel
 {
 	public:
 		Channel(std::string name, Client &c);
+		Channel(const Channel &c);
 		~Channel();
 
 		Channel &operator=(const Channel &c);
@@ -27,7 +28,8 @@ class Channel
 		int cmd_who(Client& sender);
 
 		std::string	get_topic();
-		std::string	get_name();
+		std::string	get_name() const;
+		Client*		get_op() const;
 
 		bool	is_op(Client &c);
 		bool	is_op(std::string nickname);
@@ -37,7 +39,7 @@ class Channel
 		bool	can_invite(std::string nickname);
 
 	private:
-		Channel(const Channel &c);
+		
 		std::string						name;
 		std::string						chanop;
 		std::string						topic;
