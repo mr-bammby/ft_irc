@@ -32,6 +32,7 @@ class Server
 		int 	set_nickName(Client* client_ptr, std::string nickName);
 		Client* get_clientPtr(int fd);
 		Client* get_clientPtr(std::string nickName);
+		std::vector<Channel>	&getChannels();
 	private:
 		Server();
 		Server(const Server &s);

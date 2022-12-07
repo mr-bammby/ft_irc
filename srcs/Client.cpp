@@ -24,7 +24,7 @@ int Client::setNickname(std::string name)
 	return (0);
 }
 
-const std::string& Client::getNickname()
+const std::string& Client::getNickname() const
 {
 	return (nickname);
 }
