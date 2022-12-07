@@ -30,14 +30,19 @@ void Server::executor()
 	{
 		NULL, NULL
 	};
+	// Ping
+	int	(*ignoreT[1])(Server &s, Message &a) =
+	{
+		NULL
+	};
 	// Restart missing
 	int	(*miscT[2])(Server &s, Message &a) =
 	{
 		&killCommand, NULL
 	};
-	int	(**test[5])(Server &s, Message &a) =
+	int	(**test[6])(Server &s, Message &a) =
 	{
-		initT, msgT, operT, responesT, miscT
+		initT, msgT, operT, responesT, ignoreT, miscT
 	};
 
 	Message *current;
@@ -47,7 +52,8 @@ void Server::executor()
 		current = getNextMessage();
 		std::cout << RED;
 		std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl;
-		test[current->getComCategory()][current->getType()](*this, *current);
+		if (current->getComCategory() != IGNORE)
+			test[current->getComCategory()][current->getType()](*this, *current);
 		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
 		// if (it == exeCommands.end())
 		// {
