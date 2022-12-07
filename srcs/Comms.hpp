@@ -28,7 +28,6 @@ int inviteCommand(Server &serv, Message &attempt);
 int	killCommand(Server &serv, Message &attempt);
 int	quitCommand(Server &serv, Message &attempt);
 int	partCommand(Server &serv, Message &attempt);
-int	partCommand(Server &serv, Message &attempt);
 int	kickCommand(Server &serv, Message &attempt);
 int	whoCommand(Server &serv, Message &attempt);
 int	namesCommand(Server &serv, Message &attempt);

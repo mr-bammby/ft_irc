@@ -13,25 +13,53 @@ Server::~Server()
 
 void Server::executor()
 {
+	int	(*initT[4])(Server &s, Message &a) =
+	{
+		&passCommand, &nickCommand,	&userCommand, &joinCommand
+	};
+	int	(*msgT[2])(Server &s, Message &a) =
+	{
+		&privmsgCommand, &noticeCommand
+	};
+	int	(*operT[4])(Server &s, Message &a) =
+	{
+		&kickCommand, NULL, &inviteCommand, &topicCommand
+	};
+	// ??? CMD_RESPONSE && ERROR_RESPONSE
+	int	(*responesT[2])(Server &s, Message &a) =
+	{
+		NULL, NULL
+	};
+	// Restart missing
+	int	(*miscT[2])(Server &s, Message &a) =
+	{
+		&killCommand, NULL
+	};
+	int	(**test[5])(Server &s, Message &a) =
+	{
+		initT, msgT, operT, responesT, miscT
+	};
+
 	Message *current;
 
 	while (messages.size() > 0)
 	{
 		current = getNextMessage();
 		std::cout << RED;
-		std::cout << "Executing: " << current->getCommand()  << " TXT: "<<current->getText()<< std::endl;
-		std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
-		if (it == exeCommands.end())
-		{
-			std::cout<<"Command not found"<<std::endl;
-			std::string msg = ":<servername> 421 " + current->getSender()->getNickname() + " " + current->getCommand() + " :Unknown command\r\n";
-			send(current->getSender()->getFd(), msg.c_str(), msg.length(), 0);
-		}
-		else
-		{
-			if (it->second != NULL)
-				it->second(*this, *current);
-		}
+		std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl;
+		test[current->getComCategory()][current->getType()](*this, *current);
+		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
+		// if (it == exeCommands.end())
+		// {
+		// 	std::cout<<"Command not found"<<std::endl;
+		// 	std::string msg = ":<servername> 421 " + current->getSender()->getNickname() + " " + current->getCommand() + " :Unknown command\r\n";
+		// 	send(current->getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		// }
+		// else
+		// {
+		// 	if (it->second != NULL)
+		// 		it->second(*this, *current);
+		// }
 		std::cout << BLANK;
 		removeLastMessage();
 	}
@@ -78,7 +106,6 @@ int Server::init()
 	pollfds.push_back(pollfd());
 	pollfds[0].fd = server_fd;
 	pollfds[0].events = POLLIN | POLLPRI;
-	initExecutor();
 	return 0;
 }
 
@@ -162,7 +189,7 @@ void	Server::cmd_namesAllchannels(Client* c)
 
 Channel* Server::create_channel(std::string name, Client& c)
 {
-	return (&this->channels.insert(std::make_pair<std::string, Channel>(name, Channel(name, c))).first->second);
+	return (&this->channels.insert(std::pair<std::string, Channel>(name, Channel(name, c))).first->second);
 	// return (0);
 }
 

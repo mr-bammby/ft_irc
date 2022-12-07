@@ -12,7 +12,6 @@ name(ch_name)
 Channel::Channel(const Channel &c): name(c.get_name())
 {
 	Client	*op = c.get_op();
-	; //Implement if needed
 	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
 	this->chanop = op->getNickname();
 }
@@ -155,7 +154,8 @@ std::string	Channel::get_name() const
 
 Client	*Channel::get_op() const
 {
-	return (this->clients[chanop]);
+	std::map<std::string, Client*>::const_iterator itr = clients.find(chanop);
+	return (itr->second);
 }
 
 bool Channel::is_member(std::string nickname)

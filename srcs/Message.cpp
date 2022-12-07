@@ -100,6 +100,14 @@ Client* Message::getSender() const
 	return sender;
 }
 
+std::string Message::getText() const
+{
+	std::string result;
+	for (std::vector<std::string>::const_iterator it = params.begin(); it != params.end(); it++)
+		result = result + *it;
+	return (result);
+}
+
 // Setters
 
 void Message::setCommand(enum Commands cmd_type, const std::string& cmd_str)
