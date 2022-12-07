@@ -9,9 +9,10 @@ CLASSES = \
 	Client.cpp	\
 	Channel.cpp \
 	Message.cpp \
+	utility.cpp \
 	Comms.cpp \
-	utility.cpp
-
+	ServerResponse.cpp
+ 
 SRCS = \
 	main.cpp \
 	$(addprefix srcs/,$(CLASSES))
