@@ -11,24 +11,6 @@ Server::~Server()
 	shutdown(this->pollfds[0].fd, SHUT_RDWR);
 }
 
-void Server::initExecutor()
-{
-	exeCommands.insert(std::pair<std::string, fun>("PASS", &passCommand));
-	exeCommands.insert(std::pair<std::string, fun>("USER", &userCommand));
-	exeCommands.insert(std::pair<std::string, fun>("NICK", &nickCommand));
-	exeCommands.insert(std::pair<std::string, fun>("PRIVMSG", &privmsgCommand));
-	exeCommands.insert(std::pair<std::string, fun>("NOTICE", &noticeCommand));
-	exeCommands.insert(std::pair<std::string, fun>("KILL", &killCommand));
-	exeCommands.insert(std::pair<std::string, fun>("QUIT", &quitCommand));
-	exeCommands.insert(std::pair<std::string, fun>("PING", NULL));
-	exeCommands.insert(std::pair<std::string, fun>("JOIN", &joinCommand));
-	exeCommands.insert(std::pair<std::string, fun>("PART", &partCommand));
-	exeCommands.insert(std::pair<std::string, fun>("KICK", &kickCommand));
-	exeCommands.insert(std::pair<std::string, fun>("WHO", &whoCommand));
-	exeCommands.insert(std::pair<std::string, fun>("NAMES", &namesCommand));
-	exeCommands.insert(std::pair<std::string, fun>("TOPIC", &topicCommand));
-}
-
 void Server::executor()
 {
 	Message *current;

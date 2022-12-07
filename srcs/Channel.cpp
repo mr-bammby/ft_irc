@@ -8,11 +8,12 @@ name(name)
 	this->invite_only = false;
 }
 
-// Channel::Channel(const Channel &c): name(c.name)
-// {
-// 	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
-// 	this->chanop = c.getNickname();
-// }
+Channel::Channel(const Channel &c): name(c.name)
+{
+	; //Implement if needed
+	//this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
+	//this->chanop = c.getNickname();
+}
 
 Channel::~Channel()
 {}

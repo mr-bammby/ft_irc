@@ -11,7 +11,6 @@ class Channel
 {
 	public:
 		Channel(std::string name, Client &c);
-		// Channel(const Channel &c);
 		~Channel();
 
 		Channel &operator=(const Channel &c);
@@ -38,6 +37,7 @@ class Channel
 		bool	can_invite(std::string nickname);
 
 	private:
+		Channel(const Channel &c);
 		std::string						name;
 		std::string						chanop;
 		std::string						topic;
