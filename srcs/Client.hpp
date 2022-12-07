@@ -27,7 +27,7 @@ class Client
 		Client &operator=(const Client &c);
 
 		int 					parse(std::string command);
-		const std::string&		getNickname();
+		const std::string&		getNickname() const;
 		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
 		const std::string&		getUsername();

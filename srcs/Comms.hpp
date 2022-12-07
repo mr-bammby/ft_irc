@@ -27,5 +27,5 @@ int	noticeCommand(Server &serv, Message &attempt);
 int inviteCommand(Server &serv, Message &attempt);
 int	killCommand(Server &serv, Message &attempt);
 int	quitCommand(Server &serv, Message &attempt);
-
+int	removeUserFromChannels(Server &serv, std::string nickname);
 #endif

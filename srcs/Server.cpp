@@ -237,6 +237,11 @@ Client* Server::get_clientPtr(int fd)
 	return(&(itr->second));
 }
 
+std::vector<Channel>	&Server::getChannels()
+{
+	return (this->channels);
+}
+
 Channel* Server::get_channelPtr(std::string chan)
 {
 	std::map<std::string, Channel>::iterator itr = channels.find(chan);

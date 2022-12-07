@@ -6,7 +6,7 @@ int	executeCommands(Server &serv)
 	Message *current;
 	int	(*Table[])(Server &s, Message &a) =
 	{
-		&passCommand, &nickCommand, &userCommand
+		&passCommand, &nickCommand, &userCommand, &joinCommand
 	};
 	// TODO: get the actual's message type
 	// const char *ComList[] =
@@ -308,5 +308,26 @@ int	quitCommand(Server &serv, Message &attempt)
 	// TODO: delete client form all the channels
 	serv.deleteUser(attempt.getSender());
 
+	return (0);
+}
+
+int joinCommand(Server &serv, Message &attempt)
+{
+	(void)serv;
+	(void) attempt;
+	std::vector<std::string> list = attempt.getParams();
+	return (0);
+}
+
+int	removeUserFromChannels(Server &serv, std::string nickname)
+{
+	std::vector<Channel>::iterator	iter;
+
+	iter = serv.getChannels().begin();
+	while (iter != serv.getChannels().end())
+	{
+		iter->disconnect(nickname);
+		++iter;
+	}
 	return (0);
 }

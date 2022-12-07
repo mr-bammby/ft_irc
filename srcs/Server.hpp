@@ -37,6 +37,7 @@ class Server
 		Channel* 							get_channelPtr(std::string chan);
 		void								pingClients();
 		void								deleteUser(Client *user);
+    std::vector<Channel>	&getChannels();
 	private:
 		Server();
 		Server(const Server &s);
