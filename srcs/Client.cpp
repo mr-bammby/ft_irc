@@ -1,27 +1,27 @@
 #include "Client.hpp"
 
-Client::Client(int index, int cl_fd)
-	: id(index), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname()
+Client::Client(int _id, int cl_fd)
+	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname()
 {}
 
-Client::Client() : nickname(), state(LOCKED), username(), realname() {}
+Client::Client() : id(), nickname(), state(LOCKED), username(), realname() {}
 
-Client::Client(const Client& c) : client_fd(c.client_fd) {}
+// Client::Client(const Client& c) : client_fd(c.client_fd) {}
 
 Client::~Client() {}
 
 int Client::setNickname(std::string name)
 {
-	if (state == LOCKED)
+	if (state == LOCKED || state == UNINITIALIZED)
 	{
-		return (-1);//ERR_NOTREGISTERED
+		return (-8);//ERR_NOTREGISTERED
 	}
 	nickname = name;
-	if (state == UNINITIALIZED)
+	if (state == INITIALIZED)
 	{
-		state = INITIALIZED;
+		state = SET;
 	}
-	return (0);
+	return (-5);
 }
 
 const std::string& Client::getNickname() const
@@ -41,21 +41,26 @@ const std::string&		Client::getUsername()
 
 int						Client::setUsername(std::string name)
 {
-	if (state == LOCKED || state == UNINITIALIZED)
+	if (name.empty())
 	{
-		return (-1);//ERR_NOTREGISTERED
+		return (-1);//ERR_NEEDMOREPARAMS 
 	}
-	if (state == SET)
+	if (state == LOCKED)
 	{
-		return (-1); //ERR_ALREADYREGISTERED
+		return (-2);//ERR_NOTREGISTERED
 	}
+
+	// if (state == SET || state == INITIALIZED)
+
 	username = name;
 	if (state == INITIALIZED)
 	{
-		state = SET;
-		// send RPL_WELCOME message to client(Register connection)
+		return (-3); //ERR_ALREADYREGISTERED
 	}
-	return (0);
+	username = name;
+	state = INITIALIZED;
+	return (-4);
+
 }
 
 const std::string&		Client::getRealname()
@@ -79,9 +84,13 @@ int						Client::setRealname(std::string name)
 
 int Client::parse(std::string command)
 {
+	// std::vector<Message> msgs = getMessages(command, this);
+	// std::cout << "In parsing" << msgs << std::endl;
+
 	Message::commandMap = Message::createCommandMap();
 	std::vector<Message> msgs = getMessages(command, this);
 	std::cout << msgs << std::endl;
+
 
 	std::vector<Message>::iterator it = msgs.begin();
 	while (it != msgs.end())

@@ -19,9 +19,9 @@ class Client
 
 
 	public:
-		Client(int id, int client_fd);
+		Client(int _id, int client_fd);
 		Client();
-		Client(const Client &c);
+		// Client(const Client &c);
 		~Client();
 
 		Client &operator=(const Client &c);

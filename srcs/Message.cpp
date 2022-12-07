@@ -28,13 +28,19 @@ std::string prefix::buildLongPrefix() const
 Message::Message()
 	: prefix(), category(MISC), type(static_cast<enum Commands>(-1)), command(),
 	  params(), sender(NULL)
-{}
+{
+	commandMap = createCommandMap();
+}
+
+
+// Message::Message(const std::string& raw, Client *cl) : prefix(), client(cl)
 
 Message::Message(const std::string& raw, Client* sending_client) : prefix()
 {
-	std::vector<std::string> tokens = split(
-		raw, " "); // TODO: sometimes params are allowed to have whitespace
+	std::vector<std::string> tokens = split(raw, " "); // TODO: sometimes params are allowed to have whitespace
 	// TODO: indicate error when no CRLF was found
+	std::cout<< "RAW: "<< raw <<std::endl;
+	std::cout<< "Tokens: "<< tokens <<std::endl;
 	if (tokens.empty())
 		throw std::runtime_error("No CRLF in Message found!");
 	// TODO: consume tokens to fill Message
@@ -172,8 +178,8 @@ std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 Message::createCommandMap()
 {
-	const std::string init_commands[] = {"PASS", "NICK", "USER"};
-	const size_t	  init_commands_len = 3;
+	const std::string init_commands[] = {"PASS", "NICK", "USER", "JOIN"};
+	const size_t	  init_commands_len = 4;
 	const std::string msg_commands[] = {"PRIVMSG", "NOTICE"};
 	const size_t	  msg_commands_len = 2;
 	const std::string oper_commands[] = {"KICK", "MODE", "INVITE", "TOPIC"};
@@ -307,6 +313,7 @@ const std::string Message::getCommandCategoryStr(enum ComCategory cmd_category)
  * @param raw
  * @return std::vector<Message>
  */
+
 std::vector<Message> getMessages(const std::string& raw, Client* sender)
 {
 	std::vector<Message>	 messages;
@@ -315,13 +322,11 @@ std::vector<Message> getMessages(const std::string& raw, Client* sender)
 
 	std::cout << "Messages: " << std::endl; // DEBUG
 	raw_messages = split(raw, msg_delimiter);
-
 	for (std::vector<std::string>::const_iterator it = raw_messages.begin();
 		 it != raw_messages.end();
 		 ++it)
 	{
-		messages.push_back(
-			Message(*it, sender)); // TODO: avoid construct empty Msg
+		messages.push_back(Message(*it, sender)); // TODO: avoid construct empty Msg
 	}
 	return messages;
 }
