@@ -14,19 +14,50 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	std::string motd(Client &sender)
+	std::string motdstart(Client &sender)
 	{
 		Client server;
 		std::vector<std::string> params;
 		params.push_back("375");
 		params.push_back(sender.getNickname());
-		params.push_back(" :- <servername> Message of the Day -\r\n");
+		params.push_back(":- <servername> Message of the Day -");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string motd(Client &sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		Message motd(CMD_RESPONSE, params, &server);
+		std::ifstream motdFile;
+		std::string motdStr;
+		std::string out;
+
 		params.push_back("372");
 		params.push_back(sender.getNickname());
-		params.push_back(": fancy cool ascii image plus rules list \r\n");
+		params.push_back(":-");
+		motdFile.open("srcs/ircd.motd");
+		if (!motdFile.is_open())
+			return (Error::nomotd(sender));
+		while(getline(motdFile, motdStr))
+		{
+			motdStr.resize(80);
+			params.push_back(motdStr);
+			motd.setParams(params);
+			out += motd.buildRawMsg();
+			params.pop_back();
+		}
+		motdFile.close();
+		return(out);
+	}
+
+	std::string endofmotd(Client &sender)
+	{
+		Client server;
+		std::vector<std::string> params;
 		params.push_back("376");
 		params.push_back(sender.getNickname());
-		params.push_back(" :End of /MOTD command.");
+		params.push_back(":End of /MOTD command.");
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 }
@@ -87,6 +118,16 @@ namespace Error
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 
+	std::string nomotd(Client &sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("422 *");\
+		params.push_back(sender.getNickname());
+		params.push_back(":MOTD File is missing");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
 	std::string nonicknamegiven()
 	{
 		Client server;
@@ -113,6 +154,27 @@ namespace Error
 		params.push_back("433 *");
 		params.push_back(errNick);
 		params.push_back(":Nickname is already in use.");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string usernotinchannel(Client &sender, std::string recipient, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("433 *");
+		params.push_back(sender.getNickname());
+		params.push_back(recipient + " " + channel + " :They aren't on that channel");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string notonchannel(Client &sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("441 *");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":You're not on that channel");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 
@@ -160,6 +222,17 @@ namespace Error
 		params.push_back("481 *");
 		params.push_back(sender.getNickname());
 		params.push_back(":Permission Denied- You're not an IRC operator");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string chanoprivsneeded(Client &sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("481 *");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":You're not channel operator");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 }
