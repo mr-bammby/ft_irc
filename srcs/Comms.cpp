@@ -29,7 +29,6 @@ int	passCommand(Server &serv, Message &attempt)
 
 void introducing(Client *sender, Server &serv)
 {
-	std::cout << BL << "here" << std::endl;
 	sendResponse(*sender, Reply::welcome(*sender, serv));
 	sendResponse(*sender, Reply::motdstart(*sender));
 	sendResponse(*sender, Reply::motd(*sender));
