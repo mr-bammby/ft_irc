@@ -246,7 +246,7 @@ Message::detectMsgType(const std::string& token)
 		std::cerr << "Command not supported:" << token << std::endl;
 		return std::make_pair(
 			MISC,
-			static_cast<Commands>(-1)); // TODO: seperate category for error?
+			static_cast<Commands>(UNKNOWN)); // TODO: seperate category for error?
 	}
 	return it->second;
 }

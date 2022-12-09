@@ -37,7 +37,10 @@
 int	passCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getText().size() == 0)
-		return (-1); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-1);
+	}
 	std::cout<<"provided pass: "<<attempt.getText()<<std::endl;
 	std::cout<<"Status: "<<attempt.getSender()->getState()<<std::endl;
 	if (attempt.getSender()->getState() != 0)
@@ -59,12 +62,10 @@ int	passCommand(Server &serv, Message &attempt)
 
 void introducing(Client *sender)
 {
-	std::string	message;
-	message = "001 * :- Welcome to <servername> server, " + sender->getNickname() + "\r\n";
-	message += ":<servername> 375 " + sender->getNickname() + " :- <servername> Message of the Day -\r\n";
-	message += ":<servername> 372 " + sender->getNickname() + " Welcome to <servername> Server!\r\n";
-	message += ":<servername> 376 " + sender->getNickname() + " :End of /MOTD command.\r\n";
-	send(sender->getFd(), message.c_str(), message.length(), 0);
+	sendResponse(*sender, Reply::welcome(*sender));
+	sendResponse(*sender, Reply::motdstart(*sender));
+	sendResponse(*sender, Reply::motd(*sender));
+	sendResponse(*sender, Reply::endofmotd(*sender));
 }
 
 int	nickCommand(Server &serv, Message &attempt)
@@ -72,7 +73,7 @@ int	nickCommand(Server &serv, Message &attempt)
 	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
-		return (-1); // currectly segfaults 
+		return (-1);
 	}
 	int res = serv.set_nickName(attempt.getSender(), attempt.getParams()[0]);
 	std::cout<<"Res: "<<res<<std::endl;
@@ -348,7 +349,7 @@ int	inviteCommand(Server &serv, Message &attempt)
 	Client* cln = serv.get_clientPtr(attempt.getParams()[0]);
 	if (cln == NULL)
 	{
-		return (-3); //Unknown server
+		return (-3); //Unknown server 
  	}
 
 	if (chn == NULL)
@@ -397,7 +398,7 @@ int	killCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
 	}
-	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]);
+	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]); //this looks like it will segfault if empty
 	if (tmp == NULL)
 	{
 		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //where is this stored
@@ -465,15 +466,30 @@ int	kickCommand(Server &serv, Message &attempt)
 	{
 		Channel* tmp = serv.get_channelPtr(channels[i]);
 		if (tmp == NULL)
-			return (-3); // sending ERR_NOSUCHCHANNEL
+		{
+			sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), channels[i]));
+			return (-3);
+		}
 		else if (!tmp->is_member(attempt.getSender()->getNickname()))
-			return (-4); // sending ERR_NOTONCHANNEL
+		{
+			sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), channels[i]));
+			return (-4);
+		}
 		else if(!tmp->is_op(attempt.getSender()->getNickname()))
-			return (-5); // sending ERR_CHANOPRIVSNEEDED
+		{
+			sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), channels[i]));
+			return (-5);
+		}
 		else if (i >= users.size())
-			return (-6); // sending ERR_NEEDMOREPARAMS
+		{
+			sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+			return (-6);
+		}
 		else if (!tmp->is_member(users[i]))
-			return (-7); // sending ERR_USERNOTINCHANNEL
+		{
+			sendResponse(*(attempt.getSender()), Error::usernotinchannel(*(attempt.getSender()), users[i], channels[i]));
+			return (-7);
+		}
 		std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost KICK " + channels[i] + " " + users[i] + " :" + attempt.getSender()->getNickname() + "\r\n";
 		tmp->broadcast(msg, 0);
 		tmp->disconnect(users[i]);
@@ -494,9 +510,12 @@ int	whoCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
 	}
-	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
+	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]); //will most likely segfault if params empty
 	if (tmp == NULL)
-		return (-3); //sending ERR_NOSUCHCHANNEL
+	{
+		sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-3);
+	}
 	tmp->cmd_who(*attempt.getSender());
 	return (0);
 }
@@ -539,9 +558,15 @@ int	topicCommand(Server &serv, Message &attempt)
 	}
 	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
-		return (-3); // sending ERR_NOTONCHANNEL
+	{
+		sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-3);
+	}
 	else if (!tmp->is_member(attempt.getSender()->getNickname()))
-		return (-4); // sending ERR_NOTONCHANNEL
+	{
+		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-4);
+	}
 	if (attempt.getText().size() == 0)
 	{
 		if (tmp->get_topic().size() == 0)
@@ -556,7 +581,10 @@ int	topicCommand(Server &serv, Message &attempt)
 	else
 	{
 		if (!tmp->is_op(attempt.getSender()->getNickname()))
-			return (-5); // sending ERR_CHANOPRIVSNEEDED
+		{
+			sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), attempt.getParams()[0]));
+			return (-5);
+		}
 		tmp->cmd_topic(attempt.getText());
 		std::string msg = ":<servername> 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
 		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);

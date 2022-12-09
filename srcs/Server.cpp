@@ -51,9 +51,12 @@ void Server::executor()
 	{
 		current = getNextMessage();
 		std::cout << RED;
-		std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl;
-		if (current->getComCategory() != IGNORE)
+		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
+		// ^^ this causes a segfault if there are no params
+		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
 			test[current->getComCategory()][current->getType()](*this, *current);
+		if (current->getType() == UNKNOWN)
+			sendResponse(*(current->getSender()), Error::unknowncommand(*(current->getSender()), current->getCommand()));
 		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
 		// if (it == exeCommands.end())
 		// {

@@ -3,6 +3,7 @@
 
 #include "Message.hpp"
 #include <sys/socket.h>
+#include <fstream>
 
 // source: https://datatracker.ietf.org/doc/html/rfc1459#section-6
 /*
@@ -56,6 +57,8 @@ enum ReplyCode
 	ERR_NOTEXTTOSEND 		= 412,
 		// "<command> :Unknown command"
 	ERR_UNKNOWNCOMMAND 		= 421,
+		//":MOTD File is missing"
+	ERR_NOMOTD				= 422,
 		// ":No nickname given"
 		// Returned when a nickname parameter expected for a 
 		// command and isn't found.
@@ -65,6 +68,10 @@ enum ReplyCode
 	ERR_ERRONEUSNICKNAME 	= 432,
 		// "<nick> :Nickname is already in use"
 	ERR_NICKNAMEINUSE 		= 433,
+		// "<nick> <channel> :They aren't on that channel"
+	ERR_USERNOTINCHANNEL	= 441,
+		// "<channel> :You're not on that channel"
+	ERR_NOTONCHANNEL		= 442,
 		// "<command> :Not enough parameters"
 	ERR_NEEDMOREPARAMS 		= 461,
 		//":You may not reregister"
@@ -74,7 +81,9 @@ enum ReplyCode
 		// ":Password incorrect"
 	ERR_PASSWDMISMATCH 		= 464,
 		//":Permission Denied- You're not an IRC operator"
-	ERR_NOPRIVILEGES 		= 481
+	ERR_NOPRIVILEGES 		= 481,
+		// "<channel> :You're not channel operator"
+	ERR_CHANOPRIVSNEEDED	= 482
 };
 
 void		sendResponse(Client &sender, std::string message);
@@ -82,7 +91,9 @@ void		sendResponse(Client &sender, std::string message);
 namespace Reply
 {
 	std::string	welcome(Client &sender);
+	std::string motdstart(Client &sender);
 	std::string motd(Client &sender);
+	std::string endofmotd(Client &sender);
 }
 
 namespace Error 
@@ -92,14 +103,18 @@ namespace Error
 	std::string norecipient(Client &sender, std::string cmd);
 	std::string notexttosend(Client &sender);
 	std::string unknowncommand(Client &sender, std::string errCmd);
+	std::string nomotd(Client &sender);
 	std::string nonicknamegiven();
 	std::string erroneousnickname(std::string errNick);
 	std::string nicknameinuse(std::string errNick);
+	std::string usernotinchannel(Client &sender, std::string recipient, std::string channel);
+	std::string notonchannel(Client &sender, std::string channel);
 	std::string needmoreparams(std::string errCmd);
 	std::string alreadyregistered();
 	std::string notregistered();
 	std::string passwdmismatch();
 	std::string nopriveleges(Client &sender);
+	std::string chanoprivsneeded(Client &sender, std::string channel);
 }
 
 #endif
