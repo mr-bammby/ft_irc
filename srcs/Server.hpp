@@ -10,6 +10,7 @@
 #include <poll.h>
 #include <vector>
 #include <map>
+#include <fcntl.h>
 
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -40,23 +41,31 @@ class Server
 		void								deleteUser(Client *user);
 		void 								initExecutor();
 		void 								executor();
-		void								cmd_namesAllchannels(Client* c);
+		void								cmd_namesAllchannels(Client& c);
+		std::string							get_name();
+		int									get_serverfd();
+		int									list_allchannels(Client& c);
+		int									deleteChannel(std::string name);
+
 		typedef int (*fun)(Server&, Message&);
+		bool					   			on;
 	private:
 		Server();
 		Server(const Server &s);
 		Server	&operator=(const Server &s);
-		int create_client();
-		int server_port;
-//		std::vector<int> user_ports;
-		int used_clients;
-		std::string password;
-		std::vector<pollfd> pollfds;
-		std::map<int, Client> clients_fdMap;
-		std::map<std::string, Client*> clients_nameMap;
-		std::map<std::string, Channel> channels;
-		std::vector<Message> messages;
-		std::map<std::string, fun> exeCommands;
+		int 								create_client();
+
+		int 								server_port;
+		int 								used_clients;
+		std::string 						password;
+		std::vector<pollfd> 				pollfds;
+		std::map<int, Client> 				clients_fdMap;
+		std::map<std::string, Client*> 		clients_nameMap;
+		std::map<std::string, Channel> 		channels;
+		std::vector<Message> 				messages;
+		std::map<std::string, fun> 			exeCommands;
+		std::string				   			name;
+		int						   			server_fd;
 };
 
 

@@ -26,26 +26,66 @@ class Channel
 		int	cmd_topic(std::string top);
 		int	cmd_names(Client& sender);
 		int cmd_who(Client& sender);
+		int	add_operator(std::string nick);
+		int	change_operator(std::string sign, std::string nick);
+		int	client_count();
 
 		std::string	get_topic();
 		std::string	get_name() const;
 		Client*		get_op() const;
 
-		bool	is_op(Client &c);
+		// bool	is_op(Client &c);
+		bool	is_invited(std::string nick);
 		bool	is_op(std::string nickname);
 		bool	is_member(Client &c);
 		bool	is_member(std::string nickname);
 		bool	can_invite(Client &c);
-		bool	can_invite(std::string nickname);
+		int		can_invite(std::string nickname);
+		int		change_is_private(std::string sign);
+		int		change_is_secret(std::string sign);
+		int		change_optopic(std::string sign);
+		int		change_nomsg(std::string sign);
+		int		change_moderated(std::string sign);
+		int		change_userlimits(std::string sign, std::size_t limit);
+		int		change_password(std::string sign, std::string key);
+		int		change_invite(std::string sign);
+		int		change_who_speaks_on_moderated(std::string sign, std::string user);
+
+
+		bool						get_invite_only();
+		bool						get_is_private();
+		bool						get_is_secret();
+		bool						get_op_topic();
+		bool						get_no_msg();
+		bool						get_moderated();
+		int							get_user_limit();
+		std::string					get_password();
+		std::vector<std::string>	get_who_speaks_on_moderated();
+		std::vector<std::string>	get_invited_users();
+		std::vector<std::string>	get_operators();
+		bool						can_speak_onchannel(std::string nick);
+		bool						limit_full();
+
+		std::string		channel_modes();
 
 	private:
 		
 		std::string						name;
-		std::string						chanop;
+		std::string						owner;
+		std::vector<std::string>		operators;
 		std::string						topic;
 		std::map<std::string, Client*>	clients;
 		bool							invite_only;
 		std::vector<std::string>		invited_users;
+		bool							is_private;
+		bool							is_secret;
+		bool							op_topic;
+		bool							no_msg;
+		bool							moderated;
+		std::size_t						user_limit;
+		std::string						password;
+		std::vector<std::string>		who_speaks_on_moderated;					
+
 };
 
 #endif // CHANNEL_HPP

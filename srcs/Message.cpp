@@ -53,7 +53,6 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix() //TO
 	tokens.erase(tokens.begin());
 	this->params = tokens;
 	this->setSender(sending_client);
-	// TODO: check if the params match the type
 }
 
 Message::Message(
@@ -150,9 +149,8 @@ void Message::setSender(Client* sending_client)
 		return;
 	prefix.nick = sending_client->getNickname();
 	prefix.user = sending_client->getUsername();
-	// TODO: gethostname dynamically
 	prefix.host = "localhost";
-	prefix.severname = "<servername>";
+	prefix.severname = "IRC";
 }
 
 std::string Message::buildRawMsg() const
@@ -334,7 +332,7 @@ std::vector<Message> getMessages(const std::string& raw, Client* sender)
 		 it != raw_messages.end();
 		 ++it)
 	{
-		messages.push_back(Message(*it, sender)); // TODO: avoid construct empty Msg
+		messages.push_back(Message(*it, sender)); 
 	}
 	return messages;
 }

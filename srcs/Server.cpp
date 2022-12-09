@@ -3,12 +3,22 @@
 #define PORT 6667
 
 
-Server::Server(int port, std::string pass): server_port(port), used_clients(0), password(pass)
+Server::Server(int port, std::string pass): on(true), server_port(port), used_clients(0), password(pass), name("IRC")
 {}
 
 Server::~Server()
 {
 	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+}
+
+std::string		Server::get_name()
+{
+	return (name);
+}
+
+int				Server::get_serverfd()
+{
+	return (server_fd);
 }
 
 void Server::executor()
@@ -51,6 +61,8 @@ void Server::executor()
 	{
 		current = getNextMessage();
 		std::cout << RED;
+
+    // Colon still present in args, chagne message split function
 		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
 		// ^^ this causes a segfault if there are no params
 		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
@@ -78,7 +90,6 @@ void Server::executor()
 
 int Server::init()
 {
-	int server_fd;
 	struct sockaddr_in address;
 	int opt = 1;
 
@@ -87,7 +98,10 @@ int Server::init()
 		perror("socket failed");
 		exit(EXIT_FAILURE);
 	}
-
+	if (fcntl(server_fd, F_SETFL, O_NONBLOCK)) {
+		perror("Could not set non-blocking socket");
+		exit(EXIT_FAILURE);
+	}
 
 	if (setsockopt(server_fd, SOL_SOCKET,
 					SO_REUSEADDR, &opt,
@@ -127,7 +141,6 @@ int Server::start_loop()
 		{
 			create_client();
 		}
-		// changed iterator to start from second position, because first is server and it goes into if condition(gets deleted)
 		for (std::vector<pollfd>::iterator pfdit = ++pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
 		{
 			if (pfdit->revents & POLLIN)
@@ -137,28 +150,15 @@ int Server::start_loop()
 				if (buffsize == -1 || buffsize == 0)
 				{
 					std::cout<<"User disconnected"<<std::endl;
-					// deleting disconected client from map of clients and deleting his pollfd from vector. 
-					// put command break in the end because after erasing iterators could be invalid
 					Client *tmp = get_clientPtr(pfdit->fd);
-					this->clients_fdMap.erase(pfdit->fd);
-					this->pollfds.erase(pfdit);
-					this->clients_nameMap.erase(tmp->getNickname());
-					this->used_clients--;
-					shutdown(pfdit->fd, SHUT_RDWR);
-					// break ;
+					deleteUser(tmp);
 				}
 				else{
 					buf[buffsize] = '\0';
-					// changed [] operator for function at().
-					//probably leaking
-					std::cout<<"-------------"<<std::endl;
-					std::cout<<"BUF: "<<buf<<std::endl;
-					std::cout<<"BUFF end chars: "<<buf[buffsize - 1]<<"And: "<<buf[buffsize - 2]<<std::endl;
-					std::cout<<"-------------"<<std::endl;
 					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)));
 					messages.insert(messages.begin(), current.rbegin(), current.rend());
 					current.clear();
-					// this->clients.at(pfdit->fd).parse(buf);
+
 					printf("Client: %s\n", buf);
 				}
 				break ;
@@ -179,7 +179,10 @@ int Server::create_client()
 		std::cerr << "Error occured while accept incoming Connection!" << std::endl;
 		return (-1);
 	}
-	// ToDo: check the password from the new User is correct
+	if (fcntl(client_socket, F_SETFL, O_NONBLOCK)) {
+		perror("Could not set non-blocking socket");
+		exit(EXIT_FAILURE);
+	}
 	pollfds.push_back(pollfd());
 	pollfds.back().fd = client_socket;
 	pollfds.back().events = POLLIN | POLLPRI;
@@ -190,10 +193,46 @@ int Server::create_client()
 	return (0);
 }
 
-void	Server::cmd_namesAllchannels(Client* c)
+void	Server::cmd_namesAllchannels(Client& c)
 {
 	for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); it++)
-		it->second.cmd_names(*c);
+		it->second.cmd_names(c);
+}
+
+int		Server::list_allchannels(Client& c)
+{
+	std::map<std::string, Channel>::iterator it = channels.begin();
+	while (it != channels.end())
+	{
+		if (it->second.get_is_private() || it->second.get_is_secret())
+		{
+			std::string msg2 = ":" + get_name() + " 322 " + c.getNickname() + " ";
+			if (it->second.is_member(c.getNickname()))
+			{
+				std::cout<<"Member"<<std::endl;
+				msg2 += it->second.get_name() + " :" + it->second.get_topic() + "\r\n";
+				send(c.getFd(), msg2.c_str(), msg2.length(), 0);
+			}
+			else
+			{
+				std::cout<<"non Member"<<std::endl;
+				if (it->second.get_is_private() && !it->second.get_is_secret())
+				{
+					msg2 += it->second.get_name() + "\r\n";
+					send(c.getFd(), msg2.c_str(), msg2.length(), 0);
+				}
+			}
+			msg2.clear();
+		}
+		else
+		{
+			std::string msg2 = ":" + get_name() + " 322 " + c.getNickname() + " ";
+			msg2 += it->second.get_name() + " :" + it->second.get_topic() + "\r\n";
+			send(c.getFd(), msg2.c_str(), msg2.length(), 0);
+		}
+		it++;
+	}
+	return (0);
 }
 
 Channel* Server::create_channel(std::string name, Client& c)
@@ -251,15 +290,18 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 	{
 		return (-2); // client_ptr is not viable pointer
 	}
-	if (checkNickGrammar(nickName) == -1)
+	if (checkNickGrammar(nickName) == -1 || nickName.size() > 9)
 	{
 		return (-3); //sending ERR_ERRONEUSNICKNAME
 	}
 	std::map<std::string, Client*>::iterator itr = clients_nameMap.find(nickName);
 	if (itr == clients_nameMap.end())
 	{
-		if (client_ptr->setNickname(nickName) == -8)
+		int i = client_ptr->setNickname(nickName);
+		if (i == -8)
 			return (-8);
+		if (i == -7)
+			return (-7);
 		temp = clients_nameMap.insert(std::pair<std::string, Client*>(nickName, client_ptr));
 		if (!temp.second)
 			return (-4); // nick name alredy exist
@@ -319,14 +361,22 @@ void	 Server::deleteUser(Client *user)
 	{
 		if (it1->second.is_member(user->getNickname()))
 		{
-			std::string msg = ":" + user->getNickname() + "!" + user->getUsername() + "@localhost PART " + it1->second.get_name() + "\r\n";
+			std::string msg = ":" + user->getNickname() + "!" + user->getUsername() + "@localhost QUIT " + it1->second.get_name() + "\r\n";
 			it1->second.broadcast(msg, 0);
 		}
 		it1->second.disconnect(user->getNickname());
+		if (it1->second.client_count() == 0)
+			channels.erase(it1->second.get_name());
 	}
 	shutdown(it->fd, SHUT_RDWR);
 	this->pollfds.erase(it);
 	this->clients_nameMap.erase(user->getNickname());
 	this->clients_fdMap.erase(user->getFd());
 	used_clients--;
+}
+
+int		Server::deleteChannel(std::string name)
+{
+	channels.erase(name);
+	return (0);
 }
