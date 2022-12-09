@@ -70,37 +70,50 @@ void introducing(Client *sender)
 int	nickCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getParams().size() == 0)
-		return (-1); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-1); // currectly segfaults 
+	}
 	int res = serv.set_nickName(attempt.getSender(), attempt.getParams()[0]);
 	std::cout<<"Res: "<<res<<std::endl;
 	std::cout<<std::endl;
 	switch(res)
 	{
 		case -1:
-			break;// send ERR_NONICKNAMEGIVEN
-			// break;
+		{
+			sendResponse(*(attempt.getSender()), Error::nonicknamegiven());
+			break ;
+		}
 		case -2:
 			//client_ptr is not viable pointer
 			break;
 		case -3:
-			//sending ERR_ERRONEUSNICKNAME
-			break;
+		{
+			sendResponse(*(attempt.getSender()), Error::erroneousnickname(attempt.getParams()[0]));
+			break ;
+		}
 		case -4:
-			//sending ERR_NICKNAMEINUSE
-			break;
+		{
+			sendResponse(*(attempt.getSender()), Error::nicknameinuse(attempt.getParams()[0]));
+			break ;
+		}
 		case -5:
 			introducing(attempt.getSender());
 			//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
 		case -6:
-			//sending ERR_NICKNAMEINUSE
-			break;
+		{
+			sendResponse(*(attempt.getSender()), Error::nicknameinuse(attempt.getParams()[0]));
+			break ; //is this intentionally here twice??
+		}
 		case -7:
 			//"old nicname" changed his nickname to "new nickname"
 			break;
 		case -8:
-			//sending ERR_NOTREGISTERED
-			break;
+		{
+			sendResponse(*(attempt.getSender()), Error::notregistered());
+			break ;
+		}
 	}
 
 	return (0);
@@ -110,19 +123,28 @@ int	userCommand(Server &serv, Message &attempt)
 {
 	(void)serv;
 	if (attempt.getParams().size() == 0)
-		return (-2); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2); // This might be redundant
+	}
 	int res = attempt.getSender()->setUsername(attempt.getParams()[0]);
 	switch (res)
 	{
 		case -1:
-			//sending ERR_NEEDMOREPARAMS 
+		{
+			sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 			break;
+		}
 		case -2:
-			//sending ERR_NOTREGISTERED 
+		{
+			sendResponse(*(attempt.getSender()), Error::notregistered());
 			break;
+		}
 		case -3:
-			//sending ERR_ALREADYREGISTERED
+		{
+			sendResponse(*(attempt.getSender()), Error::alreadyregistered());
 			break;
+		}
 		case -4:
 			attempt.getSender()->setRealname(attempt.getText());
 			break;
@@ -134,9 +156,15 @@ int	userCommand(Server &serv, Message &attempt)
 int	joinCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() == 0)
-		return (-2); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	//extracting channels and passwords
 	std::vector<std::string> channels;
 	std::vector<std::string> passwords;
@@ -156,7 +184,10 @@ int	joinCommand(Server &serv, Message &attempt)
 		if (tmp == NULL)//channel not exists and creating new
 		{
 			if (channels[i][0] != '#' && channels[i][0] != '&')
-				return (-3); // sending ERR_NOSUCHCHANNEL
+			{
+				sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), channels[i]));
+				return (-2);
+			}
 			// creating channel with channels[i] as a name and making client as a operator
 			Channel* tmp2 = serv.create_channel(channels[i], *attempt.getSender());
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp2->get_name() + "\r\n";
@@ -190,12 +221,20 @@ int	joinCommand(Server &serv, Message &attempt)
 int	privmsgCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() == 0)
-		return (-2); // sending ERR_NORECIPIENT
+	{
+		sendResponse(*(attempt.getSender()), Error::norecipient(*(attempt.getSender()), attempt.getCommand()));
+		return (-2);
+	}
 	if (attempt.getText().size() == 0)
-		return (-3); // sending ERR_NOTEXTTOSEND
-	
+	{
+		sendResponse(*(attempt.getSender()), Error::notexttosend(*(attempt.getSender())));
+		return (-2);
+	}
 	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
 	// iterating thorough all the recipients whom to send message
 	std::vector<std::string>::iterator it = recipients.begin();
@@ -207,7 +246,10 @@ int	privmsgCommand(Server &serv, Message &attempt)
 		{
 			Channel* tmp2 = serv.get_channelPtr(*it);
 			if (tmp2 == NULL)
-				return (-4); // sending ERR_NOSUCHNICK
+			{
+				sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //what var?
+				return (-4);
+			}
 			else
 			{
 				//sending to channel
@@ -242,7 +284,10 @@ int	noticeCommand(Server &serv, Message &attempt)
 {
 	// How I understand, NOTICE is the same as PRIVMSG, it just dont send any replies, even if some errors occur 
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() == 0)
 		return (-2); 
 	if (attempt.getText().size() == 0)
@@ -290,10 +335,14 @@ int	noticeCommand(Server &serv, Message &attempt)
 int	inviteCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() < 2)
 	{
-		return (-2);//ERR_NEEDMOREPARAMS
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
 	}
 	Channel* chn = serv.get_channelPtr(attempt.getParams()[1]);
 	Client* cln = serv.get_clientPtr(attempt.getParams()[0]);
@@ -337,15 +386,23 @@ int	inviteCommand(Server &serv, Message &attempt)
 int	killCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	// if (attempt.getSender() is not operator)
 	// 	return (-1); //sending ERR_NOPRIVILEGES
 	if (attempt.getParams().empty())
-		return (-2); // sending ERR_NEEDMOREPARAMS
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
-		return (-3); // sending ERR_NOSUCHNICK
-
+	{
+		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //where is this stored
+		return (-3);
+	}
 	serv.deleteUser(tmp);
 	return (0);
 }
@@ -362,9 +419,15 @@ int	quitCommand(Server &serv, Message &attempt)
 int	partCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() == 0)
-		return (-2); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	//extracting channels and passwords
 	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
 	std::size_t i = 0;
@@ -386,9 +449,15 @@ int	partCommand(Server &serv, Message &attempt)
 int	kickCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() < 2)
-		return (-2); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
 	std::vector<std::string> users = split(attempt.getParams()[1], ",");
 	std::size_t i = 0;
@@ -416,9 +485,15 @@ int	kickCommand(Server &serv, Message &attempt)
 int	whoCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() < 1)
-		return (-2); // sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
 		return (-3); //sending ERR_NOSUCHCHANNEL
@@ -429,7 +504,10 @@ int	whoCommand(Server &serv, Message &attempt)
 int	namesCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() == 0)
 	{
 		serv.cmd_namesAllchannels(attempt.getSender());
@@ -450,9 +528,15 @@ int	namesCommand(Server &serv, Message &attempt)
 int	topicCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() == 0)
-		return (-2); //sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
 		return (-3); // sending ERR_NOTONCHANNEL
