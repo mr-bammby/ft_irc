@@ -36,18 +36,18 @@ namespace Reply
 		params.push_back("372");
 		params.push_back(sender.getNickname());
 		params.push_back(":-");
-		motdFile.open("srcs/ircd.motd");
-		if (!motdFile.is_open())
-			return (Error::nomotd(sender));
-		while(getline(motdFile, motdStr))
-		{
-			motdStr.resize(80);
-			params.push_back(motdStr);
-			motd.setParams(params);
-			out += motd.buildRawMsg();
-			params.pop_back();
-		}
-		motdFile.close();
+		// motdFile.open("srcs/ircd.motd");
+		// if (!motdFile.is_open())
+		// 	return (Error::nomotd(sender));
+		// while(getline(motdFile, motdStr))
+		// {
+		// 	motdStr.resize(80);
+		// 	params.push_back(motdStr);
+		// 	motd.setParams(params);
+		// 	out += motd.buildRawMsg();
+		// 	params.pop_back();
+		// }
+		// motdFile.close();
 		return(out);
 	}
 
