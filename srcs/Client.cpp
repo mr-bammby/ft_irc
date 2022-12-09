@@ -1,22 +1,25 @@
 #include "Client.hpp"
 
 Client::Client(int _id, int cl_fd)
-	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname()
+	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname(), op(false)
 {}
 
-Client::Client() : id(), nickname(), state(LOCKED), username(), realname() {}
+Client::Client() : id(), nickname(), state(LOCKED), username(), realname(), op(false) {}
 
 Client::~Client() {}
 
 int Client::setNickname(std::string name)
 {
+	std::cout<<"State in nick: "<<state<<std::endl;
 	if (state == LOCKED || state == UNINITIALIZED)
 	{
 		return (-8);//ERR_NOTREGISTERED
 	}
-	nickname = name;
+	if (state == SET)
+		return (-7); //ERR_ALREADYREGISTERED
 	if (state == INITIALIZED)
 	{
+		nickname = name;
 		state = SET;
 	}
 	return (-5);
@@ -39,6 +42,7 @@ const std::string&		Client::getUsername()
 
 int						Client::setUsername(std::string name)
 {
+	std::cout<<"State in user: "<<state<<std::endl;
 	if (name.empty())
 	{
 		return (-1);//ERR_NEEDMOREPARAMS 
@@ -55,6 +59,21 @@ int						Client::setUsername(std::string name)
 	state = INITIALIZED;
 	return (-4);
 
+}
+
+bool					Client::is_op()
+{
+	return (op);
+}
+
+bool					Client::set_op(std::string pass)
+{
+	if (pass == "42")
+	{
+		op = true;
+		return (true);
+	}
+	return (false);
 }
 
 const std::string&		Client::getRealname()
@@ -89,4 +108,5 @@ void	Client::upgradeState()
         this->state = INITIALIZED;
     else if (this->state == INITIALIZED)
         this->state = SET;
+	std::cout<<"State after pass: "<<state<<std::endl;
 }

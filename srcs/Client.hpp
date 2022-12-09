@@ -35,6 +35,8 @@ class Client
 		int						setRealname(std::string name);
 		void					upgradeState();
 		int						getFd();
+		bool					is_op();
+		bool					set_op(std::string pass);
 
 	private:
 		int				id;
@@ -43,6 +45,7 @@ class Client
 		Client::State	state;
 		std::string		username;
 		std::string		realname;
+		bool			op;
 
 };
 

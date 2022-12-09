@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 		Server s(port, argv[2]);
 		s.init();
 		// Message::commandMap = Message::createCommandMap();
-		while (true)
+		while (s.on)
 		{
 			s.start_loop();
 			s.executor();
