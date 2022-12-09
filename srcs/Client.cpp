@@ -102,11 +102,11 @@ int Client::getFd()
 
 void	Client::upgradeState()
 {
-    if (this->state == LOCKED)
-        this->state = UNINITIALIZED;
-    else if (this->state == UNINITIALIZED)
-        this->state = INITIALIZED;
-    else if (this->state == INITIALIZED)
-        this->state = SET;
+	if (this->state == LOCKED)
+		this->state = UNINITIALIZED;
+	else if (this->state == UNINITIALIZED)
+		this->state = INITIALIZED;
+	else if (this->state == INITIALIZED)
+		this->state = SET;
 	std::cout<<"State after pass: "<<state<<std::endl;
 }

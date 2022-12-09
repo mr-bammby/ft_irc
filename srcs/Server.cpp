@@ -380,3 +380,8 @@ int		Server::deleteChannel(std::string name)
 	channels.erase(name);
 	return (0);
 }
+
+std::map<std::string, Channel>	&Server::getChannels()
+{
+	return (this->channels);
+}

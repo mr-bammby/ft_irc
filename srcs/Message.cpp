@@ -40,7 +40,7 @@ Message::Message(const std::string& raw, Client* sending_client) : prefix() //TO
 	std::vector<std::string> tokens = split(raw, " "); // TODO: sometimes params are allowed to have whitespace
 	// TODO: indicate error when no CRLF was found
 	std::cout<< "RAW: "<< raw <<std::endl;
-	std::cout<< "Tokens: "<< tokens <<std::endl;
+	// std::cout<< "Tokens: " << tokens <<std::endl;
 	if (tokens.empty())
 		throw std::runtime_error("No CRLF in Message found!");
 	// TODO: consume tokens to fill Message
@@ -346,7 +346,7 @@ std::ostream& operator<<(std::ostream& os, const Message& msg)
 	   << Message::getCommandCategoryStr(msg.category) << ")" << std::endl
 	   << "type=" << msg.type << "(" << Message::getCommandStr(msg.type) << ")"
 	   << std::endl
-	   << "params=" << msg.params << std::endl
+	   << "params=" << msg.params[0] << std::endl
 	   << ") // Message" << std::endl;
 	os << msg.buildRawMsg();
 	return os;
