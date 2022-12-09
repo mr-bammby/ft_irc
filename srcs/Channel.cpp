@@ -1,7 +1,7 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, Client &c):
-name(name)
+Channel::Channel(std::string ch_name, Client &c):
+name(ch_name)
 {
 	this->clients.insert(std::pair<std::string, Client*>(c.getNickname(), &c));
 	this->owner = c.getNickname();
@@ -15,11 +15,13 @@ name(name)
 	password = "";
 }
 
-// Channel::Channel(const Channel &c): name(c.name)
-// {
-// 	this->clients.insert(std::make_pair<std::string, Client*>(c.getNickname(), &c));
-// 	this->chanop = c.getNickname();
-// }
+// Needed for pair functionality
+Channel::Channel(const Channel &c): name(c.get_name())
+{
+	Client	*op = c.get_op();
+	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
+	this->chanop = op->getNickname();
+}
 
 Channel::~Channel()
 {}
@@ -379,11 +381,16 @@ std::string Channel::get_topic()
 	return(topic);
 }
 
-std::string	Channel::get_name()
+std::string	Channel::get_name() const
 {
 	return (name);
 }
 
+Client	*Channel::get_op() const
+{
+	std::map<std::string, Client*>::const_iterator itr = clients.find(chanop);
+	return (itr->second);
+}
 
 bool Channel::is_member(std::string nickname)
 {

@@ -37,4 +37,6 @@ int	squitCommand(Server &serv, Message &attempt);
 int	modeCommand(Server &serv, Message &attempt);
 int	listCommand(Server &serv, Message &attempt);
 
+int	removeUserFromChannels(Server &serv, std::string nickname);
+
 #endif

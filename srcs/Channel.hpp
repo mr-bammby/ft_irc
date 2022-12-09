@@ -11,7 +11,7 @@ class Channel
 {
 	public:
 		Channel(std::string name, Client &c);
-		// Channel(const Channel &c);
+		Channel(const Channel &c);
 		~Channel();
 
 		Channel &operator=(const Channel &c);
@@ -31,7 +31,8 @@ class Channel
 		int	client_count();
 
 		std::string	get_topic();
-		std::string	get_name();
+		std::string	get_name() const;
+		Client*		get_op() const;
 
 		// bool	is_op(Client &c);
 		bool	is_invited(std::string nick);
@@ -68,6 +69,7 @@ class Channel
 		std::string		channel_modes();
 
 	private:
+		
 		std::string						name;
 		std::string						owner;
 		std::vector<std::string>		operators;

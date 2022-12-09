@@ -15,6 +15,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Comms.hpp"
+#include "ServerResponse.hpp"
 
 #define MAX_CLIENTS 128
 #define TIMEOUT 	180

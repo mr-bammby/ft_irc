@@ -45,6 +45,7 @@ enum Commands
 	// Available to operators and servers
 	PING = 40,
 	KILL = 50,
+	UNKNOWN,
 	RESTART
 };
 

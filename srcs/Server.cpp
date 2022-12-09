@@ -21,50 +21,66 @@ int				Server::get_serverfd()
 	return (server_fd);
 }
 
-void Server::initExecutor()
-{
-	exeCommands.insert(std::pair<std::string, fun>("PASS", &passCommand));
-	exeCommands.insert(std::pair<std::string, fun>("USER", &userCommand));
-	exeCommands.insert(std::pair<std::string, fun>("NICK", &nickCommand));
-	exeCommands.insert(std::pair<std::string, fun>("PRIVMSG", &privmsgCommand));
-	exeCommands.insert(std::pair<std::string, fun>("NOTICE", &noticeCommand));
-	exeCommands.insert(std::pair<std::string, fun>("KILL", &killCommand));
-	exeCommands.insert(std::pair<std::string, fun>("QUIT", &quitCommand));
-	exeCommands.insert(std::pair<std::string, fun>("PING", NULL));
-	exeCommands.insert(std::pair<std::string, fun>("JOIN", &joinCommand));
-	exeCommands.insert(std::pair<std::string, fun>("PART", &partCommand));
-	exeCommands.insert(std::pair<std::string, fun>("KICK", &kickCommand));
-	exeCommands.insert(std::pair<std::string, fun>("WHO", &whoCommand));
-	exeCommands.insert(std::pair<std::string, fun>("NAMES", &namesCommand));
-	exeCommands.insert(std::pair<std::string, fun>("TOPIC", &topicCommand));
-	exeCommands.insert(std::pair<std::string, fun>("OPER", &operCommand));
-	exeCommands.insert(std::pair<std::string, fun>("SQUIT", &squitCommand));
-	exeCommands.insert(std::pair<std::string, fun>("MODE", &modeCommand));
-	exeCommands.insert(std::pair<std::string, fun>("INVITE", &inviteCommand));
-	exeCommands.insert(std::pair<std::string, fun>("LIST", &listCommand));
-}
-
 void Server::executor()
 {
+	int	(*initT[4])(Server &s, Message &a) =
+	{
+		&passCommand, &nickCommand,	&userCommand, &joinCommand
+	};
+	int	(*msgT[2])(Server &s, Message &a) =
+	{
+		&privmsgCommand, &noticeCommand
+	};
+	int	(*operT[4])(Server &s, Message &a) =
+	{
+		&kickCommand, NULL, &inviteCommand, &topicCommand
+	};
+	// ??? CMD_RESPONSE && ERROR_RESPONSE
+	int	(*responesT[2])(Server &s, Message &a) =
+	{
+		NULL, NULL
+	};
+	// Ping
+	int	(*ignoreT[1])(Server &s, Message &a) =
+	{
+		NULL
+	};
+	// Restart missing
+	int	(*miscT[2])(Server &s, Message &a) =
+	{
+		&killCommand, NULL
+	};
+	int	(**test[6])(Server &s, Message &a) =
+	{
+		initT, msgT, operT, responesT, ignoreT, miscT
+	};
+
 	Message *current;
 
 	while (messages.size() > 0)
 	{
 		current = getNextMessage();
 		std::cout << RED;
-		std::cout << "Executing: " << current->getCommand()  << " TXT: "<<current->getText()<< std::endl;
-		std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
-		if (it == exeCommands.end())
-		{
-			std::cout<<"Command not found"<<std::endl;
-			std::string msg = ":" + get_name() +  " 421 " + current->getSender()->getNickname() + " " + current->getCommand() + " :Unknown command\r\n";
-			send(current->getSender()->getFd(), msg.c_str(), msg.length(), 0);
-		}
-		else
-		{
-			if (it->second != NULL)
-				it->second(*this, *current);
-		}
+
+    // Colon still present in args, chagne message split function
+		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
+		// ^^ this causes a segfault if there are no params
+		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
+			test[current->getComCategory()][current->getType()](*this, *current);
+		if (current->getType() == UNKNOWN)
+			sendResponse(*(current->getSender()), Error::unknowncommand(*(current->getSender()), current->getCommand()));
+		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
+		// if (it == exeCommands.end())
+		// {
+		// 	std::cout<<"Command not found"<<std::endl;
+		// 	std::string msg = ":<servername> 421 " + current->getSender()->getNickname() + " " + current->getCommand() + " :Unknown command\r\n";
+		// 	send(current->getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		// }
+		// else
+		// {
+		// 	if (it->second != NULL)
+		// 		it->second(*this, *current);
+		// }
 		std::cout << BLANK;
 		removeLastMessage();
 	}
@@ -113,7 +129,6 @@ int Server::init()
 	pollfds.push_back(pollfd());
 	pollfds[0].fd = server_fd;
 	pollfds[0].events = POLLIN | POLLPRI;
-	initExecutor();
 	return 0;
 }
 
