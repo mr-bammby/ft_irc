@@ -33,4 +33,6 @@ int	whoCommand(Server &serv, Message &attempt);
 int	namesCommand(Server &serv, Message &attempt);
 int	topicCommand(Server &serv, Message &attempt);
 
+int	removeUserFromChannels(Server &serv, std::string nickname);
+
 #endif
