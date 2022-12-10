@@ -108,11 +108,13 @@ Client* Message::getSender() const
 	return sender;
 }
 
+//Dont use getText unsless you want to return text
+// Adds spaces between params
 std::string Message::getText() const
 {
 	std::string result;
 	for (std::vector<std::string>::const_iterator it = params.begin(); it != params.end(); it++)
-		result = result + *it;
+		result = result + *it + " ";
 	return (result);
 }
 
