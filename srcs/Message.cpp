@@ -35,23 +35,32 @@ Message::Message()
 
 // Message::Message(const std::string& raw, Client *cl) : prefix(), client(cl)
 
-Message::Message(const std::string& raw, Client* sending_client) : prefix() //TODO: do separation proper way first : than spaces
+Message::Message(const std::string& raw, Client* sending_client)
 {
-	std::vector<std::string> tokens = split(raw, " "); // TODO: sometimes params are allowed to have whitespace
-	// TODO: indicate error when no CRLF was found
-	std::cout<< "RAW: "<< raw <<std::endl;
-	// std::cout<< "Tokens: " << tokens <<std::endl;
-	if (tokens.empty())
-		throw std::runtime_error("No CRLF in Message found!");
-	// TODO: consume tokens to fill Message
-	std::pair<enum ComCategory, int> msgType = detectMsgType(tokens[0]);
-	std::cout << "msgType=" << msgType.first << ", " << msgType.second
-			  << std::endl;
+	std::string last_param;
+	std::string raw_cpy(raw);
+
+	#if MESSAGE_DUBG 
+		std::cout<< "RAW: "<< raw <<std::endl;
+	#endif
+	find_prefx(&raw_cpy, &client_prefix); // finds and removes prefix
+	find_last_param(&raw_cpy, &last_param); // finds and removes last parameter
+	std::vector<std::string> tokens = split(raw_cpy, " "); //split command and reminding parameters
+	#if MESSAGE_DUBG 
+		if (tokens.empty())
+			throw std::runtime_error("No CRLF in Message found!");
+	#endif
+	std::pair<enum ComCategory, enum Commands> msgType = detectMsgType(tokens[0]); //detects message type from command, command is always first "parameter"
+	#if MESSAGE_DUBG 
+		std::cout << "msgType=" << msgType.first << ", " << msgType.second
+				<< std::endl;
+	#endif
 	this->category = msgType.first;
-	this->type = static_cast<enum Commands>(msgType.second);
+	this->type = msgType.second;
 	this->command = tokens[0];
 	tokens.erase(tokens.begin());
 	this->params = tokens;
+	this->params.push_back(last_param);
 	this->setSender(sending_client);
 }
 
@@ -350,4 +359,57 @@ std::ostream& operator<<(std::ostream& os, const Message& msg)
 	   << ") // Message" << std::endl;
 	os << msg.buildRawMsg();
 	return os;
+}
+
+
+void Message::find_prefx(std::string *raw, std::string *prefix)
+{
+	std::size_t first_char_index = raw->find_first_not_of(" ");
+	std::size_t end_of_prefix_index; 
+
+	if (first_char_index != std::string::npos && first_char_index != 0)
+	{
+		*raw = raw->substr(first_char_index); // remows leading spaces
+	}
+	if ((*raw)[0] == ':')
+	{
+		end_of_prefix_index = raw->find_first_of(" ");
+		if (end_of_prefix_index == std::string::npos)
+		{
+			*prefix = raw->substr(1);
+			*raw = "";
+		}
+		else
+		{
+			*prefix = raw->substr(1, end_of_prefix_index - 1);
+			*raw = raw->substr(end_of_prefix_index, raw->size() - end_of_prefix_index);
+		}
+	}
+	else
+	{
+		*prefix = "";
+	}
+}
+
+void  Message::find_last_param(std::string *raw, std::string *last_param)//must be called after find_prefix
+{
+	std::string delimeter = ":"; //change string to locate to " :" in needed
+	std::size_t delemiter_index = raw->find(delimeter);
+
+	if (delemiter_index != std::string::npos)
+	{
+		if ((delemiter_index - raw->size()) > delimeter.size())
+		{
+			*last_param = raw->substr(delemiter_index + delimeter.size(), raw->size() - (delemiter_index + delimeter.size())); // removes leading spaces
+		}
+		else
+		{
+			*last_param = "";
+		}
+		*raw = raw->substr(0, delemiter_index);
+	}
+	else
+	{
+		*last_param = "";
+	}
 }

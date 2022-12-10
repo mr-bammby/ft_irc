@@ -10,6 +10,8 @@
 #include <Commands.hpp>
 #include <utility.hpp>
 
+#define MESSAGE_DUBG true
+
 class Client;
 // TODO: add test for this file
 
@@ -75,6 +77,7 @@ public:
 
 private:
 	struct prefix			 prefix; // empty in msg from client to server
+	std::string		 		 client_prefix;
 	std::string				 text;
 	enum ComCategory		 category;
 	enum Commands			 type;
@@ -91,6 +94,9 @@ private:
 
 	static const std::string
 	getCommandCategoryStr(enum ComCategory cmd_category);
+	void find_prefx(std::string *raw, std::string *prefix); // finds and removes prefix
+	void find_last_param(std::string *raw, std::string *last_param); // finds and removes last parameter
+
 };
 
 // non-member functions
