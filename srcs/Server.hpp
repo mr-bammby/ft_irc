@@ -64,7 +64,8 @@ class Server
 		std::map<std::string, Client*> 		clients_nameMap;
 		std::map<std::string, Channel> 		channels;
 		std::vector<Message> 				messages;
-		std::map<std::string, fun> 			exeCommands;
+		std::map<Client*, std::string>			incomplete;
+		// std::map<std::string, fun> 			exeCommands;
 		std::string				   			name;
 		int						   			server_fd;
 };

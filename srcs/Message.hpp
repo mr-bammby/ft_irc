@@ -9,6 +9,7 @@
 #include <Client.hpp>
 #include <Commands.hpp>
 #include <utility.hpp>
+#include "color.h"
 
 class Client;
 // TODO: add test for this file
@@ -96,6 +97,8 @@ private:
 // non-member functions
 
 std::vector<Message> getMessages(const std::string& raw, Client* sender);
+std::vector<Message> getMessages(const std::string& raw, Client* sender, \
+std::map<Client*, std::string> &incomplete_map);
 
 std::ostream& operator<<(std::ostream& os, const Message& msg);
 

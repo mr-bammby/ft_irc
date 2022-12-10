@@ -156,7 +156,7 @@ int Server::start_loop()
 				}
 				else{
 					buf[buffsize] = '\0';
-					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)));
+					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)), incomplete);
 					messages.insert(messages.begin(), current.rbegin(), current.rend());
 					current.clear();
 
@@ -298,6 +298,7 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 	std::map<std::string, Client*>::iterator itr = clients_nameMap.find(nickName);
 	if (itr == clients_nameMap.end())
 	{
+		std::cout << "intro here" << std::endl;
 		int i = client_ptr->setNickname(nickName);
 		if (i == -8)
 			return (-8);
@@ -311,6 +312,7 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 	}
 	else
 	{
+		std::cout << "or there" << std::endl;
 		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
 		if (itr2 != clients_nameMap.end())
 		{
