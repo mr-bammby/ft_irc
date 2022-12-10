@@ -35,10 +35,11 @@ Channel &Channel::operator=(const Channel &c)
 int Channel::broadcast(std::string message, int sender)
 {
 	std::map<std::string, Client*>::iterator it;
-	std::cout << message << std::endl;
+	std::cout << "Message should send to all users: " << message << std::endl;
 	for (it = clients.begin(); it != clients.end(); it++)
 	{
 		// send message to all Clients depends of the implementation
+		std::cout << "  Send to client: " << it->second->getNickname() << std::endl;
 		if (sender != it->second->getFd())
 			send(it->second->getFd(), message.c_str(), message.length(), 0);
 	}
@@ -279,8 +280,8 @@ int		Channel::change_who_speaks_on_moderated(std::string sign, std::string user)
 
 bool	Channel::limit_full()
 {
-	std::cout<<"user limit: "<<user_limit<<" clients size: "<<std::endl;
-	if (user_limit > clients.size())
+	std::cout << "user limit: " << user_limit << "  clients size: " << clients.size() << std::endl;
+	if (user_limit > clients.size() || user_limit == 0)
 		return (false);
 	return (true);
 }

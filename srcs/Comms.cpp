@@ -219,6 +219,7 @@ int	privmsgCommand(Server &serv, Message &attempt)
 	while (it != recipients.end())
 	{
 		// checking if channel or client exists with provided name
+		std::cout << "check receiver: " << it->at(0) << std::endl;
 		Client* tmp = serv.get_clientPtr(*it);
 		if (tmp == NULL)
 		{

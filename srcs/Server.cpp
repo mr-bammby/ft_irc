@@ -66,7 +66,8 @@ void Server::executor()
 		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
 		// ^^ this causes a segfault if there are no params
 		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
-			test[current->getComCategory()][current->getType()](*this, *current);
+			if (test[current->getComCategory()][current->getType() % 10] != NULL)
+				test[current->getComCategory()][current->getType() % 10](*this, *current);
 		if (current->getType() == UNKNOWN)
 			sendResponse(*(current->getSender()), Error::unknowncommand(*(current->getSender()), current->getCommand()));
 		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
@@ -313,7 +314,7 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
 		if (itr2 != clients_nameMap.end())
 		{
-			return (-6); // nick anme alredy exist ERR_NICKNAMEINUSE
+			return (-6); // nick anme already exist ERR_NICKNAMEINUSE
 		}
 		else
 			return (-7);// probably have to send message "old nicname" changed his nickname to "new nickname"

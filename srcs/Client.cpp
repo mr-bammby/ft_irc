@@ -11,16 +11,16 @@ Client::~Client() {}
 int Client::setNickname(std::string name)
 {
 	std::cout<<"State in nick: "<<state<<std::endl;
-	if (state == LOCKED || state == UNINITIALIZED)
+	if (state == LOCKED /*|| state == UNINITIALIZED*/)
 	{
 		return (-8);//ERR_NOTREGISTERED
 	}
 	if (state == SET)
 		return (-7); //ERR_ALREADYREGISTERED
-	if (state == INITIALIZED)
+	if (state == UNINITIALIZED)
 	{
 		nickname = name;
-		state = SET;
+		state = INITIALIZED;
 	}
 	return (-5);
 }
@@ -51,12 +51,12 @@ int						Client::setUsername(std::string name)
 	{
 		return (-2);//ERR_NOTREGISTERED
 	}
-	if (state == INITIALIZED || state == SET)
+	if (/*state == INITIALIZED ||*/ state == SET)
 	{
 		return (-3); //ERR_ALREADYREGISTERED
 	}
 	username = name;
-	state = INITIALIZED;
+	state = SET;
 	return (-4);
 
 }
