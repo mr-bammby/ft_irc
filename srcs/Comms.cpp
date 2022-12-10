@@ -219,7 +219,7 @@ int	privmsgCommand(Server &serv, Message &attempt)
 	while (it != recipients.end())
 	{
 		// checking if channel or client exists with provided name
-		std::cout << "check receiver: " << it->at(0) << std::endl;
+		std::cout << "check receiver: " << *it << std::endl;
 		Client* tmp = serv.get_clientPtr(*it);
 		if (tmp == NULL)
 		{
@@ -248,7 +248,7 @@ int	privmsgCommand(Server &serv, Message &attempt)
 		{
 			std::string	message;
 			// message = ":boriss PRIVMSG bobo :aaaa\r\n";
-			message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp->getNickname() + " :" + attempt.getText() + "\r\n";
+			message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp->getNickname() + " :" + attempt.getText().substr(tmp->getNickname().size() +1 ) + "\r\n";
 			std::cout<<"Sending message: "<<message<<std::endl;
 			send(tmp->getFd(), message.c_str(), message.length(), 0);
 			message.clear();
