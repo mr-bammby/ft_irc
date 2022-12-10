@@ -355,6 +355,7 @@ Channel* Server::get_channelPtr(std::string chan)
 
 void	 Server::deleteUser(Client *user)
 {
+	std::vector<std::string> to_delete;
 	std::vector<pollfd>::iterator it = pollfds.begin();
 	while (it->fd != user->getFd())
 		it++;
@@ -364,10 +365,15 @@ void	 Server::deleteUser(Client *user)
 		{
 			std::string msg = ":" + user->getNickname() + "!" + user->getUsername() + "@localhost QUIT " + it1->second.get_name() + "\r\n";
 			it1->second.broadcast(msg, 0);
+			it1->second.disconnect(user->getNickname());
+			if (it1->second.client_count() == 0)
+				to_delete.push_back(it1->second.get_name());
+				// channels.erase(it1->second.get_name());
 		}
-		it1->second.disconnect(user->getNickname());
-		if (it1->second.client_count() == 0)
-			channels.erase(it1->second.get_name());
+	}
+	for (std::vector<std::string>::iterator i = to_delete.begin(); i != to_delete.end(); i++)
+	{
+		channels.erase(*i);
 	}
 	shutdown(it->fd, SHUT_RDWR);
 	this->pollfds.erase(it);
