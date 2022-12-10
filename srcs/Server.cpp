@@ -66,7 +66,8 @@ void Server::executor()
 		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
 		// ^^ this causes a segfault if there are no params
 		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
-			test[current->getComCategory()][current->getType()](*this, *current);
+			if (test[current->getComCategory()][current->getType() % 10] != NULL)
+				test[current->getComCategory()][current->getType() % 10](*this, *current);
 		if (current->getType() == UNKNOWN)
 			sendResponse(*(current->getSender()), Error::unknowncommand(*(current->getSender()), current->getCommand()));
 		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
@@ -313,7 +314,7 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 		std::map<std::string, Client*>::iterator itr2 = clients_nameMap.find(nickName);
 		if (itr2 != clients_nameMap.end())
 		{
-			return (-6); // nick anme alredy exist ERR_NICKNAMEINUSE
+			return (-6); // nick anme already exist ERR_NICKNAMEINUSE
 		}
 		else
 			return (-7);// probably have to send message "old nicname" changed his nickname to "new nickname"
@@ -354,6 +355,7 @@ Channel* Server::get_channelPtr(std::string chan)
 
 void	 Server::deleteUser(Client *user)
 {
+	std::vector<std::string> to_delete;
 	std::vector<pollfd>::iterator it = pollfds.begin();
 	while (it->fd != user->getFd())
 		it++;
@@ -363,10 +365,15 @@ void	 Server::deleteUser(Client *user)
 		{
 			std::string msg = ":" + user->getNickname() + "!" + user->getUsername() + "@localhost QUIT " + it1->second.get_name() + "\r\n";
 			it1->second.broadcast(msg, 0);
+			it1->second.disconnect(user->getNickname());
+			if (it1->second.client_count() == 0)
+				to_delete.push_back(it1->second.get_name());
+				// channels.erase(it1->second.get_name());
 		}
-		it1->second.disconnect(user->getNickname());
-		if (it1->second.client_count() == 0)
-			channels.erase(it1->second.get_name());
+	}
+	for (std::vector<std::string>::iterator i = to_delete.begin(); i != to_delete.end(); i++)
+	{
+		channels.erase(*i);
 	}
 	shutdown(it->fd, SHUT_RDWR);
 	this->pollfds.erase(it);

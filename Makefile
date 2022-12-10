@@ -1,6 +1,6 @@
 # written by chelmerd
 CXX = c++
-CXXFLAGS = -Werror -Wall -Wextra -std=c++98 -pedantic-errors
+CXXFLAGS = -g -Werror -Wall -Wextra -std=c++98 -pedantic-errors
 
 NAME = ircserv
 

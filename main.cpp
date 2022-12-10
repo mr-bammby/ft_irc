@@ -24,7 +24,6 @@ int checkPort(char* argv)
 int main(int argc, char *argv[])
 {
 	int port;
-
 	if (argc == 3)
 	{
 		port = checkPort(argv[1]);
