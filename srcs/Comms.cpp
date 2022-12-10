@@ -15,7 +15,7 @@ int	passCommand(Server &serv, Message &attempt)
 		std::cout << "Error for double password here" << std::endl;
 		return (1);
 	}
-	if (serv.check_password(attempt.getText()) == true)
+	if (serv.check_password(attempt.getParams()[0]) == true)
 	{
 		std::cout << "Success!" << std::endl;
 
