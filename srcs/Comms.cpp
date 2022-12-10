@@ -29,7 +29,7 @@ int	passCommand(Server &serv, Message &attempt)
 
 void introducing(Client *sender, Server &serv)
 {
-	sendResponse(*sender, Reply::welcome(*sender));
+	sendResponse(*sender, Reply::welcome(*sender, serv));
 	sendResponse(*sender, Reply::motdstart(*sender));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
@@ -710,7 +710,7 @@ int	plus(Message &attempt, Channel &ch)
 				}
 			}
 			std::size_t limit;
-			sscanf(argv, "%ld", &limit);
+			sscanf(argv, "%lu", &limit);
 			ch.change_userlimits("+", limit);
 			y++;
 		}
@@ -816,14 +816,15 @@ int	listCommand(Server &serv, Message &attempt)
 	send(attempt.getSender()->getFd(), msg3.c_str(), msg3.length(), 0);
 	return (0);
 }
+
 int	removeUserFromChannels(Server &serv, std::string nickname)
 {
-	std::vector<Channel>::iterator	iter;
+	std::map<std::string, Channel>::iterator	iter;
 
 	iter = serv.getChannels().begin();
 	while (iter != serv.getChannels().end())
 	{
-		iter->disconnect(nickname);
+		iter->second.disconnect(nickname);
 		++iter;
 	}
 	return (0);

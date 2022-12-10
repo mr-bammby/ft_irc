@@ -20,7 +20,7 @@ Channel::Channel(const Channel &c): name(c.get_name())
 {
 	Client	*op = c.get_op();
 	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
-	this->chanop = op->getNickname();
+	this->owner = op->getNickname();
 }
 
 Channel::~Channel()
@@ -388,7 +388,7 @@ std::string	Channel::get_name() const
 
 Client	*Channel::get_op() const
 {
-	std::map<std::string, Client*>::const_iterator itr = clients.find(chanop);
+	std::map<std::string, Client*>::const_iterator itr = clients.find(owner);
 	return (itr->second);
 }
 

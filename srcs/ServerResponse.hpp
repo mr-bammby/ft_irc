@@ -2,6 +2,7 @@
 #define SERVER_RESPONSE_HPP
 
 #include "Message.hpp"
+#include "Server.hpp"
 #include <sys/socket.h>
 #include <fstream>
 
@@ -90,7 +91,7 @@ void		sendResponse(Client &sender, std::string message);
 
 namespace Reply
 {
-	std::string	welcome(Client &sender);
+	std::string	welcome(Client &sender, Server &serv);
 	std::string motdstart(Client &sender);
 	std::string motd(Client &sender);
 	std::string endofmotd(Client &sender);

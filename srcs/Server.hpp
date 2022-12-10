@@ -46,6 +46,7 @@ class Server
 		int									get_serverfd();
 		int									list_allchannels(Client& c);
 		int									deleteChannel(std::string name);
+		std::map<std::string, Channel>		&getChannels();
 
 		typedef int (*fun)(Server&, Message&);
 		bool					   			on;

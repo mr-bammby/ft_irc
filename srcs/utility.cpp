@@ -8,6 +8,7 @@ split(const std::string& str, const std::string& delimiter)
 	std::string				 s(str);
 	size_t					 pos = s.find(delimiter);
 
+	
 	if (pos == std::string::npos)
 	{
 		tokens.push_back(s);

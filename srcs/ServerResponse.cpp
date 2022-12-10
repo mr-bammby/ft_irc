@@ -2,7 +2,7 @@
 
 namespace Reply
 {
-	std::string	welcome(Client &sender)
+	std::string	welcome(Client &sender, Server &serv)
 	{
 		Client server;
 		std::vector<std::string> params;
@@ -10,7 +10,7 @@ namespace Reply
 		params.push_back(sender.getNickname());
 		params.push_back(":Welcome to the Internet Relay Network");
 		params.push_back(sender.getNickname() + "!" + \
-			sender.getUsername() + "@" + "PLACEHOLDER SERVER");
+			sender.getUsername() + "@" + serv.get_name());
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
@@ -36,18 +36,18 @@ namespace Reply
 		params.push_back("372");
 		params.push_back(sender.getNickname());
 		params.push_back(":-");
-		motdFile.open("srcs/ircd.motd");
-		if (!motdFile.is_open())
-			return (Error::nomotd(sender));
-		while(getline(motdFile, motdStr))
-		{
-			motdStr.resize(80);
-			params.push_back(motdStr);
-			motd.setParams(params);
-			out += motd.buildRawMsg();
-			params.pop_back();
-		}
-		motdFile.close();
+		// motdFile.open("srcs/ircd.motd");
+		// if (!motdFile.is_open())
+		// 	return (Error::nomotd(sender));
+		// while(getline(motdFile, motdStr))
+		// {
+		// 	motdStr.resize(80);
+		// 	params.push_back(motdStr);
+		// 	motd.setParams(params);
+		// 	out += motd.buildRawMsg();
+		// 	params.pop_back();
+		// }
+		// motdFile.close();
 		return(out);
 	}
 
