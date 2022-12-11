@@ -348,6 +348,48 @@ std::vector<Message> getMessages(const std::string& raw, Client* sender)
 	return messages;
 }
 
+std::vector<Message> getMessages(const std::string& raw, Client* sender, \
+std::map<Client*, std::string> &incomplete_map)
+{
+	std::vector<Message>	 messages;
+	std::vector<std::string> raw_messages;
+	const std::string		 msg_delimiter = "\r\n";
+
+
+	raw_messages = split(raw, msg_delimiter);
+	// If part of previous input that was unfinished
+	if (incomplete_map.find(sender) != incomplete_map.end())
+	{
+		std::cout << GR << "Incomplete fella found" << std::endl;
+		std::string		temp = incomplete_map[sender];
+		if (raw.find(msg_delimiter) == std::string::npos) // KEEP ADDING
+		{
+			for (std::vector<std::string>::const_iterator it = raw_messages.begin();
+			it != raw_messages.end(); ++it)
+				incomplete_map[sender].append(*it);
+			return (messages);
+		}
+		else			// IS FINISHED
+		{
+			std::cout << GR << "Has been finished" << std::endl;
+			raw_messages[0].insert(0, temp);
+			incomplete_map.erase(sender);
+		}		
+	}
+	else if (raw.find(msg_delimiter) == std::string::npos)	// If new user's incomplete message
+	{
+		incomplete_map[sender] = raw_messages[0];
+		return (messages);
+	}
+	for (std::vector<std::string>::const_iterator it = raw_messages.begin();
+		 it != raw_messages.end();
+		 ++it)
+	{
+		messages.push_back(Message(*it, sender)); 
+	}
+	return messages;
+}
+
 std::ostream& operator<<(std::ostream& os, const Message& msg)
 {
 	// TODO: use getters and remove friend

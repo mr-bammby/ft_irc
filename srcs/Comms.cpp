@@ -33,6 +33,7 @@ void introducing(Client *sender, Server &serv)
 	sendResponse(*sender, Reply::motdstart(*sender));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
+	std::cout << "went here" << std::endl;
 }
 
 int	nickCommand(Server &serv, Message &attempt)
@@ -75,6 +76,7 @@ int	nickCommand(Server &serv, Message &attempt)
 			break ; //is this intentionally here twice??
 		}
 		case -7:
+			introducing(attempt.getSender(), serv);		// TEMPORARY, RETURN VALUES BROKEN BY CLIENTS VERIFICATION PROCESS
 			//ERR_ALREADYREGISTERED
 			break;
 		case -8:
