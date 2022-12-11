@@ -400,7 +400,7 @@ void  Message::find_last_param(std::string *raw, std::string *last_param)//must 
 
 	if (delemiter_index != std::string::npos)
 	{
-		if ((delemiter_index - raw->size()) > delimeter.size())
+		if ((raw->size() - delemiter_index) > delimeter.size())
 		{
 			*last_param = raw->substr(delemiter_index + delimeter.size(), raw->size() - (delemiter_index + delimeter.size())); // removes leading spaces
 		}
