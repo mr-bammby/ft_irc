@@ -19,7 +19,7 @@ enum Commands
 	USER,
 	// Parameters: <channel>{,<channel>} [<key>{,<key>}]
 	// https://datatracker.ietf.org/doc/html/rfc1459#section-4.2.1
-	JOIN,
+
 	// Send private messages between users. <receiver> is the
 	// nickname of the receiver of the message. <receiver> can also
 	// be a list of names or channels separated with commas.
@@ -36,6 +36,11 @@ enum Commands
 	MODE,	   // Change the channel's mode
 	INVITE,	   // Invite a client to an invite-only channel (mode +i)
 	TOPIC,	   // Change the channel topic in a mode +t channel
+	PART,
+	WHO,
+	NAMES,
+	LIST,
+	JOIN,
 	// responses diffrent from other commands: no command after prefix
 	// 200 -> 3XX
 	CMD_RESPONSE = 30,
@@ -45,8 +50,11 @@ enum Commands
 	// Available to operators and servers
 	PING = 40,
 	KILL = 50,
-	UNKNOWN,
-	RESTART
+	RESTART,
+	OPER,
+	QUIT,
+	SQUIT,
+	UNKNOWN
 };
 
 // all command categories
@@ -54,7 +62,7 @@ enum ComCategory
 {
 	INIT,
 	MSG,
-	OPER,
+	CHANNEL,
 	RESPONSE,
 	IGNORE,
 	MISC

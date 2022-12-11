@@ -25,15 +25,15 @@ void Server::executor()
 {
 	int	(*initT[4])(Server &s, Message &a) =
 	{
-		&passCommand, &nickCommand,	&userCommand, &joinCommand
+		&passCommand, &nickCommand,	&userCommand
 	};
 	int	(*msgT[2])(Server &s, Message &a) =
 	{
 		&privmsgCommand, &noticeCommand
 	};
-	int	(*operT[4])(Server &s, Message &a) =
+	int	(*channelT[9])(Server &s, Message &a) =
 	{
-		&kickCommand, NULL, &inviteCommand, &topicCommand
+		&kickCommand, &modeCommand, &inviteCommand, &topicCommand, &partCommand, &whoCommand, &namesCommand, &listCommand, &joinCommand
 	};
 	// ??? CMD_RESPONSE && ERROR_RESPONSE
 	int	(*responesT[2])(Server &s, Message &a) =
@@ -46,13 +46,13 @@ void Server::executor()
 		NULL
 	};
 	// Restart missing
-	int	(*miscT[2])(Server &s, Message &a) =
+	int	(*miscT[5])(Server &s, Message &a) =
 	{
-		&killCommand, NULL
+		&killCommand, NULL, &operCommand, &quitCommand, &squitCommand
 	};
 	int	(**test[6])(Server &s, Message &a) =
 	{
-		initT, msgT, operT, responesT, ignoreT, miscT
+		initT, msgT, channelT, responesT, ignoreT, miscT
 	};
 
 	Message *current;
@@ -65,6 +65,7 @@ void Server::executor()
     // Colon still present in args, chagne message split function
 		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
 		// ^^ this causes a segfault if there are no params
+		std::cout<<"COMMANDS IN EXECUTOR, CATEGORY: "<<current->getComCategory()<<" TYPE: "<<current->getType()<<std::endl;
 		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
 			if (test[current->getComCategory()][current->getType() % 10] != NULL)
 				test[current->getComCategory()][current->getType() % 10](*this, *current);
@@ -157,7 +158,9 @@ int Server::start_loop()
 				else{
 					buf[buffsize] = '\0';
 					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)), incomplete);
+					std::cout <<"666666666" << std::endl;
 					messages.insert(messages.begin(), current.rbegin(), current.rend());
+					std::cout <<"7777777" << std::endl;
 					current.clear();
 
 					printf("Client: %s\n", buf);

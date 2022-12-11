@@ -68,7 +68,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("401 *");
+		params.push_back("401");
 		params.push_back(sender.getNickname());
 		params.push_back(errNick);
 		params.push_back(" :No such nick/channel");
@@ -79,7 +79,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("403 *");
+		params.push_back("403");
 		params.push_back(sender.getNickname());
 		params.push_back(errChannel);
 		params.push_back(" :No such channel");
@@ -90,7 +90,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("411 *");
+		params.push_back("411");
 		params.push_back(sender.getNickname());
 		params.push_back(":No recipient given");
 		params.push_back("(" + cmd + ")");
@@ -101,7 +101,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("412 *");
+		params.push_back("412");
 		params.push_back(sender.getNickname());
 		params.push_back(":No text to send");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -111,7 +111,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("421 *");\
+		params.push_back("421");\
 		params.push_back(sender.getNickname());
 		params.push_back(errCmd);
 		params.push_back("Unknown command");
@@ -122,7 +122,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("422 *");\
+		params.push_back("422");\
 		params.push_back(sender.getNickname());
 		params.push_back(":MOTD File is missing");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -132,7 +132,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("431 *");
+		params.push_back("431");
 		params.push_back(":No nickname given");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
@@ -141,7 +141,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("432 *");
+		params.push_back("432");
 		params.push_back(errNick);
 		params.push_back(":Erroneous Nickname");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -151,7 +151,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("433 *");
+		params.push_back("433");
 		params.push_back(errNick);
 		params.push_back(":Nickname is already in use.");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -161,7 +161,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("433 *");
+		params.push_back("433");
 		params.push_back(sender.getNickname());
 		params.push_back(recipient + " " + channel + " :They aren't on that channel");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -171,7 +171,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("441 *");
+		params.push_back("441");
 		params.push_back(sender.getNickname());
 		params.push_back(channel);
 		params.push_back(":You're not on that channel");
@@ -182,7 +182,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("461 *");
+		params.push_back("461");
 		params.push_back(errCmd);
 		params.push_back(":Not enough parameters");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -192,7 +192,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("462 *");
+		params.push_back("462");
 		params.push_back(":You may not reregister");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
@@ -201,7 +201,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("451 *");
+		params.push_back("451");
 		params.push_back(":You have not registered");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
@@ -210,7 +210,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("464 *");
+		params.push_back("464");
 		params.push_back(":Password incorrect");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
@@ -219,7 +219,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("481 *");
+		params.push_back("481");
 		params.push_back(sender.getNickname());
 		params.push_back(":Permission Denied- You're not an IRC operator");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -229,7 +229,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("481 *");
+		params.push_back("481");
 		params.push_back(sender.getNickname());
 		params.push_back(channel);
 		params.push_back(":You're not channel operator");

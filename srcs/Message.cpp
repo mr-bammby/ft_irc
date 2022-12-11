@@ -114,7 +114,11 @@ std::string Message::getText() const
 {
 	std::string result;
 	for (std::vector<std::string>::const_iterator it = params.begin(); it != params.end(); it++)
-		result = result + *it + " ";
+	{
+		result = result + *it;
+		if (it + 1 != params.end())
+			result += " ";
+	}
 	return (result);
 }
 
@@ -195,18 +199,18 @@ std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 std::map< std::string, std::pair<enum ComCategory, enum Commands> >
 Message::createCommandMap()
 {
-	const std::string init_commands[] = {"PASS", "NICK", "USER", "JOIN"};
-	const size_t	  init_commands_len = 4;
+	const std::string init_commands[] = {"PASS", "NICK", "USER"};
+	const size_t	  init_commands_len = 3;
 	const std::string msg_commands[] = {"PRIVMSG", "NOTICE"};
 	const size_t	  msg_commands_len = 2;
-	const std::string oper_commands[] = {"KICK", "MODE", "INVITE", "TOPIC"};
-	const size_t	  oper_commands_len = 4;
+	const std::string channel_commands[] = {"KICK", "MODE", "INVITE", "TOPIC", "PART", "WHO", "NAMES", "LIST", "JOIN"};
+	const size_t	  channel_commands_len = 9;
 	const std::string response_commands[] = {"CMD_RESPONSE", "ERROR_RESPONSE"};
 	const size_t	  response_commands_len = 2;
 	const std::string ignore_commands[] = {"PING"};
 	const size_t	  ignore_commands_len = 1;
-	const std::string misc_commands[] = {"KILL", "RESTART"};
-	const size_t	  misc_commands_len = 2;
+	const std::string misc_commands[] = {"KILL", "RESTART", "OPER", "QUIT", "SQUIT"};
+	const size_t	  misc_commands_len = 5;
 
 	// TODO: build similar map for nb# of parameters for a given cmd
 	typedef std::map< std::string, std::pair<enum ComCategory, enum Commands> >
@@ -220,10 +224,10 @@ Message::createCommandMap()
 		cmd_map.insert(std::make_pair(
 			msg_commands[i],
 			std::make_pair(MSG, static_cast<Commands>(MSG * 10 + i))));
-	for (size_t i = 0; i < oper_commands_len; i++)
+	for (size_t i = 0; i < channel_commands_len; i++)
 		cmd_map.insert(std::make_pair(
-			oper_commands[i],
-			std::make_pair(OPER, static_cast<Commands>(OPER * 10 + i))));
+			channel_commands[i],
+			std::make_pair(CHANNEL, static_cast<Commands>(CHANNEL * 10 + i))));
 	for (size_t i = 0; i < response_commands_len; i++)
 		cmd_map.insert(std::make_pair(
 			response_commands[i],
@@ -294,6 +298,20 @@ const std::string Message::getCommandStr(enum Commands cmd_type)
 		return "KILL";
 	case RESTART:
 		return "RESTART";
+	case OPER:
+		return "OPER";
+	case QUIT:
+		return "QUIT";
+	case PART:
+		return "PART";
+	case WHO:
+		return "WHO";
+	case NAMES:
+		return "NAMES";
+	case SQUIT:
+		return "SQUIT";
+	case LIST:
+		return "LIST";
 	default:
 		return "UNKOWN";
 	}
@@ -307,8 +325,8 @@ const std::string Message::getCommandCategoryStr(enum ComCategory cmd_category)
 		return "INIT";
 	case MSG:
 		return "MSG";
-	case OPER:
-		return "OPER";
+	case CHANNEL:
+		return "CHANNEL";
 	case RESPONSE:
 		return "RESPONSE";
 	case IGNORE:
@@ -372,7 +390,12 @@ std::map<Client*, std::string> &incomplete_map)
 		else			// IS FINISHED
 		{
 			std::cout << GR << "Has been finished" << std::endl;
-			raw_messages[0].insert(0, temp);
+			//Changed here, because if we write full working command, for example "PASS 12" and press ctrl + D, 
+			// then press enter without any chars, it segfaulted, because raw_messages[0] didnt exist
+			if (raw.find("\r\n") == 0)
+				raw_messages.insert(raw_messages.begin(), temp);
+			else
+				raw_messages[0].insert(0, temp);
 			incomplete_map.erase(sender);
 		}		
 	}
