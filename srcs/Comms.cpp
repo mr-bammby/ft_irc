@@ -67,9 +67,12 @@ int	nickCommand(Server &serv, Message &attempt)
 			break ;
 		}
 		case -5:
-			introducing(attempt.getSender(), serv);
-			//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
+		{
+			if (attempt.getSender()->getState() == 3)
+				introducing(attempt.getSender(), serv);
+				//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
+		}
 		case -6:
 		{
 			sendResponse(*(attempt.getSender()), Error::nicknameinuse(attempt.getParams()[0]));
@@ -116,7 +119,11 @@ int	userCommand(Server &serv, Message &attempt)
 			break;
 		}
 		case -4:
+		if (attempt.getSender()->getState() == 3)
+		{
 			attempt.getSender()->setRealname(attempt.getText());
+			introducing(attempt.getSender(), serv);
+		}
 			break;
 	}
 
@@ -371,7 +378,7 @@ int	killCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notregistered()); 
 		return (-1);
 	}
-  if (!attempt.getSender()->is_op())
+  	if (!attempt.getSender()->is_op())
 		return (-4); //sending ERR_NOPRIVILEGES
 	if (attempt.getParams().empty())
 	{
@@ -556,7 +563,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), attempt.getParams()[0]));
 		return (-4);
 	}
-	if (attempt.getText().size() == 0)
+	if (attempt.getParams().size() < 2)
 	{
 		if (tmp->get_topic().size() == 0)
 		{
@@ -576,7 +583,7 @@ int	topicCommand(Server &serv, Message &attempt)
 			sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), attempt.getParams()[0]));
 			return (-5);
 		}
-		tmp->cmd_topic(attempt.getText());
+		tmp->cmd_topic(attempt.getParams()[1]);
 		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
 		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
 		return (0);
@@ -588,14 +595,12 @@ int	operCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
 		return (-1); //sending ERR_NOTREGISTERED
-	if (attempt.getParams().size() == 0)
+	if (attempt.getParams().size() < 2)
 		return (-2); //sending ERR_NEEDMOREPARAMS 
-	if (attempt.getText().size() == 0)
-		return (-3); //sending ERR_NEEDMOREPARAMS 
 	Client*	tmp = serv.get_clientPtr(attempt.getParams()[0]);
 	if (tmp == NULL || tmp->getNickname() != attempt.getSender()->getNickname())
 		return (-4); // sending ERR_USERSDONTMATCH
-	if (attempt.getSender()->set_op(attempt.getText()))
+	if (attempt.getSender()->set_op(attempt.getParams()[1]))
 	{
 		std::string msg = ":" + serv.get_name() +   " 381 " + attempt.getSender()->getNickname() + " OPER :You are now an IRC operator\r\n";
 		send(tmp->getFd(), msg.c_str(), msg.length(), 0);

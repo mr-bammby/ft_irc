@@ -15,13 +15,13 @@ name(ch_name)
 	password = "";
 }
 
-// Needed for pair functionality
-Channel::Channel(const Channel &c): name(c.get_name())
-{
-	Client	*op = c.get_op();
-	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
-	this->owner = op->getNickname();
-}
+// // Needed for pair functionality
+// Channel::Channel(const Channel &c): name(c.get_name())
+// {
+// 	Client	*op = c.get_op();
+// 	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
+// 	this->owner = op->getNickname();
+// }
 
 Channel::~Channel()
 {}
@@ -98,47 +98,47 @@ int	Channel::cmd_topic(std::string top)
 	return (0);
 }
 
-bool						Channel::get_invite_only()
+bool						Channel::get_invite_only() const
 {
 	return (invite_only);
 }
 
-bool						Channel::get_is_private()
+bool						Channel::get_is_private() const
 {
 	return (is_private);
 }
 
-bool						Channel::get_is_secret()
+bool						Channel::get_is_secret() const
 {
 	return (is_secret);
 }
 
-bool						Channel::get_op_topic()
+bool						Channel::get_op_topic() const
 {
 	return (op_topic);
 }
 
-bool						Channel::get_no_msg()
+bool						Channel::get_no_msg() const
 {
 	return (no_msg);
 }
 
-bool						Channel::get_moderated()
+bool						Channel::get_moderated() const
 {
 	return (moderated);
 }
 
-int							Channel::get_user_limit()
+int							Channel::get_user_limit() const
 {
 	return (user_limit);
 }
 
-std::string					Channel::get_password()
+std::string					Channel::get_password() const
 {
 	return (password);
 }
 
-std::vector<std::string>	Channel::get_who_speaks_on_moderated()
+std::vector<std::string>	Channel::get_who_speaks_on_moderated() const
 {
 	return (who_speaks_on_moderated);
 }
@@ -150,12 +150,12 @@ bool						Channel::can_speak_onchannel(std::string nick)
 	return (true);
 }
 
-std::vector<std::string>	Channel::get_invited_users()
+std::vector<std::string>	Channel::get_invited_users() const
 {
 	return (invited_users);
 }
 
-std::vector<std::string>	Channel::get_operators()
+std::vector<std::string>	Channel::get_operators() const
 {
 	return (operators);
 }

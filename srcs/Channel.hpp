@@ -11,7 +11,7 @@ class Channel
 {
 	public:
 		Channel(std::string name, Client &c);
-		Channel(const Channel &c);
+		// Channel(const Channel &c);
 		~Channel();
 
 		Channel &operator=(const Channel &c);
@@ -52,17 +52,17 @@ class Channel
 		int		change_who_speaks_on_moderated(std::string sign, std::string user);
 
 
-		bool						get_invite_only();
-		bool						get_is_private();
-		bool						get_is_secret();
-		bool						get_op_topic();
-		bool						get_no_msg();
-		bool						get_moderated();
-		int							get_user_limit();
-		std::string					get_password();
-		std::vector<std::string>	get_who_speaks_on_moderated();
-		std::vector<std::string>	get_invited_users();
-		std::vector<std::string>	get_operators();
+		bool						get_invite_only() const;
+		bool						get_is_private() const;
+		bool						get_is_secret() const;
+		bool						get_op_topic() const;
+		bool						get_no_msg() const;
+		bool						get_moderated() const;
+		int							get_user_limit() const;
+		std::string					get_password() const;
+		std::vector<std::string>	get_who_speaks_on_moderated() const;
+		std::vector<std::string>	get_invited_users() const;
+		std::vector<std::string>	get_operators() const;
 		bool						can_speak_onchannel(std::string nick);
 		bool						limit_full();
 
