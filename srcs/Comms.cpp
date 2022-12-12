@@ -67,10 +67,12 @@ int	nickCommand(Server &serv, Message &attempt)
 			break ;
 		}
 		case -5:
-		if (attempt.getSender()->getState() == 3)
-			introducing(attempt.getSender(), serv);
-			//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
+		{
+			if (attempt.getSender()->getState() == 3)
+				introducing(attempt.getSender(), serv);
+				//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
+		}
 		case -6:
 		{
 			sendResponse(*(attempt.getSender()), Error::nicknameinuse(attempt.getParams()[0]));
