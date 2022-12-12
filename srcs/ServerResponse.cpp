@@ -14,6 +14,76 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
+	std::string liststart(Client&sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("321");
+		params.push_back(sender.getNickname());
+		params.push_back("Channel :Users  Name");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	// std::string list(Client&sender,)
+	// {
+
+	// }
+
+	std::string listend(Client&sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("323");
+		params.push_back(sender.getNickname());
+		params.push_back(":End of /LIST");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("324");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(mode);
+		params.push_back(modeparams);
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string notopic(Client& sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("331");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":No topic is set");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string topic(Client& sender, std::string channel, std::string top)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("332");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":" + top);
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string inviting(Client &sender, std::string channel, std::string nick)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("341");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(nick);
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
 	std::string motdstart(Client &sender)
 	{
 		Client server;
@@ -60,6 +130,16 @@ namespace Reply
 		params.push_back(":End of /MOTD command.");
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
+
+	std::string youreoper(Client &sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("381");
+		params.push_back(sender.getNickname());
+		params.push_back(":You are now an IRC operator");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
 }
 
 namespace Error
@@ -71,7 +151,18 @@ namespace Error
 		params.push_back("401");
 		params.push_back(sender.getNickname());
 		params.push_back(errNick);
-		params.push_back(" :No such nick/channel");
+		params.push_back(":No such nick/channel");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string nosuchserver(Client &sender, std::string errServ)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("402");
+		params.push_back(sender.getNickname());
+		params.push_back(errServ);
+		params.push_back(":No such server");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 
@@ -82,7 +173,17 @@ namespace Error
 		params.push_back("403");
 		params.push_back(sender.getNickname());
 		params.push_back(errChannel);
-		params.push_back(" :No such channel");
+		params.push_back(":No such channel");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+	std::string cannotsendtochan(Client &sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("404");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":Cannot send to channel");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 
@@ -161,7 +262,7 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("433");
+		params.push_back("441");
 		params.push_back(sender.getNickname());
 		params.push_back(recipient + " " + channel + " :They aren't on that channel");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
@@ -171,10 +272,20 @@ namespace Error
 	{
 		Client server;
 		std::vector<std::string> params;
-		params.push_back("441");
+		params.push_back("442");
 		params.push_back(sender.getNickname());
 		params.push_back(channel);
 		params.push_back(":You're not on that channel");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string useronchannel(Client &sender, std::string recipient, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("443");
+		params.push_back(sender.getNickname());
+		params.push_back(recipient + " " + channel + " :is already on channel");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 
@@ -206,6 +317,50 @@ namespace Error
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 
+	std::string channelisfull(Client &sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("471");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":Cannot join channel (+l)");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string unknownmode(Client &sender, std::string errChar)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("472");
+		params.push_back(sender.getNickname());
+		params.push_back(errChar);
+		params.push_back(":is unknown mode char to me");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string inviteonlychan(Client &sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("473");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":Cannot join channel (+i)");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string badchannelkey(Client &sender, std::string channel)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("475");
+		params.push_back(sender.getNickname());
+		params.push_back(channel);
+		params.push_back(":Cannot join channel (+k)");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
 	std::string passwdmismatch()
 	{
 		Client server;
@@ -233,6 +388,16 @@ namespace Error
 		params.push_back(sender.getNickname());
 		params.push_back(channel);
 		params.push_back(":You're not channel operator");
+		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string usersdontmatch(Client &sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("502");
+		params.push_back(sender.getNickname());
+		params.push_back(":Cant change mode for other users");
 		return(Message(ERROR_RESPONSE, params, &server).buildRawMsg());
 	}
 }

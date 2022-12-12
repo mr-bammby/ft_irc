@@ -13,10 +13,10 @@ int Client::setNickname(std::string name)
 	std::cout<<"State in nick: "<<state<<std::endl;
 	if (state == LOCKED)
 	{
-		return (-8);//ERR_NOTREGISTERED
+		return (-8);
 	}
 	if (state == SET || nickname.size() > 0)
-		return (-7); //ERR_ALREADYREGISTERED
+		return (-7);
 	nickname = name;
 	upgradeState();
 	return (-5);
@@ -42,15 +42,15 @@ int						Client::setUsername(std::string name)
 	std::cout<<"State in user: "<<state<<std::endl;
 	if (name.empty())
 	{
-		return (-1);//ERR_NEEDMOREPARAMS 
+		return (-1);
 	}
 	if (state == LOCKED)
 	{
-		return (-2);//ERR_NOTREGISTERED
+		return (-2);
 	}
 	if (state == SET || username.size() > 0)
 	{
-		return (-3); //ERR_ALREADYREGISTERED
+		return (-3);
 	}
 	username = name;
 	upgradeState();
