@@ -7,7 +7,6 @@
 #include <sys/socket.h>
 #include "Client.hpp"
 
-
 class Channel
 {
 	public:
@@ -30,7 +29,7 @@ class Channel
 		int	add_operator(std::string nick);
 		int	change_operator(std::string sign, std::string nick);
 		int	client_count();
-		int list_coms(Client& sender);
+		int	list_coms(Client& sender);
 
 		std::string	get_topic();
 		std::string	get_name() const;
