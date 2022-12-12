@@ -30,7 +30,10 @@ int	passCommand(Server &serv, Message &attempt)
 void introducing(Client *sender, Server &serv)
 {
 	sendResponse(*sender, Reply::welcome(*sender, serv));
-	sendResponse(*sender, Reply::motdstart(*sender));
+	sendResponse(*sender, Reply::yourhost(*sender, serv));
+	sendResponse(*sender, Reply::created(*sender));
+	sendResponse(*sender, Reply::myinfo(*sender, serv));
+	sendResponse(*sender, Reply::motdstart(*sender, serv));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
 	std::cout << "went here" << std::endl; //delete?

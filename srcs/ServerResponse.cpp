@@ -14,6 +14,41 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
+	std::string yourhost(Client &sender, Server &serv)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("002");
+		params.push_back(sender.getNickname());
+		params.push_back(":Your host is ");
+		params.push_back(serv.get_name() + ",");
+		params.push_back("running version 1");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string created(Client &sender)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("003");
+		params.push_back(sender.getNickname());
+		params.push_back(":This server was created today"); //idk, do we need to get more specific lmao
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
+	std::string myinfo(Client &sender, Server &serv)
+	{
+		Client server;
+		std::vector<std::string> params;
+		params.push_back("004");
+		params.push_back(sender.getNickname());
+		params.push_back(serv.get_name());
+		params.push_back("version 1");
+		params.push_back("insert user modes here"); //i dont even know 
+		params.push_back("insert channel modes here");
+		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	}
+
 	std::string liststart(Client&sender)
 	{
 		Client server;
@@ -84,13 +119,14 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	std::string motdstart(Client &sender)
+	std::string motdstart(Client &sender, Server &serv)
 	{
 		Client server;
 		std::vector<std::string> params;
 		params.push_back("375");
 		params.push_back(sender.getNickname());
-		params.push_back(":- <servername> Message of the Day -");
+		params.push_back(":- " + serv.get_name());
+		params.push_back("Message of the Day -");
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
@@ -106,18 +142,18 @@ namespace Reply
 		params.push_back("372");
 		params.push_back(sender.getNickname());
 		params.push_back(":-");
-		// motdFile.open("srcs/ircd.motd");
-		// if (!motdFile.is_open())
-		// 	return (Error::nomotd(sender));
-		// while(getline(motdFile, motdStr))
-		// {
-		// 	motdStr.resize(80);
-		// 	params.push_back(motdStr);
-		// 	motd.setParams(params);
-		// 	out += motd.buildRawMsg();
-		// 	params.pop_back();
-		// }
-		// motdFile.close();
+		motdFile.open("srcs/ircd.motd");
+		if (!motdFile.is_open())
+			return (Error::nomotd(sender));
+		while(getline(motdFile, motdStr))
+		{
+			motdStr.resize(80);
+			params.push_back(motdStr);
+			motd.setParams(params);
+			out += motd.buildRawMsg();
+			params.pop_back();
+		}
+		motdFile.close();
 		return(out);
 	}
 

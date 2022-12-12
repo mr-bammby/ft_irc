@@ -8,16 +8,22 @@
 
 // source: https://datatracker.ietf.org/doc/html/rfc1459#section-6
 /*
+	Notes from Jasper:
+		- These enums serve no purpose and are currently only here for reference or in
+			case we decide to implement them for whatever reason
+		- Not every enum has a function.
+	
 	001 - 399 Reply codes 
-	400 - 500 Error codes
+	400 - 500+ Error codes
 
-	The server sends Replies 001 to 004 to a&sender 
+	The server sends Replies 001 to 004 to sender 
 	upon successful registration
 
 	not all of these replycodes have been implemented yet,
 	mostly due to needing more info from server
 
-	TODO: add server info either to client or as a variable to be passed 
+	TODO: add server info either to client or as a variable to be passed
+
 */
 enum ReplyCode
 {
@@ -124,6 +130,9 @@ void		sendResponse(Client &sender, std::string message);
 namespace Reply
 {
 	std::string	welcome(Client &sender, Server &serv);
+	std::string yourhost(Client &sender, Server &serv);
+	std::string created(Client &sender);
+	std::string myinfo(Client &sender, Server &serv);
 	std::string liststart(Client&sender);
 	//std::string list(Client&sender,);
 	std::string listend(Client&sender);
@@ -131,7 +140,7 @@ namespace Reply
 	std::string notopic(Client&sender, std::string channel);
 	std::string topic(Client&sender, std::string channel, std::string top);
 	std::string inviting(Client &sender, std::string channel, std::string nick);
-	std::string motdstart(Client &sender);
+	std::string motdstart(Client &sender, Server &serv);
 	std::string motd(Client &sender);
 	std::string endofmotd(Client &sender);
 	std::string youreoper(Client &sender);
