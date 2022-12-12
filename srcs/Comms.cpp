@@ -307,7 +307,7 @@ int	noticeCommand(Server &serv, Message &attempt)
 				if (tmp2->get_moderated() && !tmp2->can_speak_onchannel(attempt.getSender()->getNickname()))
 					return (-5); // ERR_CANNOTSENDTOCHAN
 				std::string	message;
-				message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp2->get_name() + " :" + attempt.getText() + "\r\n";
+				message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp2->get_name() + " :" + attempt.getText().substr(tmp2->get_name().size() + 1) + "\r\n";
 				std::cout<<"Sending message: "<<message<<std::endl;
 				tmp2->broadcast(message, attempt.getSender()->getFd());
 				// send(tmp->getFd(), message.c_str(), message.length(), 0);
@@ -317,7 +317,7 @@ int	noticeCommand(Server &serv, Message &attempt)
 		else
 		{
 			std::string	message;
-			message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp->getNickname() + " :" + attempt.getText() + "\r\n";
+			message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp->getNickname() + " :" + attempt.getText().substr(tmp->getNickname().size() +1 ) + "\r\n";
 			std::cout<<"Sending message: "<<message<<std::endl;
 			send(tmp->getFd(), message.c_str(), message.length(), 0);
 			message.clear();
