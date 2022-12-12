@@ -170,6 +170,7 @@ int	joinCommand(Server &serv, Message &attempt)
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp2->get_name() + "\r\n";
 			tmp2->broadcast(msg, 0);
 			tmp2->cmd_names(*attempt.getSender());
+			tmp2->list_coms(*attempt.getSender());
 			std::cout<<"Channels created"<<std::endl;
 		}
 		else //channel exists and trying to connect to it
@@ -197,7 +198,9 @@ int	joinCommand(Server &serv, Message &attempt)
 			// RPL_TOPIC
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp->get_name() + "\r\n";
 			tmp->broadcast(msg, 0);
+			topicCommand(serv, attempt);
 			tmp->cmd_names(*attempt.getSender());
+			tmp->list_coms(*attempt.getSender());
 		}
 		i++;
 	}
@@ -547,7 +550,8 @@ int	topicCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notregistered());
 		return (-1);
 	}
-	if (attempt.getParams().size() == 0)
+	// 0 Doesn't actually change with just TOPIC input
+	if (attempt.getParams().size() <= 1)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
@@ -563,7 +567,8 @@ int	topicCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), attempt.getParams()[0]));
 		return (-4);
 	}
-	if (attempt.getParams().size() < 2)
+	// Apparently it still has (or can have, mb will change with colon fixes) 2 params, the second one being ""
+	if (attempt.getParams().size() < 2 || attempt.getParams()[1].size() == 0)
 	{
 		if (tmp->get_topic().size() == 0)
 		{
@@ -574,10 +579,11 @@ int	topicCommand(Server &serv, Message &attempt)
 		}
 		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
 		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		std::cout << BL << "Said the topic" << std::endl << BLANK;
 	}
 	else
 	{
-
+		std::cout << BL << "Setting topic" << std::endl << BLANK;
 		if (tmp->get_op_topic() && !tmp->is_op(attempt.getSender()->getNickname()))
 		{
 			sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), attempt.getParams()[0]));
@@ -586,6 +592,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		tmp->cmd_topic(attempt.getParams()[1]);
 		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
 		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		tmp->broadcast(msg, attempt.getSender()->getFd());		// Added broadcast so the change is known to other clients in the channel
 		return (0);
 	}
 	return (0);
