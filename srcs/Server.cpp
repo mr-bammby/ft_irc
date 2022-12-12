@@ -213,7 +213,11 @@ int		Server::list_allchannels(Client& c)
 			std::string msg2 = ":" + get_name() + " 322 " + c.getNickname() + " ";
 			if (it->second.is_member(c.getNickname()))
 			{
-				msg2 += it->second.get_name() + " :" + it->second.get_topic() + "\r\n";
+				std::cout<<"Member"<<std::endl;
+				std::string		topic = it->second.get_topic();
+				if (topic.size() == 0)
+					topic = ": No topic";
+				msg2 += it->second.get_name() + " :" + topic + "\r\n";
 				send(c.getFd(), msg2.c_str(), msg2.length(), 0);
 			}
 			else
@@ -229,7 +233,10 @@ int		Server::list_allchannels(Client& c)
 		else
 		{
 			std::string msg2 = ":" + get_name() + " 322 " + c.getNickname() + " ";
-			msg2 += it->second.get_name() + " :" + it->second.get_topic() + "\r\n";
+			std::string		topic = it->second.get_topic();
+			if (topic.size() == 0)
+				topic = ": No topic";
+			msg2 += it->second.get_name() + " :" + topic + "\r\n";
 			send(c.getFd(), msg2.c_str(), msg2.length(), 0);
 		}
 		it++;
