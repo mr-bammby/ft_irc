@@ -213,13 +213,11 @@ int		Server::list_allchannels(Client& c)
 			std::string msg2 = ":" + get_name() + " 322 " + c.getNickname() + " ";
 			if (it->second.is_member(c.getNickname()))
 			{
-				std::cout<<"Member"<<std::endl;
 				msg2 += it->second.get_name() + " :" + it->second.get_topic() + "\r\n";
 				send(c.getFd(), msg2.c_str(), msg2.length(), 0);
 			}
 			else
 			{
-				std::cout<<"non Member"<<std::endl;
 				if (it->second.get_is_private() && !it->second.get_is_secret())
 				{
 					msg2 += it->second.get_name() + "\r\n";

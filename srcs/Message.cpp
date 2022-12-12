@@ -60,7 +60,8 @@ Message::Message(const std::string& raw, Client* sending_client)
 	this->command = tokens[0];
 	tokens.erase(tokens.begin());
 	this->params = tokens;
-	this->params.push_back(last_param);
+	if (last_param.size())
+		this->params.push_back(last_param);
 	this->setSender(sending_client);
 }
 
