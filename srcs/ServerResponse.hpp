@@ -21,9 +21,6 @@
 
 	not all of these replycodes have been implemented yet,
 	mostly due to needing more info from server
-
-	TODO: add server info either to client or as a variable to be passed
-
 */
 enum ReplyCode
 {
@@ -130,13 +127,13 @@ void		sendResponse(Client &sender, std::string message);
 namespace Reply
 {
 	std::string	welcome(Client &sender, Server &serv);
-	std::string yourhost(Client &sender, Server &serv);
-	std::string created(Client &sender);
-	std::string myinfo(Client &sender, Server &serv);
+	// std::string yourhost(Client &sender, Server &serv);
+	// std::string created(Client &sender);
+	// std::string myinfo(Client &sender, Server &serv);
 	std::string liststart(Client&sender);
 	//std::string list(Client&sender,);
 	std::string listend(Client&sender);
-	std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams);
+	//std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams);
 	std::string notopic(Client&sender, std::string channel);
 	std::string topic(Client&sender, std::string channel, std::string top);
 	std::string inviting(Client &sender, std::string channel, std::string nick);

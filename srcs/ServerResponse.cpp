@@ -14,40 +14,40 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	std::string yourhost(Client &sender, Server &serv)
-	{
-		Client server;
-		std::vector<std::string> params;
-		params.push_back("002");
-		params.push_back(sender.getNickname());
-		params.push_back(":Your host is ");
-		params.push_back(serv.get_name() + ",");
-		params.push_back("running version 1");
-		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	}
+	// std::string yourhost(Client &sender, Server &serv)
+	// {
+	// 	Client server;
+	// 	std::vector<std::string> params;
+	// 	params.push_back("002");
+	// 	params.push_back(sender.getNickname());
+	// 	params.push_back(":Your host is ");
+	// 	params.push_back(serv.get_name() + ",");
+	// 	params.push_back("running version 1");
+	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	// }
 
-	std::string created(Client &sender)
-	{
-		Client server;
-		std::vector<std::string> params;
-		params.push_back("003");
-		params.push_back(sender.getNickname());
-		params.push_back(":This server was created today"); //idk, do we need to get more specific lmao
-		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	}
+	// std::string created(Client &sender)
+	// {
+	// 	Client server;
+	// 	std::vector<std::string> params;
+	// 	params.push_back("003");
+	// 	params.push_back(sender.getNickname());
+	// 	params.push_back(":This server was created today"); //idk, do we need to get more specific lmao
+	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	// }
 
-	std::string myinfo(Client &sender, Server &serv)
-	{
-		Client server;
-		std::vector<std::string> params;
-		params.push_back("004");
-		params.push_back(sender.getNickname());
-		params.push_back(serv.get_name());
-		params.push_back("version 1");
-		params.push_back("insert user modes here"); //i dont even know 
-		params.push_back("insert channel modes here");
-		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	}
+	// std::string myinfo(Client &sender, Server &serv)
+	// {
+	// 	Client server;
+	// 	std::vector<std::string> params;
+	// 	params.push_back("004");
+	// 	params.push_back(sender.getNickname());
+	// 	params.push_back(serv.get_name());
+	// 	params.push_back("version 1");
+	// 	params.push_back("insert user modes here"); //i dont even know 
+	// 	params.push_back("insert channel modes here");
+	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	// }
 
 	std::string liststart(Client&sender)
 	{
@@ -74,17 +74,17 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams)
-	{
-		Client server;
-		std::vector<std::string> params;
-		params.push_back("324");
-		params.push_back(sender.getNickname());
-		params.push_back(channel);
-		params.push_back(mode);
-		params.push_back(modeparams);
-		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	}
+	// std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams)
+	// {
+	// 	Client server;
+	// 	std::vector<std::string> params;
+	// 	params.push_back("324");
+	// 	params.push_back(sender.getNickname());
+	// 	params.push_back(channel);
+	// 	params.push_back(mode);
+	// 	params.push_back(modeparams);
+	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
+	// }
 
 	std::string notopic(Client& sender, std::string channel)
 	{

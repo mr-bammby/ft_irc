@@ -24,7 +24,7 @@ int	passCommand(Server &serv, Message &attempt)
 	else
 	{
 		sendResponse(*(attempt.getSender()), Error::passwdmismatch()); //technically not needed
-		std::cout << "Failed!" << std::endl; //wrong pass
+		std::cout << "Failed!" << std::endl;
 	}
 	std::cout << BLANK;
 	return (0);
@@ -33,9 +33,9 @@ int	passCommand(Server &serv, Message &attempt)
 void introducing(Client *sender, Server &serv)
 {
 	sendResponse(*sender, Reply::welcome(*sender, serv));
-	sendResponse(*sender, Reply::yourhost(*sender, serv));
-	sendResponse(*sender, Reply::created(*sender));
-	sendResponse(*sender, Reply::myinfo(*sender, serv));
+	//sendResponse(*sender, Reply::yourhost(*sender, serv));
+	//sendResponse(*sender, Reply::created(*sender));
+	//sendResponse(*sender, Reply::myinfo(*sender, serv));
 	sendResponse(*sender, Reply::motdstart(*sender, serv));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
@@ -425,10 +425,10 @@ int	killCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
 	}
-	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]); //this looks like it will segfault if empty
+	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
 	{
-		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0])); //where is this stored
+		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0]));
 		return (-3);
 	}
 	serv.deleteUser(tmp);
@@ -853,7 +853,8 @@ int	modeCommand(Server &serv, Message &attempt)
 			break ;
 		}
 	}
-	sendResponse(*(attempt.getSender()), Reply::channelmodeis(*(attempt.getSender()), tmp->get_name(), tmp->channel_modes(), "placeholder")); //idk what the mode params are or if we need them 
+	std::string msg = ":" + serv.get_name() + " 324 " +  attempt.getSender()->getNickname() + " " + tmp->get_name() + " +" + tmp->channel_modes() + "\r\n";
+	tmp->broadcast(msg, 0);
 	return (0);
 }
 
