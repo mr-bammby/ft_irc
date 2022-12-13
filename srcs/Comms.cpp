@@ -175,6 +175,7 @@ int	joinCommand(Server &serv, Message &attempt)
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp2->get_name() + "\r\n";
 			tmp2->broadcast(msg, 0);
 			tmp2->cmd_names(*attempt.getSender());
+			tmp2->list_coms(*attempt.getSender());
 			std::cout<<"Channels created"<<std::endl;
 		}
 		else //channel exists and trying to connect to it
@@ -214,7 +215,9 @@ int	joinCommand(Server &serv, Message &attempt)
 				sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp->get_name() + "\r\n";
 			tmp->broadcast(msg, 0);
+			topicCommand(serv, attempt);
 			tmp->cmd_names(*attempt.getSender());
+			tmp->list_coms(*attempt.getSender());
 		}
 		i++;
 	}
@@ -596,6 +599,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notregistered());
 		return (-1);
 	}
+	// 0 Doesn't actually change with just TOPIC input
 	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
@@ -619,11 +623,14 @@ int	topicCommand(Server &serv, Message &attempt)
 			sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			return (0);
 		}
-		sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
+		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
+		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		std::cout << BL << "Said the topic" << std::endl << BLANK;
+		//sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
 	}
 	else
 	{
-
+		std::cout << BL << "Setting topic" << std::endl << BLANK;
 		if (tmp->get_op_topic() && !tmp->is_op(attempt.getSender()->getNickname()))
 		{
 			sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), attempt.getParams()[0]));
@@ -631,6 +638,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		}
 		tmp->cmd_topic(attempt.getParams()[1]);
 		sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
+		tmp->broadcast(msg, attempt.getSender()->getFd());		// Added broadcast so the change is known to other clients in the channel
 		return (0);
 	}
 	return (0);
@@ -872,9 +880,7 @@ int	listCommand(Server &serv, Message &attempt)
 	while (i < channels.size())
 	{
 		Channel* tmp = serv.get_channelPtr(channels[i]);
-		if (tmp == NULL)
-			;
-		else
+		if (tmp != NULL)
 		{
 			if (tmp->get_is_private() || tmp->get_is_secret())
 			{

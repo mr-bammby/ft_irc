@@ -79,6 +79,26 @@ int	Channel::client_count()
 	return (clients.size());
 }
 
+int Channel::list_coms(Client& sender)
+{
+	std::string			servername("IRC");
+	std::vector<std::string>	params;
+
+	params.push_back("371");
+	params.push_back(this->get_name());
+	params.push_back(":The available commands on this channel are TOPIC, PART, NAMES, WHO, PRIVMSG and NOTICE for users");
+	std::string			test = Message(CMD_RESPONSE, params, &sender).buildRawMsg();
+	send(sender.getFd(), test.c_str(), test.length(), 0);
+	params[2] = ":Additional operator commands are MODE, INVITE, KICK.";
+	test = Message(CMD_RESPONSE, params, &sender).buildRawMsg();
+	send(sender.getFd(), test.c_str(), test.length(), 0);
+	params[0] = "374";
+	params.pop_back();
+	test = Message(CMD_RESPONSE, params, &sender).buildRawMsg();
+	send(sender.getFd(), test.c_str(), test.length(), 0);
+	return (0);
+}
+
 int	Channel::cmd_kick(std::string nickname)
 {
 
