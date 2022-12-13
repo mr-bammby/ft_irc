@@ -795,9 +795,7 @@ int	listCommand(Server &serv, Message &attempt)
 	while (i < channels.size())
 	{
 		Channel* tmp = serv.get_channelPtr(channels[i]);
-		if (tmp == NULL)
-			;
-		else
+		if (tmp != NULL)
 		{
 			if (tmp->get_is_private() || tmp->get_is_secret())
 			{
