@@ -551,7 +551,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		return (-1);
 	}
 	// 0 Doesn't actually change with just TOPIC input
-	if (attempt.getParams().size() <= 1)
+	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
@@ -567,8 +567,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), attempt.getParams()[0]));
 		return (-4);
 	}
-	// Apparently it still has (or can have, mb will change with colon fixes) 2 params, the second one being ""
-	if (attempt.getParams().size() < 2 || attempt.getParams()[1].size() == 0)
+	if (attempt.getParams().size() < 2)
 	{
 		if (tmp->get_topic().size() == 0)
 		{
