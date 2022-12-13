@@ -3,7 +3,6 @@
 
 #include <string>
 #include <iostream>
-
 #include <Message.hpp>
 
 class Client
@@ -19,27 +18,26 @@ class Client
 
 
 	public:
-		Client(int _id, int client_fd);
+		Client(int cl_fd);
 		Client();
 		~Client();
 
-		Client &operator=(const Client &c);
-
-		int 					parse(std::string command);
+		//getters
 		const std::string&		getNickname();
-		int						setNickname(std::string name); //check for name uniqness before call of this function
 		const Client::State&	getState();
 		const std::string&		getUsername();
-		int						setUsername(std::string name);
 		const std::string&		getRealname();
-		int						setRealname(std::string name);
-		void					upgradeState();
 		int						getFd();
 		bool					is_op();
+
+		//setters
+		int						setNickname(std::string name);
+		int						setUsername(std::string name);
+		int						setRealname(std::string name);
+		void					upgradeState();
 		bool					set_op(std::string pass);
 
 	private:
-		int				id;
 		int				client_fd;
 		std::string		nickname;
 		Client::State	state;

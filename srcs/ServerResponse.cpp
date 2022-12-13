@@ -59,6 +59,11 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
+	// std::string list(Client&sender,)
+	// {
+
+	// }
+
 	std::string listend(Client&sender)
 	{
 		Client server;
@@ -127,27 +132,28 @@ namespace Reply
 
 	std::string motd(Client &sender)
 	{
-		Client server;
+		// Client server;
 		std::vector<std::string> params;
-		Message motd(CMD_RESPONSE, params, &server);
-		std::ifstream motdFile;
-		std::string motdStr;
+		// Message motd(CMD_RESPONSE, params, &server);
+		// std::ifstream motdFile;
+		// std::string motdStr;
 		std::string out;
 
 		params.push_back("372");
 		params.push_back(sender.getNickname());
 		params.push_back(":-");
-		motdFile.open("srcs/ircd.motd");
-		if (!motdFile.is_open())
-			return (Error::nomotd(sender));
-		while(getline(motdFile, motdStr))
-		{
-			params.push_back(motdStr);
-			motd.setParams(params);
-			out += motd.buildRawMsg();
-			params.pop_back();
-		}
-		motdFile.close();
+		// motdFile.open("srcs/ircd.motd");
+		// if (!motdFile.is_open())
+		// 	return (Error::nomotd(sender));
+		// while(getline(motdFile, motdStr))
+		// {
+		// 	motdStr.resize(80);
+		// 	params.push_back(motdStr);
+		// 	motd.setParams(params);
+		// 	out += motd.buildRawMsg();
+		// 	params.pop_back();
+		// }
+		// motdFile.close();
 		return(out);
 	}
 

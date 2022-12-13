@@ -11,37 +11,22 @@ class Channel
 {
 	public:
 		Channel(std::string name, Client &c);
-		// Channel(const Channel &c);
 		~Channel();
 
-		Channel &operator=(const Channel &c);
+		//commands
+		int				broadcast(std::string message, int sender);
+		int				connect(Client &c);
+		int				disconnect(Client &c);
+		int				disconnect(std::string nickname);
+		int				cmd_kick(std::string nickname);
+		int				cmd_invite(std::string nickname);
+		int				cmd_topic(std::string top);
+		int				cmd_names(Client& sender);
+		int 			cmd_who(Client& sender);
+		int				client_count();
+		int				list_coms(Client& sender);
 
-		int	broadcast(std::string message, int sender);
-		int	connect(Client &c);
-		int	disconnect(Client &c);
-		int	disconnect(std::string nickname);
-		int	cmd_kick(std::string nickname);
-		// int cmd_mode();
-		int	cmd_invite(std::string nickname);
-		int	cmd_topic(std::string top);
-		int	cmd_names(Client& sender);
-		int cmd_who(Client& sender);
-		int	add_operator(std::string nick);
-		int	change_operator(std::string sign, std::string nick);
-		int	client_count();
-		int	list_coms(Client& sender);
-
-		std::string	get_topic();
-		std::string	get_name() const;
-		Client*		get_op() const;
-
-		// bool	is_op(Client &c);
-		bool	is_invited(std::string nick);
-		bool	is_op(std::string nickname);
-		bool	is_member(Client &c);
-		bool	is_member(std::string nickname);
-		bool	can_invite(Client &c);
-		int		can_invite(std::string nickname);
+		//setters
 		int		change_is_private(std::string sign);
 		int		change_is_secret(std::string sign);
 		int		change_optopic(std::string sign);
@@ -51,8 +36,10 @@ class Channel
 		int		change_password(std::string sign, std::string key);
 		int		change_invite(std::string sign);
 		int		change_who_speaks_on_moderated(std::string sign, std::string user);
+		int		change_operator(std::string sign, std::string nick);
+		int		add_operator(std::string nick);
 
-
+		//getters
 		bool						get_invite_only() const;
 		bool						get_is_private() const;
 		bool						get_is_secret() const;
@@ -66,8 +53,14 @@ class Channel
 		std::vector<std::string>	get_operators() const;
 		bool						can_speak_onchannel(std::string nick);
 		bool						limit_full();
-
-		std::string		channel_modes();
+		std::string					channel_modes();
+		bool						is_invited(std::string nick);
+		bool						is_op(std::string nickname);
+		bool						is_member(std::string nickname);
+		int							can_invite(std::string nickname);
+		std::string					get_topic();
+		std::string					get_name() const;
+		Client*						get_op() const;
 
 	private:
 		

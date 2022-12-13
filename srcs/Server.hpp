@@ -17,8 +17,6 @@
 #include "Comms.hpp"
 #include "ServerResponse.hpp"
 
-#define MAX_CLIENTS 128
-#define TIMEOUT 	180
 
 class Server
 {
@@ -27,33 +25,37 @@ class Server
 		~Server();
 		int 								init();
 		int 								start_loop();
-		Channel* 							create_channel(std::string name, Client& c);
-		bool								check_password(std::string pass);
+		void 								initExecutor();
+		void 								executor();
+
+		// getters
 		Message 							*getNextMessage();
 		int									getBacklogLength();
-		void								removeLastMessage();
-		int 								checkNickGrammar(std::string nick);
-		int 								set_nickName(Client* client_ptr, std::string nickName);
 		Client* 							get_clientPtr(int fd);
 		Client* 							get_clientPtr(std::string nickName);
 		Channel* 							get_channelPtr(std::string chan);
-		void								pingClients();
-		void								deleteUser(Client *user);
-		void 								initExecutor();
-		void 								executor();
-		void								cmd_namesAllchannels(Client& c);
 		std::string							get_name();
 		int									get_serverfd();
-		int									list_allchannels(Client& c);
-		int									deleteChannel(std::string name);
 		std::map<std::string, Channel>		&getChannels();
 
+		//settters and helpers
+
+		Channel* 							create_channel(std::string name, Client& c);
+		bool								check_password(std::string pass);
+		void								removeLastMessage();
+		int 								checkNickGrammar(std::string nick);
+		int 								set_nickName(Client* client_ptr, std::string nickName);
+		void								deleteUser(Client *user);
+		void								cmd_namesAllchannels(Client& c);
+		int									list_allchannels(Client& c);
+		int									deleteChannel(std::string name);
+
+		//variables
 		typedef int (*fun)(Server&, Message&);
 		bool					   			on;
+
 	private:
-		Server();
-		Server(const Server &s);
-		Server	&operator=(const Server &s);
+
 		int 								create_client();
 
 		int 								server_port;
@@ -67,6 +69,7 @@ class Server
 		std::map<Client*, std::string>		incomplete;
 		std::string				   			name;
 		int						   			server_fd;
+		std::map<std::string, fun> 			exeCommands;
 };
 
 

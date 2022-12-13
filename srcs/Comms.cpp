@@ -8,8 +8,7 @@ int	passCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-1);
 	}
-	std::cout<<"provided pass: "<<attempt.getText()<<std::endl;
-	std::cout<<"Status: "<<attempt.getSender()->getState()<<std::endl;
+
 	if (attempt.getSender()->getState() != 0)
 	{
 		std::cout << "Error for double password here" << std::endl;
@@ -26,16 +25,12 @@ int	passCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::passwdmismatch()); //technically not needed
 		std::cout << "Failed!" << std::endl;
 	}
-	std::cout << BLANK;
 	return (0);
 }
 
 void introducing(Client *sender, Server &serv)
 {
 	sendResponse(*sender, Reply::welcome(*sender, serv));
-	//sendResponse(*sender, Reply::yourhost(*sender, serv));
-	//sendResponse(*sender, Reply::created(*sender));
-	//sendResponse(*sender, Reply::myinfo(*sender, serv));
 	sendResponse(*sender, Reply::motdstart(*sender, serv));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
@@ -49,8 +44,6 @@ int	nickCommand(Server &serv, Message &attempt)
 		return (-1);
 	}
 	int res = serv.set_nickName(attempt.getSender(), attempt.getParams()[0]);
-	std::cout<<"Res: "<<res<<std::endl;
-	std::cout<<std::endl;
 	switch(res)
 	{
 		case -1:
@@ -80,7 +73,7 @@ int	nickCommand(Server &serv, Message &attempt)
 		case -6:
 		{
 			sendResponse(*(attempt.getSender()), Error::nicknameinuse(attempt.getParams()[0]));
-			break ; //is this intentionally here twice??
+			break ;
 		}
 		case -7:
 		{
@@ -126,7 +119,7 @@ int	userCommand(Server &serv, Message &attempt)
 		case -4:
 		if (attempt.getSender()->getState() == 3)
 		{
-			attempt.getSender()->setRealname(attempt.getText());
+			attempt.getSender()->setRealname(attempt.getParams().back());
 			introducing(attempt.getSender(), serv);
 		}
 			break;
@@ -176,20 +169,9 @@ int	joinCommand(Server &serv, Message &attempt)
 			tmp2->broadcast(msg, 0);
 			tmp2->cmd_names(*attempt.getSender());
 			tmp2->list_coms(*attempt.getSender());
-			std::cout<<"Channels created"<<std::endl;
 		}
 		else //channel exists and trying to connect to it
 		{
-			//connecting to channel by sending channels[i] as a channel name and currentPass as a password for this channel
-			// it should be checked if channel is invite only, if channel is full, if client is banned from channel, 
-			//if password is correct for channel, if client joined to too many channels
-
-			//if everything ok. Client recives NOTICE about all commands avaliable which affects channel
-			//(MODE, KICK, PART, QUIT, PRIVMSG/NOTICE).
-			// If a JOIN is successful, the user is then sent the channel's topic
-			//(using RPL_TOPIC) and the list of users who are on the channel (using
-			//RPL_NAMREPLY), which must include the user joining.
-			std::cout<<"Channel exists, name: "<<tmp->get_name()<<std::endl;
 			if (tmp->limit_full())
 			{
 				sendResponse(*(attempt.getSender()), Error::channelisfull(*(attempt.getSender()), channels[i]));
@@ -209,14 +191,13 @@ int	joinCommand(Server &serv, Message &attempt)
 				return (-6);
 			}
 			tmp->connect(*attempt.getSender());
-			if (tmp->get_op_topic() != false)
-				sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
-			else 
-				sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp->get_name() + "\r\n";
 			tmp->broadcast(msg, 0);
-			topicCommand(serv, attempt);
 			tmp->cmd_names(*attempt.getSender());
+			if (tmp->get_topic().size() == 0)
+				sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
+			else 
+				sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
 			tmp->list_coms(*attempt.getSender());
 		}
 		i++;
@@ -236,18 +217,16 @@ int	privmsgCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::norecipient(*(attempt.getSender()), attempt.getCommand()));
 		return (-2);
 	}
-	if (attempt.getText().size() == 0)
+	if (attempt.getParams().size() < 2)
 	{
 		sendResponse(*(attempt.getSender()), Error::notexttosend(*(attempt.getSender())));
 		return (-2);
 	}
 	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
-	// iterating thorough all the recipients whom to send message
 	std::vector<std::string>::iterator it = recipients.begin();
 	while (it != recipients.end())
 	{
 		// checking if channel or client exists with provided name
-		std::cout << "check receiver: " << *it << std::endl;
 		Client* tmp = serv.get_clientPtr(*it);
 		if (tmp == NULL)
 		{
@@ -272,22 +251,16 @@ int	privmsgCommand(Server &serv, Message &attempt)
 				}
 				std::string	message;
 				message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp2->get_name() + " :" + attempt.getText().substr(tmp2->get_name().size() + 1) + "\r\n";
-				std::cout<<"Sending message: "<<message<<std::endl;
 				tmp2->broadcast(message, attempt.getSender()->getFd());
-				// send(tmp->getFd(), message.c_str(), message.length(), 0);
 				message.clear();
 			}
 		}
 		else
 		{
 			std::string	message;
-			// message = ":boriss PRIVMSG bobo :aaaa\r\n";
 			message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp->getNickname() + " :" + attempt.getText().substr(tmp->getNickname().size() +1 ) + "\r\n";
-			std::cout<<"Sending message: "<<message<<std::endl;
 			send(tmp->getFd(), message.c_str(), message.length(), 0);
 			message.clear();
-			// sending to client
-			// if client is away, sending RPL_AWAY message
 		}
 		
 		it++;
@@ -298,7 +271,6 @@ int	privmsgCommand(Server &serv, Message &attempt)
 
 int	noticeCommand(Server &serv, Message &attempt)
 {
-	// How I understand, NOTICE is the same as PRIVMSG, it just dont send any replies, even if some errors occur 
 	if (attempt.getSender()->getState() != 3)
 	{
 		sendResponse(*(attempt.getSender()), Error::notregistered());
@@ -306,7 +278,7 @@ int	noticeCommand(Server &serv, Message &attempt)
 	}
 	if (attempt.getParams().size() == 0)
 		return (-2); 
-	if (attempt.getText().size() == 0)
+	if (attempt.getParams().size() < 2)
 		return (-3);
 	
 	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
@@ -325,20 +297,12 @@ int	noticeCommand(Server &serv, Message &attempt)
 			{
 				//sending to channel
 				if (tmp2->get_no_msg() && !tmp2->is_member(attempt.getSender()->getNickname()))
-				{
-					sendResponse(*(attempt.getSender()), Error::cannotsendtochan(*(attempt.getSender()), tmp2->get_name()));
 					return (-5);
-				}
 				if (tmp2->get_moderated() && !tmp2->can_speak_onchannel(attempt.getSender()->getNickname()))
-				{
-					sendResponse(*(attempt.getSender()), Error::cannotsendtochan(*(attempt.getSender()), tmp2->get_name()));
 					return (-5);
-				} // should these 2 errors even send if notice doesn't send errors?
 				std::string	message;
 				message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp2->get_name() + " :" + attempt.getText().substr(tmp2->get_name().size() + 1) + "\r\n";
-				std::cout<<"Sending message: "<<message<<std::endl;
 				tmp2->broadcast(message, attempt.getSender()->getFd());
-				// send(tmp->getFd(), message.c_str(), message.length(), 0);
 				message.clear();
 			}
 		}
@@ -346,7 +310,6 @@ int	noticeCommand(Server &serv, Message &attempt)
 		{
 			std::string	message;
 			message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp->getNickname() + " :" + attempt.getText().substr(tmp->getNickname().size() +1 ) + "\r\n";
-			std::cout<<"Sending message: "<<message<<std::endl;
 			send(tmp->getFd(), message.c_str(), message.length(), 0);
 			message.clear();
 			// sending to client
@@ -385,7 +348,7 @@ int	inviteCommand(Server &serv, Message &attempt)
 	if (!chn->is_member(attempt.getSender()->getNickname()))
 	{
 		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), chn->get_name()));
-		return (-5); // this said ERR_USERONCHANNEL, but i think it should be not on channel, change if needed 
+		return (-5);
 	}
 	int chn_resp = chn->can_invite(attempt.getSender()->getNickname());
 	if (chn_resp == 0)
@@ -440,8 +403,6 @@ int	killCommand(Server &serv, Message &attempt)
 
 int	quitCommand(Server &serv, Message &attempt)
 {
-	// if (attempt.getSender()->getState() != 3)
-	// 	return (-1); //sending ERR_NOTREGISTERED
 	serv.deleteUser(attempt.getSender());
 
 	return (0);
@@ -599,7 +560,6 @@ int	topicCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::notregistered());
 		return (-1);
 	}
-	// 0 Doesn't actually change with just TOPIC input
 	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
@@ -623,12 +583,10 @@ int	topicCommand(Server &serv, Message &attempt)
 			sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			return (0);
 		}
-		std::cout << BL << "Said the topic" << std::endl << BLANK;
 		sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
 	}
 	else
 	{
-		std::cout << BL << "Setting topic" << std::endl << BLANK;
 		if (tmp->get_op_topic() && !tmp->is_op(attempt.getSender()->getNickname()))
 		{
 			sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), attempt.getParams()[0]));
@@ -637,7 +595,7 @@ int	topicCommand(Server &serv, Message &attempt)
 		tmp->cmd_topic(attempt.getParams()[1]);
 		std::string msg = Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic());
 		sendResponse(*(attempt.getSender()), msg);
-		tmp->broadcast(msg, attempt.getSender()->getFd());		// Added broadcast so the change is known to other clients in the channel
+		tmp->broadcast(msg, attempt.getSender()->getFd());
 		return (0);
 	}
 	return (0);
@@ -751,7 +709,6 @@ int	minus(Message &attempt, Channel &ch)
 
 int	plus(Message &attempt, Channel &ch)
 {
-	std::cout<<"plus"<<std::endl;
 	std::size_t y = 2;
 	std::string tmp = attempt.getParams()[1];
 	for (std::size_t i = 1; tmp[i]; i++)
@@ -867,6 +824,11 @@ int	modeCommand(Server &serv, Message &attempt)
 
 int	listCommand(Server &serv, Message &attempt)
 {
+	if (attempt.getSender()->getState() != 3)
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	sendResponse(*(attempt.getSender()), Reply::liststart(*(attempt.getSender())));
 	if (attempt.getParams().size() == 0)
 	{
@@ -909,18 +871,5 @@ int	listCommand(Server &serv, Message &attempt)
 		i++;
 	}
 	sendResponse(*(attempt.getSender()), Reply::listend(*(attempt.getSender())));
-	return (0);
-}
-
-int	removeUserFromChannels(Server &serv, std::string nickname)
-{
-	std::map<std::string, Channel>::iterator	iter;
-
-	iter = serv.getChannels().begin();
-	while (iter != serv.getChannels().end())
-	{
-		iter->second.disconnect(nickname);
-		++iter;
-	}
 	return (0);
 }

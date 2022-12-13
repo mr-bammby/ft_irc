@@ -4,20 +4,11 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "color.h"
 #include <string>
-// struct Message
-// {
-// 	Commands	type;
-// 	std::string	content;
-// 	Client		*sender;
-// };
-
-class Server;
 #include "Server.hpp"
 
-// Message createMessage(std::string str, Client *cl);
-// int	executeCommands(Server &serv);
+class Server;
+
 int	passCommand(Server &serv, Message &attempt);
 int	nickCommand(Server &serv, Message &attempt);
 int	userCommand(Server &serv, Message &attempt);
@@ -36,7 +27,5 @@ int	operCommand(Server &serv, Message &attempt);
 int	squitCommand(Server &serv, Message &attempt);
 int	modeCommand(Server &serv, Message &attempt);
 int	listCommand(Server &serv, Message &attempt);
-
-int	removeUserFromChannels(Server &serv, std::string nickname);
 
 #endif

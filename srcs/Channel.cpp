@@ -15,38 +15,21 @@ name(ch_name)
 	password = "";
 }
 
-// // Needed for pair functionality
-// Channel::Channel(const Channel &c): name(c.get_name())
-// {
-// 	Client	*op = c.get_op();
-// 	this->clients.insert(std::make_pair<std::string, Client*>(op->getNickname(), op));
-// 	this->owner = op->getNickname();
-// }
-
 Channel::~Channel()
 {}
 
-Channel &Channel::operator=(const Channel &c)
-{
-	this->name = c.name;
-	return (*this);
-}
-
-int Channel::broadcast(std::string message, int sender)
+int 	Channel::broadcast(std::string message, int sender)
 {
 	std::map<std::string, Client*>::iterator it;
-	// std::cout << "Message should send to all users: " << message << std::endl;
 	for (it = clients.begin(); it != clients.end(); it++)
 	{
-		// send message to all Clients depends of the implementation
-		// std::cout << "  Send to client: " << it->second->getNickname() << std::endl;
 		if (sender != it->second->getFd())
 			send(it->second->getFd(), message.c_str(), message.length(), 0);
 	}
 	return (0);
 }
 
-int	Channel::connect(Client &c)
+int		Channel::connect(Client &c)
 {
 	if (this->invite_only)
 	{
@@ -58,7 +41,7 @@ int	Channel::connect(Client &c)
 	return (0);
 }
 
-int Channel::disconnect(Client &c)
+int 	Channel::disconnect(Client &c)
 {
 	clients.erase(c.getNickname());
 	if (clients.empty())
@@ -66,7 +49,7 @@ int Channel::disconnect(Client &c)
 	return (0);
 }
 
-int Channel::disconnect(std::string nickname)
+int 	Channel::disconnect(std::string nickname)
 {
 	clients.erase(nickname);
 	if (clients.empty())
@@ -74,17 +57,17 @@ int Channel::disconnect(std::string nickname)
 	return (0);
 }
 
-int	Channel::client_count()
+int		Channel::client_count()
 {
 	return (clients.size());
 }
 
-int Channel::list_coms(Client& sender)
+int 	Channel::list_coms(Client& sender)
 {
 	std::string			servername("IRC");
 	std::vector<std::string>	params;
 
-	params.push_back("371");
+	params.push_back("NOTICE");
 	params.push_back(this->get_name());
 	params.push_back(":The available commands on this channel are TOPIC, PART, NAMES, WHO, PRIVMSG and NOTICE for users");
 	std::string			test = Message(CMD_RESPONSE, params, &sender).buildRawMsg();
@@ -92,63 +75,59 @@ int Channel::list_coms(Client& sender)
 	params[2] = ":Additional operator commands are MODE, INVITE, KICK.";
 	test = Message(CMD_RESPONSE, params, &sender).buildRawMsg();
 	send(sender.getFd(), test.c_str(), test.length(), 0);
-	params[0] = "374";
-	params.pop_back();
-	test = Message(CMD_RESPONSE, params, &sender).buildRawMsg();
-	send(sender.getFd(), test.c_str(), test.length(), 0);
 	return (0);
 }
 
-int	Channel::cmd_kick(std::string nickname)
+int		Channel::cmd_kick(std::string nickname)
 {
 
 	this->clients.erase(nickname);
 	return (0);
 }
 
-int	Channel::cmd_invite(std::string nickname)
+int		Channel::cmd_invite(std::string nickname)
 {
 	this->invited_users.push_back(nickname);
 	return (0);
 }
 
-int	Channel::cmd_topic(std::string top)
+int		Channel::cmd_topic(std::string top)
 {
 	this->topic = top;
 	return (0);
 }
 
-bool						Channel::get_invite_only() const
+bool	Channel::get_invite_only() const
 {
 	return (invite_only);
 }
 
-bool						Channel::get_is_private() const
+bool	Channel::get_is_private() const
 {
 	return (is_private);
 }
 
-bool						Channel::get_is_secret() const
+bool	Channel::get_is_secret() const
 {
 	return (is_secret);
 }
 
-bool						Channel::get_op_topic() const
+bool	Channel::get_op_topic() const
 {
 	return (op_topic);
 }
 
-bool						Channel::get_no_msg() const
+bool	Channel::get_no_msg() const
 {
 	return (no_msg);
 }
 
-bool						Channel::get_moderated() const
+bool	Channel::get_moderated() const
 {
 	return (moderated);
 }
 
-int							Channel::get_user_limit() const
+int		Channel::get_user_limit() const
 {
 	return (user_limit);
 }
@@ -188,7 +167,6 @@ int	Channel::add_operator(std::string nick)
 
 int	Channel::change_operator(std::string sign, std::string nick)
 {
-	std::cout<<"change operator"<<std::endl;
 	if (sign == "-")
 	{
 		std::vector<std::string>::iterator	p = std::find(operators.begin(), operators.end(), nick);
@@ -202,7 +180,6 @@ int	Channel::change_operator(std::string sign, std::string nick)
 
 int		Channel::change_is_private(std::string sign)
 {
-	std::cout<<"change is private"<<std::endl;
 	if (sign == "-")
 		is_private = false;
 	else if (sign == "+")
@@ -212,7 +189,6 @@ int		Channel::change_is_private(std::string sign)
 
 int		Channel::change_is_secret(std::string sign)
 {
-	std::cout<<"change is secret"<<std::endl;
 	if (sign == "-")
 		is_secret = false;
 	else if (sign == "+")
@@ -222,7 +198,6 @@ int		Channel::change_is_secret(std::string sign)
 
 int		Channel::change_optopic(std::string sign)
 {
-	std::cout<<"change optopic"<<std::endl;
 	if (sign == "-")
 		op_topic = false;
 	else if (sign == "+")
@@ -232,7 +207,6 @@ int		Channel::change_optopic(std::string sign)
 
 int		Channel::change_nomsg(std::string sign)
 {
-	std::cout<<"change nomsg"<<std::endl;
 	if (sign == "-")
 		no_msg = false;
 	else if (sign == "+")
@@ -242,7 +216,6 @@ int		Channel::change_nomsg(std::string sign)
 
 int		Channel::change_moderated(std::string sign)
 {
-	std::cout<<"change moderated"<<std::endl;
 	if (sign == "-")
 		moderated = false;
 	else if (sign == "+")
@@ -252,7 +225,6 @@ int		Channel::change_moderated(std::string sign)
 
 int		Channel::change_userlimits(std::string sign, std::size_t limit)
 {
-	std::cout<<"change user limits"<<std::endl;
 	if (sign == "-")
 		user_limit = 10000;
 	else if (sign == "+")
@@ -262,7 +234,6 @@ int		Channel::change_userlimits(std::string sign, std::size_t limit)
 
 int		Channel::change_password(std::string sign, std::string key)
 {
-	std::cout<<"change password"<<std::endl;
 	if (sign == "-")
 		password = "";
 	else if (sign == "+")
@@ -272,7 +243,6 @@ int		Channel::change_password(std::string sign, std::string key)
 
 int		Channel::change_invite(std::string sign)
 {
-	std::cout<<"change invite"<<std::endl;
 	if (sign == "-")
 		invite_only = false;
 	else if (sign == "+")
@@ -282,7 +252,6 @@ int		Channel::change_invite(std::string sign)
 
 int		Channel::change_who_speaks_on_moderated(std::string sign, std::string user)
 {
-	std::cout<<"change who speaks"<<std::endl;
 	if (sign == "-")
 	{
 		std::vector<std::string>::iterator	p = std::find(who_speaks_on_moderated.begin(), who_speaks_on_moderated.end(), user);
@@ -300,7 +269,6 @@ int		Channel::change_who_speaks_on_moderated(std::string sign, std::string user)
 
 bool	Channel::limit_full()
 {
-	std::cout << "user limit: " << user_limit << "  clients size: " << clients.size() << std::endl;
 	if (user_limit > clients.size() || user_limit == 0)
 		return (false);
 	return (true);
@@ -314,7 +282,7 @@ bool	Channel::is_invited(std::string nick)
 	return (true);
 }
 
-int	Channel::cmd_names(Client& sender)
+int		Channel::cmd_names(Client& sender)
 {
 	if (get_is_secret())
 	{
@@ -368,7 +336,7 @@ std::string		Channel::channel_modes()
 	return (modes);
 }
 
-int Channel::cmd_who(Client& sender)
+int 	Channel::cmd_who(Client& sender)
 {
 	for (std::map<std::string, Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 	{
@@ -383,12 +351,7 @@ int Channel::cmd_who(Client& sender)
 	return (0);
 }
 
-// bool Channel::is_op(Client &c)
-// {
-// 	return (is_op(c.getNickname()));
-// }
-
-bool Channel::is_op(std::string nickname)
+bool 	Channel::is_op(std::string nickname)
 {
 	for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); it++)
 	{
@@ -400,23 +363,23 @@ bool Channel::is_op(std::string nickname)
 	return (false);
 }
 
-std::string Channel::get_topic()
+std::string 	Channel::get_topic()
 {
 	return(topic);
 }
 
-std::string	Channel::get_name() const
+std::string		Channel::get_name() const
 {
 	return (name);
 }
 
-Client	*Channel::get_op() const
+Client			*Channel::get_op() const
 {
 	std::map<std::string, Client*>::const_iterator itr = clients.find(owner);
 	return (itr->second);
 }
 
-bool Channel::is_member(std::string nickname)
+bool 			Channel::is_member(std::string nickname)
 {
 	std::map<std::string, Client*>::iterator itr = clients.find(nickname);
 	if (itr != clients.end())
@@ -426,15 +389,7 @@ bool Channel::is_member(std::string nickname)
 	return (false);
 }
 
-bool Channel::is_member(Client &c)
-{
-	return (is_member(c.getNickname()));
-}
-
-/*
-Checks if client can invite to this channel
-*/
-int Channel::can_invite(std::string nickname)
+int 			Channel::can_invite(std::string nickname)
 {
 	if (is_op(nickname))
 	{
@@ -450,9 +405,4 @@ int Channel::can_invite(std::string nickname)
 		return (0);
 	}
 	return (-7);
-}
-
-bool Channel::can_invite(Client &c)
-{
-	return (can_invite(c.getNickname()));
 }

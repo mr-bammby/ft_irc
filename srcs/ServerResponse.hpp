@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <fstream>
 
+class Server;
 // source: https://datatracker.ietf.org/doc/html/rfc1459#section-6
 /*
 	Notes from Jasper:
@@ -131,6 +132,7 @@ namespace Reply
 	// std::string created(Client &sender);
 	// std::string myinfo(Client &sender, Server &serv);
 	std::string liststart(Client&sender);
+	//std::string list(Client&sender,);
 	std::string listend(Client&sender);
 	//std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams);
 	std::string notopic(Client&sender, std::string channel);

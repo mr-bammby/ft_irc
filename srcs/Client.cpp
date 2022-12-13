@@ -1,16 +1,15 @@
 #include "Client.hpp"
 
-Client::Client(int _id, int cl_fd)
-	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname(), op(false)
+Client::Client(int cl_fd)
+	: client_fd(cl_fd), nickname(), state(LOCKED), username(), realname(), op(false)
 {}
 
-Client::Client() : id(), nickname(), state(LOCKED), username(), realname(), op(false) {}
+Client::Client() : nickname(), state(LOCKED), username(), realname(), op(false) {}
 
 Client::~Client() {}
 
-int Client::setNickname(std::string name)
+int 					Client::setNickname(std::string name)
 {
-	std::cout<<"State in nick: "<<state<<std::endl;
 	if (state == LOCKED)
 	{
 		return (-8);
@@ -22,12 +21,12 @@ int Client::setNickname(std::string name)
 	return (-5);
 }
 
-const std::string& Client::getNickname()
+const std::string& 		Client::getNickname()
 {
 	return (nickname);
 }
 
-const Client::State& Client::getState()
+const Client::State& 	Client::getState()
 {
 	return (state);
 }
@@ -39,7 +38,6 @@ const std::string&		Client::getUsername()
 
 int						Client::setUsername(std::string name)
 {
-	std::cout<<"State in user: "<<state<<std::endl;
 	if (name.empty())
 	{
 		return (-1);
@@ -92,12 +90,12 @@ int						Client::setRealname(std::string name)
 	return (0);
 }
 
-int Client::getFd()
+int 					Client::getFd()
 {
 	return (client_fd);
 }
 
-void	Client::upgradeState()
+void					Client::upgradeState()
 {
 	if (this->state == LOCKED)
 		this->state = UNINITIALIZED;
@@ -105,5 +103,4 @@ void	Client::upgradeState()
 		this->state = INITIALIZED;
 	else if (this->state == INITIALIZED)
 		this->state = SET;
-	std::cout<<"State after pass: "<<state<<std::endl;
 }
