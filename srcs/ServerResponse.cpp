@@ -59,11 +59,6 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	// std::string list(Client&sender,)
-	// {
-
-	// }
-
 	std::string listend(Client&sender)
 	{
 		Client server;
@@ -147,7 +142,6 @@ namespace Reply
 			return (Error::nomotd(sender));
 		while(getline(motdFile, motdStr))
 		{
-			motdStr.resize(80);
 			params.push_back(motdStr);
 			motd.setParams(params);
 			out += motd.buildRawMsg();
