@@ -22,7 +22,10 @@ int	passCommand(Server &serv, Message &attempt)
 		attempt.getSender()->upgradeState();
 	}
 	else
+	{
+		sendResponse(*(attempt.getSender()), Error::passwdmismatch()); //technically not needed
 		std::cout << "Failed!" << std::endl;
+	}
 	std::cout << BLANK;
 	return (0);
 }
@@ -30,10 +33,12 @@ int	passCommand(Server &serv, Message &attempt)
 void introducing(Client *sender, Server &serv)
 {
 	sendResponse(*sender, Reply::welcome(*sender, serv));
-	sendResponse(*sender, Reply::motdstart(*sender));
+	//sendResponse(*sender, Reply::yourhost(*sender, serv));
+	//sendResponse(*sender, Reply::created(*sender));
+	//sendResponse(*sender, Reply::myinfo(*sender, serv));
+	sendResponse(*sender, Reply::motdstart(*sender, serv));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
-	std::cout << "went here" << std::endl;
 }
 
 int	nickCommand(Server &serv, Message &attempt)
@@ -70,7 +75,6 @@ int	nickCommand(Server &serv, Message &attempt)
 		{
 			if (attempt.getSender()->getState() == 3)
 				introducing(attempt.getSender(), serv);
-				//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
 		}
 		case -6:
@@ -79,9 +83,10 @@ int	nickCommand(Server &serv, Message &attempt)
 			break ; //is this intentionally here twice??
 		}
 		case -7:
-			introducing(attempt.getSender(), serv);		// TEMPORARY, RETURN VALUES BROKEN BY CLIENTS VERIFICATION PROCESS
-			//ERR_ALREADYREGISTERED
+		{
+			sendResponse(*(attempt.getSender()), Error::alreadyregistered());
 			break;
+		}
 		case -8:
 		{
 			sendResponse(*(attempt.getSender()), Error::notregistered());
@@ -98,7 +103,7 @@ int	userCommand(Server &serv, Message &attempt)
 	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
-		return (-2); // This might be redundant
+		return (-2);
 	}
 	int res = attempt.getSender()->setUsername(attempt.getParams()[0]);
 	switch (res)
@@ -186,16 +191,28 @@ int	joinCommand(Server &serv, Message &attempt)
 			//RPL_NAMREPLY), which must include the user joining.
 			std::cout<<"Channel exists, name: "<<tmp->get_name()<<std::endl;
 			if (tmp->limit_full())
-				return (-4); // ERR_CHANNELISFULL
+			{
+				sendResponse(*(attempt.getSender()), Error::channelisfull(*(attempt.getSender()), channels[i]));
+				return (-4);
+			}
 			if (tmp->get_invite_only())
 			{
 				if (!tmp->is_invited(attempt.getSender()->getNickname()))
-					return (-5); // sending ERR_INVITEONLYCHAN
+				{
+					sendResponse(*(attempt.getSender()), Error::inviteonlychan(*(attempt.getSender()), channels[i]));
+					return (-5);
+				}
 			}
 			if (tmp->get_password() != currentPass)
-				return (-6); // ERR_BADCHANNELKEY
+			{
+				sendResponse(*(attempt.getSender()), Error::badchannelkey(*(attempt.getSender()), channels[i]));
+				return (-6);
+			}
 			tmp->connect(*attempt.getSender());
-			// RPL_TOPIC
+			if (tmp->get_op_topic() != false)
+				sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
+			else 
+				sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp->get_name() + "\r\n";
 			tmp->broadcast(msg, 0);
 			topicCommand(serv, attempt);
@@ -204,7 +221,6 @@ int	joinCommand(Server &serv, Message &attempt)
 		}
 		i++;
 	}
-
 	return (0);
 }
 
@@ -238,16 +254,22 @@ int	privmsgCommand(Server &serv, Message &attempt)
 			Channel* tmp2 = serv.get_channelPtr(*it);
 			if (tmp2 == NULL)
 			{
-				sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //what var?
+				sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), *it));
 				return (-4);
 			}
 			else
 			{
 				//sending to channel
 				if (tmp2->get_no_msg() && !tmp2->is_member(attempt.getSender()->getNickname()))
-					return (-5); // ERR_CANNOTSENDTOCHAN
+				{
+					sendResponse(*(attempt.getSender()), Error::cannotsendtochan(*(attempt.getSender()), tmp2->get_name()));
+					return (-5);
+				}
 				if (tmp2->get_moderated() && !tmp2->can_speak_onchannel(attempt.getSender()->getNickname()))
-					return (-5); // ERR_CANNOTSENDTOCHAN
+				{
+					sendResponse(*(attempt.getSender()), Error::cannotsendtochan(*(attempt.getSender()), tmp2->get_name()));
+					return (-5);
+				}
 				std::string	message;
 				message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp2->get_name() + " :" + attempt.getText().substr(tmp2->get_name().size() + 1) + "\r\n";
 				std::cout<<"Sending message: "<<message<<std::endl;
@@ -303,9 +325,15 @@ int	noticeCommand(Server &serv, Message &attempt)
 			{
 				//sending to channel
 				if (tmp2->get_no_msg() && !tmp2->is_member(attempt.getSender()->getNickname()))
-					return (-5); // ERR_CANNOTSENDTOCHAN
+				{
+					sendResponse(*(attempt.getSender()), Error::cannotsendtochan(*(attempt.getSender()), tmp2->get_name()));
+					return (-5);
+				}
 				if (tmp2->get_moderated() && !tmp2->can_speak_onchannel(attempt.getSender()->getNickname()))
-					return (-5); // ERR_CANNOTSENDTOCHAN
+				{
+					sendResponse(*(attempt.getSender()), Error::cannotsendtochan(*(attempt.getSender()), tmp2->get_name()));
+					return (-5);
+				} // should these 2 errors even send if notice doesn't send errors?
 				std::string	message;
 				message = ":" + attempt.getSender()->getNickname() + " NOTICE " + tmp2->get_name() + " :" + attempt.getText().substr(tmp2->get_name().size() + 1) + "\r\n";
 				std::cout<<"Sending message: "<<message<<std::endl;
@@ -346,29 +374,38 @@ int	inviteCommand(Server &serv, Message &attempt)
 	Client* cln = serv.get_clientPtr(attempt.getParams()[0]);
 	if (cln == NULL)
 	{
-		return (-3); //ERR_NOSUCHNICK
+		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-3);
  	}
-
 	if (chn == NULL)
 	{
-		return (-4); //ERR_NOSUCHNICK
+		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[1]));
+		return (-4);
  	}
 	if (!chn->is_member(attempt.getSender()->getNickname()))
-		return (-5); // ERR_USERONCHANNEL
+	{
+		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), chn->get_name()));
+		return (-5); // this said ERR_USERONCHANNEL, but i think it should be not on channel, change if needed 
+	}
 	int chn_resp = chn->can_invite(attempt.getSender()->getNickname());
 	if (chn_resp == 0)
 	{
 		chn->cmd_invite(cln->getNickname());
-		std::string msg = ":" + serv.get_name() + " 341 " + attempt.getSender()->getNickname() + " " + cln->getNickname() + " " + chn->get_name() + " \r\n";
-		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		sendResponse(*(attempt.getSender()), Reply::inviting(*(attempt.getSender()), chn->get_name(), cln->getNickname()));
 		std::string msg1 = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost INVITE " + cln->getNickname() + " " + chn->get_name() + "\r\n";
 		send(cln->getFd(), msg1.c_str(), msg1.length(), 0); 
 		//send invite
 	}
 	else if (chn_resp == -6)
-		return (-6); // ERR_CHANOPRIVSNEEDED
+	{
+		sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), chn->get_name()));
+		return (-6);
+ 	}
 	else if (chn_resp == -7)
-		return (-7); // ERR_NOTONCHANNEL 
+	{
+		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), chn->get_name()));
+		return (-7);
+	}
 	return (0);
 
 
@@ -382,16 +419,19 @@ int	killCommand(Server &serv, Message &attempt)
 		return (-1);
 	}
   	if (!attempt.getSender()->is_op())
-		return (-4); //sending ERR_NOPRIVILEGES
+	{
+		sendResponse(*(attempt.getSender()), Error::nopriveleges(*(attempt.getSender())));
+		return (-4);
+	}
 	if (attempt.getParams().empty())
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
 	}
-	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]); //this looks like it will segfault if empty
+	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
 	{
-		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //where is this stored
+		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0]));
 		return (-3);
 	}
 	serv.deleteUser(tmp);
@@ -426,9 +466,15 @@ int	partCommand(Server &serv, Message &attempt)
 	{
 		Channel* tmp = serv.get_channelPtr(channels[i]);
 		if (tmp == NULL)//channel not exists and creating new
-			return (-3); //sending ERR_NOSUCHCHANNEL
+		{
+			sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), channels[i]));
+			return (-3);
+		}
 		else if (!tmp->is_member(attempt.getSender()->getNickname()))
-			return (-4); //sending ERR_NOTONCHANNEL
+		{
+			sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), channels[i]));
+			return (-4);
+		}
 		std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost PART " + channels[i] + "\r\n";
 		tmp->broadcast(msg, 0);
 		tmp->disconnect(attempt.getSender()->getNickname());
@@ -504,7 +550,7 @@ int	whoCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
 	}
-	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]); //will most likely segfault if params empty
+	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
   {
 		sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), attempt.getParams()[0]));
@@ -513,7 +559,10 @@ int	whoCommand(Server &serv, Message &attempt)
 	if (tmp->get_is_private() || tmp->get_is_secret())
 	{
 		if (!tmp->is_member(attempt.getSender()->getNickname()))
-			return (-4); // sending ERR_NOTONCHANNEL //TODO sendResponse with error
+		{
+			sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()),tmp->get_name()));
+			return (-4);
+		}
 	}
 	tmp->cmd_who(*attempt.getSender());
 	return (0);
@@ -571,14 +620,11 @@ int	topicCommand(Server &serv, Message &attempt)
 	{
 		if (tmp->get_topic().size() == 0)
 		{
-			// NO TOPIC
-			std::string msg = ":" + serv.get_name() +   " 331 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :No topic is set\r\n";
-			send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+			sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			return (0);
 		}
-		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
-		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
 		std::cout << BL << "Said the topic" << std::endl << BLANK;
+		sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
 	}
 	else
 	{
@@ -589,8 +635,8 @@ int	topicCommand(Server &serv, Message &attempt)
 			return (-5);
 		}
 		tmp->cmd_topic(attempt.getParams()[1]);
-		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
-		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+		std::string msg = Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic());
+		sendResponse(*(attempt.getSender()), msg);
 		tmp->broadcast(msg, attempt.getSender()->getFd());		// Added broadcast so the change is known to other clients in the channel
 		return (0);
 	}
@@ -600,31 +646,53 @@ int	topicCommand(Server &serv, Message &attempt)
 int	operCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() < 2)
-		return (-2); //sending ERR_NEEDMOREPARAMS 
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	Client*	tmp = serv.get_clientPtr(attempt.getParams()[0]);
 	if (tmp == NULL || tmp->getNickname() != attempt.getSender()->getNickname())
-		return (-4); // sending ERR_USERSDONTMATCH
+	{
+		sendResponse(*(attempt.getSender()), Error::usersdontmatch(*(attempt.getSender())));
+		return (-4);
+	}
 	if (attempt.getSender()->set_op(attempt.getParams()[1]))
 	{
-		std::string msg = ":" + serv.get_name() +   " 381 " + attempt.getSender()->getNickname() + " OPER :You are now an IRC operator\r\n";
-		send(tmp->getFd(), msg.c_str(), msg.length(), 0);
-		return (0); // sending RPL_YOUREOPER
+		sendResponse(*(attempt.getSender()), Reply::youreoper(*(attempt.getSender())));
+		return (0);
 	}
-	return (-5); // sending ERR_PASSWDMISMATCH
+	sendResponse(*(attempt.getSender()), Error::passwdmismatch());
+	return (-5);
 }
 
 int	squitCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (!attempt.getSender()->is_op())
-		return (-2); //sending ERR_NOPRIVILEGES
+	{
+		sendResponse(*(attempt.getSender()), Error::nopriveleges(*(attempt.getSender())));
+		return (-2);
+	}
+		
 	if (attempt.getParams().size() == 0)
-		return (-3); //sending ERR_NEEDMOREPARAMS
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-3);
+	}
 	if (attempt.getParams()[0] != serv.get_name())
-		return (-4); // sending ERR_NOSUCHSERVER
+	{
+		sendResponse(*(attempt.getSender()), Error::nosuchserver(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-4);
+	}
 	serv.on = false;
 	return (0);
 }
@@ -640,7 +708,7 @@ int	minus(Message &attempt, Channel &ch)
 			if (attempt.getParams().size() < (y + 1) || !ch.is_member(attempt.getParams()[y]))
 			{
 				y++;
-				return (-5); // sending ERR_NOSUCHNICK
+				return (-5);
 			}
 			ch.change_operator("-", attempt.getParams()[y]);
 			y++;
@@ -665,18 +733,18 @@ int	minus(Message &attempt, Channel &ch)
 		else if (tmp[i] == 'v')
 		{
 			if (attempt.getParams().size() < (y + 1))
-				return (-6); // ERR_NEEDMOREPARAMS  
+				return (-6);
 			ch.change_who_speaks_on_moderated("-", attempt.getParams()[y]);
 			y++;
 		}
 		else if (tmp[i] == 'k')
 		{
 			if (attempt.getParams().size() < (y + 1))
-				return (-6); // ERR_NEEDMOREPARAMS 
+				return (-6);
 			ch.change_password("-", attempt.getParams()[y]);
 		}
 		else
-			return (-7); // sending ERR_UNKNOWNMODE
+			return (-7);
 	}
 	return (0);
 }
@@ -693,7 +761,7 @@ int	plus(Message &attempt, Channel &ch)
 			if (attempt.getParams().size() < (y + 1))
 			{
 				y++;
-				return (-5); // sending ERR_NOSUCHNICK
+				return (-5);
 			}
 			ch.change_operator("+", attempt.getParams()[y]);
 			y++;
@@ -713,15 +781,12 @@ int	plus(Message &attempt, Channel &ch)
 		else if (tmp[i] == 'l')
 		{
 			if (attempt.getParams().size() < (y + 1))
-				return (-6); // ERR_NEEDMOREPARAMS  
+				return (-6);
 			const char* argv = attempt.getParams()[y].c_str();
 			for (int i = 0; argv[i]; i++)
 			{
 				if (std::isdigit(argv[i]) == 0)
-				{
-					std::cout<<"// ERR_NEEDMOREPARAMS"<<std::endl;
-					return (-6);// ERR_NEEDMOREPARAMS
-				}
+					return (-6);
 			}
 			std::size_t limit;
 			sscanf(argv, "%lu", &limit);
@@ -731,18 +796,18 @@ int	plus(Message &attempt, Channel &ch)
 		else if (tmp[i] == 'v')
 		{
 			if (attempt.getParams().size() < (y + 1))
-				return (-6); // ERR_NEEDMOREPARAMS  
+				return (-6);
 			ch.change_who_speaks_on_moderated("+", attempt.getParams()[y]);
 			y++;
 		}
 		else if (tmp[i] == 'k')
 		{
 			if (attempt.getParams().size() < (y + 1))
-				return (-6); // ERR_NEEDMOREPARAMS 
+				return (-6); 
 			ch.change_password("+", attempt.getParams()[y]);
 		}
 		else
-			return (-7); // sending ERR_UNKNOWNMODE
+			return (-7);
 	}
 	return (0);
 }
@@ -750,14 +815,26 @@ int	plus(Message &attempt, Channel &ch)
 int	modeCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
-		return (-1); //sending ERR_NOTREGISTERED
+	{
+		sendResponse(*(attempt.getSender()), Error::notregistered());
+		return (-1);
+	}
 	if (attempt.getParams().size() < 2)
-		return (-2); //sending ERR_NEEDMOREPARAMS
+	{
+		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+		return (-2);
+	}
 	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
-		return (-3); // sending ERR_NOSUCHCHANNEL
+	{
+		sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-3);
+	}
 	if (!tmp->is_op(attempt.getSender()->getNickname()))
-		return (-4); //sending ERR_CHANOPRIVSNEEDED
+	{
+		sendResponse(*(attempt.getSender()), Error::chanoprivsneeded(*(attempt.getSender()), attempt.getParams()[0]));
+		return (-4);
+	}
 	int res;
 	if (attempt.getParams()[1][0] == '-')
 		res = minus(attempt, *tmp);
@@ -767,12 +844,21 @@ int	modeCommand(Server &serv, Message &attempt)
 		res = -7;
 	switch (res)
 	{
-		case -5: // sending ERR_NOSUCHNICK
+		case -5:
+		{
+			sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0])); //check
 			break ;
+		}
 		case -6:
-			break ;// ERR_NEEDMOREPARAMS 
+		{
+			sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
+			break;
+		}
 		case -7:
-			break ; // sending ERR_UNKNOWNMODE
+		{
+			sendResponse(*(attempt.getSender()), Error::unknownmode(*(attempt.getSender()), attempt.getParams()[1])); //check
+			break ;
+		}
 	}
 	std::string msg = ":" + serv.get_name() + " 324 " +  attempt.getSender()->getNickname() + " " + tmp->get_name() + " +" + tmp->channel_modes() + "\r\n";
 	tmp->broadcast(msg, 0);
@@ -781,13 +867,11 @@ int	modeCommand(Server &serv, Message &attempt)
 
 int	listCommand(Server &serv, Message &attempt)
 {
-	std::string msg = ":" + serv.get_name() + " 321 " + attempt.getSender()->getNickname() + " Channel :Users Name\r\n";
-	send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
+	sendResponse(*(attempt.getSender()), Reply::liststart(*(attempt.getSender())));
 	if (attempt.getParams().size() == 0)
 	{
 		serv.list_allchannels(*attempt.getSender());
-		std::string msg3 = ":" + serv.get_name() + " 323 " + attempt.getSender()->getNickname() + " :End of /LIST\r\n";
-		send(attempt.getSender()->getFd(), msg3.c_str(), msg3.length(), 0);
+		sendResponse(*(attempt.getSender()), Reply::listend(*(attempt.getSender())));
 		return (0);
 	}
 	std::vector<std::string> channels = split(attempt.getParams()[0], ",");
@@ -824,8 +908,7 @@ int	listCommand(Server &serv, Message &attempt)
 		}
 		i++;
 	}
-	std::string msg3 = ":" + serv.get_name() + " 323 " + attempt.getSender()->getNickname() + " :End of /LIST\r\n";
-	send(attempt.getSender()->getFd(), msg3.c_str(), msg3.length(), 0);
+	sendResponse(*(attempt.getSender()), Reply::listend(*(attempt.getSender())));
 	return (0);
 }
 

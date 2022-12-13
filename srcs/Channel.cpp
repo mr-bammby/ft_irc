@@ -319,7 +319,10 @@ int	Channel::cmd_names(Client& sender)
 	if (get_is_secret())
 	{
 		if (!is_member(sender.getNickname()))
-			return (-4); // sending ERR_NOTONCHANNEL
+		{
+			//sendResponse(sender, Error::notonchannel(sender, get_name()));
+			return (-4);
+		}
 	}
 	std::string listUsers = ":IRC 353 " + sender.getNickname() + " = " + get_name() + " :";
 	for (std::map<std::string, Client*>::iterator it = clients.begin(); it != clients.end(); it++)
