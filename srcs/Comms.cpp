@@ -623,10 +623,8 @@ int	topicCommand(Server &serv, Message &attempt)
 			sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			return (0);
 		}
-		std::string msg = ":" + serv.get_name() +   " 332 " + attempt.getSender()->getNickname() + " " + tmp->get_name() + " :" + tmp->get_topic() + "\r\n";
-		send(attempt.getSender()->getFd(), msg.c_str(), msg.length(), 0);
 		std::cout << BL << "Said the topic" << std::endl << BLANK;
-		//sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
+		sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
 	}
 	else
 	{
@@ -637,7 +635,8 @@ int	topicCommand(Server &serv, Message &attempt)
 			return (-5);
 		}
 		tmp->cmd_topic(attempt.getParams()[1]);
-		sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
+		std::string msg = Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic());
+		sendResponse(*(attempt.getSender()), msg);
 		tmp->broadcast(msg, attempt.getSender()->getFd());		// Added broadcast so the change is known to other clients in the channel
 		return (0);
 	}
@@ -857,7 +856,7 @@ int	modeCommand(Server &serv, Message &attempt)
 		}
 		case -7:
 		{
-			sendResponse(*(attempt.getSender()), Error::unknownmode(*(attempt.getSender()), attempt.getParams()[1][1])); //check
+			sendResponse(*(attempt.getSender()), Error::unknownmode(*(attempt.getSender()), attempt.getParams()[1])); //check
 			break ;
 		}
 	}
