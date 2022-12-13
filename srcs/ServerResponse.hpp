@@ -131,7 +131,6 @@ namespace Reply
 	// std::string created(Client &sender);
 	// std::string myinfo(Client &sender, Server &serv);
 	std::string liststart(Client&sender);
-	//std::string list(Client&sender,);
 	std::string listend(Client&sender);
 	//std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams);
 	std::string notopic(Client&sender, std::string channel);
