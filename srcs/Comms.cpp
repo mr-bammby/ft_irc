@@ -22,7 +22,10 @@ int	passCommand(Server &serv, Message &attempt)
 		attempt.getSender()->upgradeState();
 	}
 	else
-		std::cout << "Failed!" << std::endl;
+	{
+		sendResponse(*(attempt.getSender()), Error::passwdmismatch()); //technically not needed
+		std::cout << "Failed!" << std::endl; //wrong pass
+	}
 	std::cout << BLANK;
 	return (0);
 }
@@ -36,7 +39,6 @@ void introducing(Client *sender, Server &serv)
 	sendResponse(*sender, Reply::motdstart(*sender, serv));
 	sendResponse(*sender, Reply::motd(*sender));
 	sendResponse(*sender, Reply::endofmotd(*sender));
-	std::cout << "went here" << std::endl; //delete?
 }
 
 int	nickCommand(Server &serv, Message &attempt)
@@ -73,7 +75,6 @@ int	nickCommand(Server &serv, Message &attempt)
 		{
 			if (attempt.getSender()->getState() == 3)
 				introducing(attempt.getSender(), serv);
-				//introducing new nick and //sending RPL_WELCOME message to client(Register connection)
 			break;
 		}
 		case -6:
@@ -82,9 +83,10 @@ int	nickCommand(Server &serv, Message &attempt)
 			break ; //is this intentionally here twice??
 		}
 		case -7:
-			introducing(attempt.getSender(), serv);		// TEMPORARY, RETURN VALUES BROKEN BY CLIENTS VERIFICATION PROCESS
-			//ERR_ALREADYREGISTERED
+		{
+			sendResponse(*(attempt.getSender()), Error::alreadyregistered());
 			break;
+		}
 		case -8:
 		{
 			sendResponse(*(attempt.getSender()), Error::notregistered());
@@ -101,7 +103,7 @@ int	userCommand(Server &serv, Message &attempt)
 	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
-		return (-2); // This might be redundant
+		return (-2);
 	}
 	int res = attempt.getSender()->setUsername(attempt.getParams()[0]);
 	switch (res)
@@ -426,7 +428,7 @@ int	killCommand(Server &serv, Message &attempt)
 	Client* tmp = serv.get_clientPtr(attempt.getParams()[0]); //this looks like it will segfault if empty
 	if (tmp == NULL)
 	{
-		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //where is this stored
+		sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0])); //where is this stored
 		return (-3);
 	}
 	serv.deleteUser(tmp);
@@ -545,7 +547,7 @@ int	whoCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
 		return (-2);
 	}
-	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]); //will most likely segfault if params empty
+	Channel* tmp = serv.get_channelPtr(attempt.getParams()[0]);
 	if (tmp == NULL)
   {
 		sendResponse(*(attempt.getSender()), Error::nosuchchannel(*(attempt.getSender()), attempt.getParams()[0]));
@@ -837,7 +839,7 @@ int	modeCommand(Server &serv, Message &attempt)
 	{
 		case -5:
 		{
-			sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), "PLACEHOLDER")); //where is this stored
+			sendResponse(*(attempt.getSender()), Error::nosuchnick(*(attempt.getSender()), attempt.getParams()[0])); //check
 			break ;
 		}
 		case -6:
@@ -847,7 +849,7 @@ int	modeCommand(Server &serv, Message &attempt)
 		}
 		case -7:
 		{
-			sendResponse(*(attempt.getSender()), Error::unknownmode(*(attempt.getSender()), "placeholder")); // unknown char 
+			sendResponse(*(attempt.getSender()), Error::unknownmode(*(attempt.getSender()), attempt.getParams()[1][1])); //check
 			break ;
 		}
 	}
