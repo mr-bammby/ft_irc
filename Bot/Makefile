@@ -1,22 +1,21 @@
-
+# written by chelmerd
 CXX = c++
 CXXFLAGS = -g -Werror -Wall -Wextra -std=c++98 -pedantic-errors
 
-NAME = ircserv
+NAME = bot
 
-CLASSES = \
-	Server.cpp	\
-	Client.cpp	\
-	Channel.cpp \
-	Message.cpp \
-	Comms.cpp \
-	ServerResponse.cpp
+CLASSES = Server.hpp	\
+	Client.hpp	\
+	Channel.hpp \
+	Message.hpp \
+	Comms.hpp \
+	ServerResponse.hpp
  
 SRCS = \
 	main.cpp \
-	$(addprefix srcs/,$(CLASSES))
+	Bot.cpp
 
-HEADERS = $(patsubst %.cpp,%.hpp,$(addprefix srcs/,$(CLASSES)))
+HEADERS = $(addprefix ../srcs/,$(CLASSES)) Bot.hpp
 
 all: $(NAME)
 
@@ -31,5 +30,4 @@ re: fclean all
 $(NAME): $(SRCS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -I./srcs -o $@
 
-
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re

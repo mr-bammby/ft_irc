@@ -128,13 +128,8 @@ void		sendResponse(Client &sender, std::string message);
 namespace Reply
 {
 	std::string	welcome(Client &sender, Server &serv);
-	// std::string yourhost(Client &sender, Server &serv);
-	// std::string created(Client &sender);
-	// std::string myinfo(Client &sender, Server &serv);
 	std::string liststart(Client&sender);
-	//std::string list(Client&sender,);
 	std::string listend(Client&sender);
-	//std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams);
 	std::string notopic(Client&sender, std::string channel);
 	std::string topic(Client&sender, std::string channel, std::string top);
 	std::string inviting(Client &sender, std::string channel, std::string nick);
@@ -148,7 +143,7 @@ namespace Error
 {
 	std::string nosuchnick(Client &sender, std::string errNick);
 	std::string nosuchserver(Client &sender, std::string errServ);
-	std::string nosuchchannel(Client &sender, std::string errChannel); //check for username 
+	std::string nosuchchannel(Client &sender, std::string errChannel);
 	std::string cannotsendtochan(Client &sender, std::string channel);
 	std::string norecipient(Client &sender, std::string cmd);
 	std::string notexttosend(Client &sender);

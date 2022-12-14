@@ -133,8 +133,14 @@ int Server::start_loop()
 				}
 				else{
 					buf[buffsize] = '\0';
+					std::string m(buf);
+					std::cout<<"************************"<<std::endl;
+					std::cout<<"Recived message: "<<m<<std::endl;
+					std::cout<<"Recived message sender FD: "<<pfdit->fd<<std::endl;
 					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)), incomplete);
 					messages.insert(messages.begin(), current.rbegin(), current.rend());
+					std::cout<<"Recived message sender NICK: "<<messages[0].getSender()->getNickname()<<std::endl;
+					std::cout<<"************************"<<std::endl;
 					current.clear();
 				}
 				break ;
@@ -240,6 +246,8 @@ void	Server::removeLastMessage()
 
 int Server::checkNickGrammar(std::string nick)
 {
+	if (std::isdigit(nick[0]) > 0)
+		return (-1);
 	std::string allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-[]\\`^{}";
 	int i = 0;
 	while (nick[i])
