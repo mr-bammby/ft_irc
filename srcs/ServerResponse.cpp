@@ -59,11 +59,6 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	// std::string list(Client&sender,)
-	// {
-
-	// }
-
 	std::string listend(Client&sender)
 	{
 		Client server;
