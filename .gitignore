@@ -3,5 +3,6 @@ a.out
 .DS_Store
 
 # executables
+bot
 ircserv
 tests/bin/
