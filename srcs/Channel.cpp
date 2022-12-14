@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "ServerResponse.hpp"
 
 Channel::Channel(std::string ch_name, Client &c):
 name(ch_name)
@@ -288,7 +289,7 @@ int		Channel::cmd_names(Client& sender)
 	{
 		if (!is_member(sender.getNickname()))
 		{
-			//sendResponse(sender, Error::notonchannel(sender, get_name()));
+			sendResponse(sender, Error::notonchannel(sender, get_name()));
 			return (-4);
 		}
 	}

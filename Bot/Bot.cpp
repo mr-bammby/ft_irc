@@ -1,4 +1,5 @@
 #include "Bot.hpp"
+
 Bot::Bot(int port, std::string pass) : pass(pass)
 {
 	nick = "partybot";
@@ -38,7 +39,7 @@ void Bot::run()
 			recieve_msg();
 		if (awake == 1 && messages[0].find("JOIN") != std::string::npos)
 			send_msg("PRIVMSG #PARTY welcome to the party!!\r\n");
-		else if (awake == 1 && messages[0].find("party") != std::string::npos)
+		else if (awake == 1 && messages[0].find("party") != std::string::npos && messages[0].find("PRIVMSG #PARTY") != std::string::npos)
 			send_msg("PRIVMSG #PARTY did someone say party????\r\n");
 		if (awake == 1)
 			messages.erase(messages.begin());
@@ -51,7 +52,6 @@ void Bot::send_msg(std::string msg)
 	if (send(bot_fd, msg.c_str(), msg.size(), 0) < 0)
 	{
 		awake = 0;
-		std::cout << nick << " unable to send message :(" << std::endl;
 	}
 }
 
@@ -88,9 +88,14 @@ void Bot::join_server()
 	send_msg("PASS " + pass + "\r\n");
 	send_msg("USER " + nick + "\r\n");
 	send_msg("NICK " + nick + "\r\n");
+
+	sleep(2);
 	recieve_msg();
 	if (messages.size() < 4)
 	{
+		std::vector<std::string>::iterator it;
+		for (it = messages.begin(); it != messages.end(); it++)
+			std::cout << *it << std::endl;
 		std::cout << "unable to join server" << std::endl;
 		return;
 	}
