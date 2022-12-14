@@ -24,51 +24,6 @@ int				Server::get_serverfd()
 	return (server_fd);
 }
 
-typedef int (*fun)(Server&, Message&);
-
-void	Server::setupTable()
-{
-	fun		*res[6];
-
-	res[0] = new fun[3];
-	res[0][0] = &passCommand;
-	res[0][1] = &nickCommand;
-	res[0][2] = &userCommand;
-	res[1] = new fun[2];
-	res[1][0] = &privmsgCommand;
-	res[1][1] = &noticeCommand;
-	res[2] = new fun[9];
-	res[2][0] = &kickCommand;
-	res[2][1] = &modeCommand;
-	res[2][2] = &inviteCommand;
-	res[2][3] = &topicCommand;
-	res[2][4] = &partCommand;
-	res[2][5] = &whoCommand;
-	res[2][6] = &namesCommand;
-	res[2][7] = &listCommand;
-	res[2][8] = &joinCommand;
-	res[3] = new fun[2];
-	res[4] = new fun[2];
-	res[5] = new fun[5];
-	res[5][0] = &killCommand;
-	res[5][1] = NULL;
-	res[5][2] = &operCommand;
-	res[5][3] = &quitCommand;
-	res[5][4] = &squitCommand;
-	for (int i = 0; i < 6; i++)
-	{
-		this->table.push_back(res[i]);
-	}
-}
-void	Server::cleanTable()
-{
-	for (int i = 0; i < 6; i++)
-	{
-		delete[] this->table[i];
-	}
-	this->table.clear();
-}
-
 void Server::executor()
 {
 
@@ -415,4 +370,51 @@ int		Server::deleteChannel(std::string name)
 std::map<std::string, Channel>	&Server::getChannels()
 {
 	return (this->channels);
+}
+
+
+typedef int (*fun)(Server&, Message&);
+
+void	Server::setupTable()
+{
+	fun		*res[6];
+
+	res[0] = new fun[3];
+	res[0][0] = &passCommand;
+	res[0][1] = &nickCommand;
+	res[0][2] = &userCommand;
+	res[1] = new fun[2];
+	res[1][0] = &privmsgCommand;
+	res[1][1] = &noticeCommand;
+	res[2] = new fun[9];
+	res[2][0] = &kickCommand;
+	res[2][1] = &modeCommand;
+	res[2][2] = &inviteCommand;
+	res[2][3] = &topicCommand;
+	res[2][4] = &partCommand;
+	res[2][5] = &whoCommand;
+	res[2][6] = &namesCommand;
+	res[2][7] = &listCommand;
+	res[2][8] = &joinCommand;
+	res[3] = new fun[2];
+	res[4] = new fun[2];
+	res[5] = new fun[5];
+	res[5][0] = &killCommand;
+	res[5][1] = NULL;
+	res[5][2] = &operCommand;
+	res[5][3] = &quitCommand;
+	res[5][4] = &squitCommand;
+	for (int i = 0; i < 6; i++)
+	{
+		this->table.push_back(res[i]);
+	}
+}
+
+void	Server::cleanTable()
+{
+	for (int i = 0; i < 6; i++)
+	{
+		delete[] this->table[i];
+	}
+	this->table.clear();
 }
