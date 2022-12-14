@@ -22,7 +22,7 @@ int	passCommand(Server &serv, Message &attempt)
 	}
 	else
 	{
-		sendResponse(*(attempt.getSender()), Error::passwdmismatch()); //technically not needed
+		sendResponse(*(attempt.getSender()), Error::passwdmismatch());
 		std::cout << "Failed!" << std::endl;
 	}
 	return (0);

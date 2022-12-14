@@ -51,7 +51,6 @@ void Bot::send_msg(std::string msg)
 	if (send(bot_fd, msg.c_str(), msg.size(), 0) < 0)
 	{
 		awake = 0;
-		std::cout << nick << " unable to send message :(" << std::endl;
 	}
 }
 
@@ -88,9 +87,13 @@ void Bot::join_server()
 	send_msg("PASS " + pass + "\r\n");
 	send_msg("USER " + nick + "\r\n");
 	send_msg("NICK " + nick + "\r\n");
+	sleep(2);
 	recieve_msg();
 	if (messages.size() < 4)
 	{
+		std::vector<std::string>::iterator it;
+		for (it = messages.begin(); it != messages.end(); it++)
+			std::cout << *it << std::endl;
 		std::cout << "unable to join server" << std::endl;
 		return;
 	}

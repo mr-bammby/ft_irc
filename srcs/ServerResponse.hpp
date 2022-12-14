@@ -7,21 +7,10 @@
 #include <fstream>
 
 class Server;
-// source: https://datatracker.ietf.org/doc/html/rfc1459#section-6
 /*
-	Notes from Jasper:
-		- These enums serve no purpose and are currently only here for reference or in
-			case we decide to implement them for whatever reason
-		- Not every enum has a function.
-	
 	001 - 399 Reply codes 
 	400 - 500+ Error codes
-
-	The server sends Replies 001 to 004 to sender 
-	upon successful registration
-
-	not all of these replycodes have been implemented yet,
-	mostly due to needing more info from server
+	source: https://datatracker.ietf.org/doc/html/rfc1459#section-6
 */
 enum ReplyCode
 {

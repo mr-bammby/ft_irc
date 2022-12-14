@@ -2,7 +2,7 @@
 CXX = c++
 CXXFLAGS = -g -Werror -Wall -Wextra -std=c++98 -pedantic-errors
 
-NAME = bot
+NAME = ../bot
 
 CLASSES = Server.hpp	\
 	Client.hpp	\

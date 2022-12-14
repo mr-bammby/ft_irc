@@ -31,5 +31,14 @@ re: fclean all
 $(NAME): $(SRCS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -I./srcs -o $@
 
+# for bonus 
+bot: 
+	cd Bot && $(MAKE)
 
-.PHONY: all clean fclean re test
+botfclean:
+	cd Bot && $(MAKE) fclean
+
+botre:
+	cd Bot && $(MAKE) re
+
+.PHONY: all clean fclean re test bot botfclean botre

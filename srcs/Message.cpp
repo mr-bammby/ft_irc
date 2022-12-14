@@ -152,14 +152,14 @@ std::map<Client*, std::string> &incomplete_map)
 	if (incomplete_map.find(sender) != incomplete_map.end())
 	{
 		std::string		temp = incomplete_map[sender];
-		if (raw.find(msg_delimiter) == std::string::npos) // KEEP ADDING
+		if (raw.find(msg_delimiter) == std::string::npos)
 		{
 			for (std::vector<std::string>::const_iterator it = raw_messages.begin();
 			it != raw_messages.end(); ++it)
 				incomplete_map[sender].append(*it);
 			return (messages);
 		}
-		else			// IS FINISHED
+		else
 		{
 			if (raw.find("\r\n") == 0)
 				raw_messages.insert(raw_messages.begin(), temp);
