@@ -14,41 +14,6 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	// std::string yourhost(Client &sender, Server &serv)
-	// {
-	// 	Client server;
-	// 	std::vector<std::string> params;
-	// 	params.push_back("002");
-	// 	params.push_back(sender.getNickname());
-	// 	params.push_back(":Your host is ");
-	// 	params.push_back(serv.get_name() + ",");
-	// 	params.push_back("running version 1");
-	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	// }
-
-	// std::string created(Client &sender)
-	// {
-	// 	Client server;
-	// 	std::vector<std::string> params;
-	// 	params.push_back("003");
-	// 	params.push_back(sender.getNickname());
-	// 	params.push_back(":This server was created today"); //idk, do we need to get more specific lmao
-	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	// }
-
-	// std::string myinfo(Client &sender, Server &serv)
-	// {
-	// 	Client server;
-	// 	std::vector<std::string> params;
-	// 	params.push_back("004");
-	// 	params.push_back(sender.getNickname());
-	// 	params.push_back(serv.get_name());
-	// 	params.push_back("version 1");
-	// 	params.push_back("insert user modes here"); //i dont even know 
-	// 	params.push_back("insert channel modes here");
-	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	// }
-
 	std::string liststart(Client&sender)
 	{
 		Client server;
@@ -59,11 +24,6 @@ namespace Reply
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
 
-	// std::string list(Client&sender,)
-	// {
-
-	// }
-
 	std::string listend(Client&sender)
 	{
 		Client server;
@@ -73,18 +33,6 @@ namespace Reply
 		params.push_back(":End of /LIST");
 		return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
 	}
-
-	// std::string channelmodeis(Client&sender, std::string channel, std::string mode, std::string modeparams)
-	// {
-	// 	Client server;
-	// 	std::vector<std::string> params;
-	// 	params.push_back("324");
-	// 	params.push_back(sender.getNickname());
-	// 	params.push_back(channel);
-	// 	params.push_back(mode);
-	// 	params.push_back(modeparams);
-	// 	return(Message(CMD_RESPONSE, params, &server).buildRawMsg());
-	// }
 
 	std::string notopic(Client& sender, std::string channel)
 	{
@@ -132,28 +80,27 @@ namespace Reply
 
 	std::string motd(Client &sender)
 	{
-		// Client server;
+		Client server;
 		std::vector<std::string> params;
-		// Message motd(CMD_RESPONSE, params, &server);
-		// std::ifstream motdFile;
-		// std::string motdStr;
+		Message motd(CMD_RESPONSE, params, &server);
+		std::ifstream motdFile;
+		std::string motdStr;
 		std::string out;
 
 		params.push_back("372");
 		params.push_back(sender.getNickname());
 		params.push_back(":-");
-		// motdFile.open("srcs/ircd.motd");
-		// if (!motdFile.is_open())
-		// 	return (Error::nomotd(sender));
-		// while(getline(motdFile, motdStr))
-		// {
-		// 	motdStr.resize(80);
-		// 	params.push_back(motdStr);
-		// 	motd.setParams(params);
-		// 	out += motd.buildRawMsg();
-		// 	params.pop_back();
-		// }
-		// motdFile.close();
+		motdFile.open("srcs/ircd.motd");
+		if (!motdFile.is_open())
+			return (Error::nomotd(sender));
+		while(getline(motdFile, motdStr))
+		{
+			params.push_back(motdStr);
+			motd.setParams(params);
+			out += motd.buildRawMsg();
+			params.pop_back();
+		}
+		motdFile.close();
 		return(out);
 	}
 

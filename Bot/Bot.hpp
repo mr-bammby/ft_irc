@@ -6,10 +6,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-/**
- * this is the dumbest thing ever written haha
- * currently segfaults if server quits
-*/
 class	Bot
 {
 	private:
@@ -26,9 +22,7 @@ class	Bot
 		void	join_server();
 	public:
 		Bot(int port, std::string pass);
-		Bot(Bot const &src);
 		~Bot(void);
-		//Bot &operator=(Bot const &rhs);
 
 		void run();
 };

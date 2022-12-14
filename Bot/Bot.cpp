@@ -20,20 +20,12 @@ Bot::Bot(int port, std::string pass) : pass(pass)
 	servAddr.sin_addr = ((struct sockaddr_in *)serv->ai_addr)->sin_addr;
 	return ;
 }
-Bot::Bot(Bot const &src)
-{
-	*this = src;
-	return ;
-}
+
 Bot::~Bot(void)
 {
 	send_msg("QUIT\r\n");
 	return ;
 }
-// Bot	&Bot::operator=(Bot const &rhs)
-// {
-// 	return *this;
-// }
 
 void Bot::run()
 {
@@ -42,13 +34,14 @@ void Bot::run()
 	join_server();
 	while(awake == 1)
 	{
-		if (messages.empty())
+		if (awake == 1 && messages.empty())
 			recieve_msg();
-		if (messages[0].find("JOIN") != std::string::npos)
+		if (awake == 1 && messages[0].find("JOIN") != std::string::npos)
 			send_msg("PRIVMSG #PARTY welcome to the party!!\r\n");
-		else if (messages[0].find("party") != std::string::npos)
-			send_msg("PRIVMSG #PARTY did someone say party????\r\n"); // i think these are where the segfault occurs 
-		messages.erase(messages.begin());
+		else if (awake == 1 && messages[0].find("party") != std::string::npos)
+			send_msg("PRIVMSG #PARTY did someone say party????\r\n");
+		if (awake == 1)
+			messages.erase(messages.begin());
 	}
 	messages.clear();
 }
@@ -62,7 +55,7 @@ void Bot::send_msg(std::string msg)
 	}
 }
 
-void Bot::recieve_msg() //if no message recieved when func called
+void Bot::recieve_msg()
 {
 	char buf[1024];
 	struct pollfd pfd;
@@ -73,12 +66,8 @@ void Bot::recieve_msg() //if no message recieved when func called
 	{
 		awake = 0;
 		return;
-		// if (pfd.revents & POLLERR)
-		// {
-			
-		// }
 	}
-	ssize_t len = recv(bot_fd, &buf, 1024, 0);
+	ssize_t len = recv(bot_fd, &buf, 1024, O_NONBLOCK);
 	if (len <= 0)
 	{
 		awake = 0;
@@ -97,18 +86,12 @@ void Bot::recieve_msg() //if no message recieved when func called
 void Bot::join_server()
 {
 	send_msg("PASS " + pass + "\r\n");
-	//recieve_msg(); fix
-	if (messages.size() > 0)
-	{
-		std::cout << "wrong password" << std::endl;
-		return ;
-	}
 	send_msg("USER " + nick + "\r\n");
 	send_msg("NICK " + nick + "\r\n");
 	recieve_msg();
-	if (messages.size() > 2)
+	if (messages.size() < 4)
 	{
-		std::cout << "bot nickname in use" << std::endl;
+		std::cout << "unable to join server" << std::endl;
 		return;
 	}
 	awake = 1;
