@@ -38,7 +38,7 @@ void Bot::run()
 			recieve_msg();
 		if (awake == 1 && messages[0].find("JOIN") != std::string::npos)
 			send_msg("PRIVMSG #PARTY welcome to the party!!\r\n");
-		else if (awake == 1 && messages[0].find("party") != std::string::npos)
+		else if (awake == 1 && messages[0].find("party") != std::string::npos && messages[0].find("PRIVMSG #PARTY") != std::string::npos)
 			send_msg("PRIVMSG #PARTY did someone say party????\r\n");
 		if (awake == 1)
 			messages.erase(messages.begin());
