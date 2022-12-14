@@ -147,7 +147,6 @@ namespace Reply
 			return (Error::nomotd(sender));
 		while(getline(motdFile, motdStr))
 		{
-			motdStr.resize(80);
 			params.push_back(motdStr);
 			motd.setParams(params);
 			out += motd.buildRawMsg();

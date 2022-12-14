@@ -4,10 +4,13 @@
 
 
 Server::Server(int port, std::string pass): on(true), server_port(port), used_clients(0), password(pass), name("IRC")
-{}
+{
+	setupTable();
+}
 
 Server::~Server()
 {
+	cleanTable();
 	shutdown(this->pollfds[0].fd, SHUT_RDWR);
 }
 
@@ -21,39 +24,53 @@ int				Server::get_serverfd()
 	return (server_fd);
 }
 
+typedef int (*fun)(Server&, Message&);
+
+void	Server::setupTable()
+{
+	fun		*res[6];
+
+	res[0] = new fun[3];
+	res[0][0] = &passCommand;
+	res[0][1] = &nickCommand;
+	res[0][2] = &userCommand;
+	res[1] = new fun[2];
+	res[1][0] = &privmsgCommand;
+	res[1][1] = &noticeCommand;
+	res[2] = new fun[9];
+	res[2][0] = &kickCommand;
+	res[2][1] = &modeCommand;
+	res[2][2] = &inviteCommand;
+	res[2][3] = &topicCommand;
+	res[2][4] = &partCommand;
+	res[2][5] = &whoCommand;
+	res[2][6] = &namesCommand;
+	res[2][7] = &listCommand;
+	res[2][8] = &joinCommand;
+	res[3] = new fun[2];
+	res[4] = new fun[2];
+	res[5] = new fun[5];
+	res[5][0] = &killCommand;
+	res[5][1] = NULL;
+	res[5][2] = &operCommand;
+	res[5][3] = &quitCommand;
+	res[5][4] = &squitCommand;
+	for (int i = 0; i < 6; i++)
+	{
+		this->table.push_back(res[i]);
+	}
+}
+void	Server::cleanTable()
+{
+	for (int i = 0; i < 6; i++)
+	{
+		delete[] this->table[i];
+	}
+	this->table.clear();
+}
+
 void Server::executor()
 {
-	int	(*initT[4])(Server &s, Message &a) =
-	{
-		&passCommand, &nickCommand,	&userCommand
-	};
-	int	(*msgT[2])(Server &s, Message &a) =
-	{
-		&privmsgCommand, &noticeCommand
-	};
-	int	(*channelT[9])(Server &s, Message &a) =
-	{
-		&kickCommand, &modeCommand, &inviteCommand, &topicCommand, &partCommand, &whoCommand, &namesCommand, &listCommand, &joinCommand
-	};
-	// ??? CMD_RESPONSE && ERROR_RESPONSE
-	int	(*responesT[2])(Server &s, Message &a) =
-	{
-		NULL, NULL
-	};
-	// Ping
-	int	(*ignoreT[1])(Server &s, Message &a) =
-	{
-		NULL
-	};
-	// Restart missing
-	int	(*miscT[5])(Server &s, Message &a) =
-	{
-		&killCommand, NULL, &operCommand, &quitCommand, &squitCommand
-	};
-	int	(**test[6])(Server &s, Message &a) =
-	{
-		initT, msgT, channelT, responesT, ignoreT, miscT
-	};
 
 	Message *current;
 
@@ -62,13 +79,10 @@ void Server::executor()
 		current = getNextMessage();
 		std::cout << RED;
 
-    // Colon still present in args, chagne message split function
-		//std::cout << "Executing: " << current->getCommand()  << " TXT: " << current->getParams()[0] << std::endl; 
-		// ^^ this causes a segfault if there are no params
 		std::cout<<"COMMANDS IN EXECUTOR, CATEGORY: "<<current->getComCategory()<<" TYPE: "<<current->getType()<<std::endl;
 		if (current->getComCategory() != IGNORE && current->getType() != UNKNOWN)
-			if (test[current->getComCategory()][current->getType() % 10] != NULL)
-				test[current->getComCategory()][current->getType() % 10](*this, *current);
+			if (this->table[current->getComCategory()][current->getType() % 10] != NULL)
+				this->table[current->getComCategory()][current->getType() % 10](*this, *current);
 		if (current->getType() == UNKNOWN)
 			sendResponse(*(current->getSender()), Error::unknowncommand(*(current->getSender()), current->getCommand()));
 		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
