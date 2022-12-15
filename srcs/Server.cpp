@@ -389,6 +389,7 @@ void	 Server::deleteUser(Client *user)
 	this->pollfds.erase(it);
 	this->clients_nameMap.erase(user->getNickname());
 	this->clients_fdMap.erase(user->getFd());
+	this->incomplete.erase(user);
 	used_clients--;
 }
 
