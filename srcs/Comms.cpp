@@ -251,11 +251,6 @@ int	privmsgCommand(Server &serv, Message &attempt)
 				}
 				std::string	message;
 				message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp2->get_name() + " :" + attempt.getText().substr(tmp2->get_name().size() + 1) + "\r\n";
-				std::cout<<"-------------------------"<<std::endl;
-				std::cout<<"CH Sent message: "<<message<<std::endl;
-				std::cout<<"CH Sent message sender FD: "<<attempt.getSender()->getFd()<<std::endl;
-				std::cout<<"CH Sent message sender NICK: "<<attempt.getSender()->getNickname()<<std::endl;
-				std::cout<<"-------------------------"<<std::endl;
 				tmp2->broadcast(message, attempt.getSender()->getFd());
 				message.clear();
 			}
@@ -264,13 +259,6 @@ int	privmsgCommand(Server &serv, Message &attempt)
 		{
 			std::string	message;
 			message = ":" + attempt.getSender()->getNickname() + " PRIVMSG " + tmp->getNickname() + " :" + attempt.getText().substr(tmp->getNickname().size() +1 ) + "\r\n";
-			std::cout<<"==========================="<<std::endl;
-			std::cout<<"CL Sent message: "<<message<<std::endl;
-			std::cout<<"CL Sent message sender FD: "<<attempt.getSender()->getFd()<<std::endl;
-			std::cout<<"CL Sent message sender NICK: "<<attempt.getSender()->getNickname()<<std::endl;
-			std::cout<<"CL Sent message reciver FD: "<<tmp->getFd()<<std::endl;
-			std::cout<<"CL Sent message reciver NICK: "<<tmp->getNickname()<<std::endl;
-			std::cout<<"==========================="<<std::endl;
 			send(tmp->getFd(), message.c_str(), message.length(), 0);
 			message.clear();
 		}

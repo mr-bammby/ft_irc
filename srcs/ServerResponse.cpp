@@ -388,10 +388,5 @@ namespace Error
 
 void		sendResponse(Client &sender, std::string message)
 {
-	std::cout<<"§§§§§§§§§§§§§§§§§§§§§§§"<<std::endl;
-	std::cout<<"Sending response: "<<message<<std::endl;
-	std::cout<<"Sending response sender FD: "<<sender.getFd()<<std::endl;
-	std::cout<<"Sending response sender NICK: "<<sender.getNickname()<<std::endl;
-	std::cout<<"§§§§§§§§§§§§§§§§§§§§§§§"<<std::endl;
 	send(sender.getFd(), message.c_str(), message.length(), 0);
 }

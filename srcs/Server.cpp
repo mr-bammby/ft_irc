@@ -134,13 +134,8 @@ int Server::start_loop()
 				else{
 					buf[buffsize] = '\0';
 					std::string m(buf);
-					std::cout<<"************************"<<std::endl;
-					std::cout<<"Recived message: "<<m<<std::endl;
-					std::cout<<"Recived message sender FD: "<<pfdit->fd<<std::endl;
 					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)), incomplete);
 					messages.insert(messages.begin(), current.rbegin(), current.rend());
-					std::cout<<"Recived message sender NICK: "<<messages[0].getSender()->getNickname()<<std::endl;
-					std::cout<<"************************"<<std::endl;
 					current.clear();
 				}
 				break ;
@@ -272,7 +267,7 @@ int Server::set_nickName(Client* client_ptr, std::string nickName)
 	{
 		return (-2);
 	}
-	if (checkNickGrammar(nickName) == -1 || nickName.size() > 9)
+	if (nickName.size() > 9 || checkNickGrammar(nickName) == -1)
 	{
 		return (-3);
 	}
