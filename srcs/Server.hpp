@@ -55,6 +55,8 @@ class Server
 		Server(const Server &s);
 		Server	&operator=(const Server &s);
 		int 								create_client();
+		void								setupTable();
+		void								cleanTable();
 
 		int 								server_port;
 		int 								used_clients;
@@ -66,6 +68,7 @@ class Server
 		std::vector<Message> 				messages;
 		std::map<Client*, std::string>		incomplete;
 		std::string				   			name;
+		std::vector<fun*>					table;
 		int						   			server_fd;
 };
 
