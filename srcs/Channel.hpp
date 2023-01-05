@@ -7,21 +7,26 @@
 #include <sys/socket.h>
 #include "Client.hpp"
 
+/** @class Channel
+ * @brief This class handless all interactions connected to irc channel operation.
+ * 
+ * @details It includes handling of members, topic, operator. 
+ * 			It also have functionality of inviting, joining, and removing of members.
+ * 			Meant to be used with proprietary class Client
+ */
 class Channel
 {
 	public:
 		Channel(std::string name, Client &c);
-		// Channel(const Channel &c);
 		~Channel();
-
 		Channel &operator=(const Channel &c);
 
+		//actions
 		int	broadcast(std::string message, int sender);
 		int	connect(Client &c);
 		int	disconnect(Client &c);
 		int	disconnect(std::string nickname);
 		int	cmd_kick(std::string nickname);
-		// int cmd_mode();
 		int	cmd_invite(std::string nickname);
 		int	cmd_topic(std::string top);
 		int	cmd_names(Client& sender);
@@ -31,17 +36,7 @@ class Channel
 		int	client_count();
 		int	list_coms(Client& sender);
 
-		std::string	get_topic();
-		std::string	get_name() const;
-		Client*		get_op() const;
-
-		// bool	is_op(Client &c);
-		bool	is_invited(std::string nick);
-		bool	is_op(std::string nickname);
-		bool	is_member(Client &c);
-		bool	is_member(std::string nickname);
-		bool	can_invite(Client &c);
-		int		can_invite(std::string nickname);
+		//setters
 		int		change_is_private(std::string sign);
 		int		change_is_secret(std::string sign);
 		int		change_optopic(std::string sign);
@@ -52,7 +47,16 @@ class Channel
 		int		change_invite(std::string sign);
 		int		change_who_speaks_on_moderated(std::string sign, std::string user);
 
-
+		//getters 
+		std::string					get_topic();
+		std::string					get_name() const;
+		Client*						get_op() const;
+		bool						is_invited(std::string nick);
+		bool						is_op(std::string nickname);
+		bool						is_member(Client &c);
+		bool						is_member(std::string nickname);
+		bool						can_invite(Client &c);
+		int							can_invite(std::string nickname);
 		bool						get_invite_only() const;
 		bool						get_is_private() const;
 		bool						get_is_secret() const;
@@ -66,8 +70,7 @@ class Channel
 		std::vector<std::string>	get_operators() const;
 		bool						can_speak_onchannel(std::string nick);
 		bool						limit_full();
-
-		std::string		channel_modes();
+		std::string					channel_modes();
 
 	private:
 		
@@ -85,7 +88,9 @@ class Channel
 		bool							moderated;
 		std::size_t						user_limit;
 		std::string						password;
-		std::vector<std::string>		who_speaks_on_moderated;					
+		std::vector<std::string>		who_speaks_on_moderated;
+
+		Channel(const Channel &c); //canonical form				
 
 };
 
