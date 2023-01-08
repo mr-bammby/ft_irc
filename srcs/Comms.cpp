@@ -181,7 +181,7 @@ int	joinCommand(Server &serv, Message &attempt)
 		else //channel exists and trying to connect to it
 		{
 			//connecting to channel by sending channels[i] as a channel name and currentPass as a password for this channel
-			// it should be checked if channel is invite only, if channel is full, if client is banned from channel, 
+			// it should be checked if channel is invite only, if channel is full, if client is banned from channel,
 			//if password is correct for channel, if client joined to too many channels
 
 			//if everything ok. Client recives NOTICE about all commands avaliable which affects channel
@@ -211,7 +211,7 @@ int	joinCommand(Server &serv, Message &attempt)
 			tmp->connect(*attempt.getSender());
 			if (tmp->get_op_topic() != false)
 				sendResponse(*(attempt.getSender()), Reply::topic(*(attempt.getSender()), tmp->get_name(), tmp->get_topic()));
-			else 
+			else
 				sendResponse(*(attempt.getSender()), Reply::notopic(*(attempt.getSender()), tmp->get_name()));
 			std::string msg = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost JOIN" + " :" + tmp->get_name() + "\r\n";
 			tmp->broadcast(msg, 0);
@@ -236,7 +236,7 @@ int	privmsgCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::norecipient(*(attempt.getSender()), attempt.getCommand()));
 		return (-2);
 	}
-	if (attempt.getText().size() == 0)
+	if (attempt.getParams().size() == 1 || attempt.getText().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::notexttosend(*(attempt.getSender())));
 		return (-2);
@@ -289,7 +289,7 @@ int	privmsgCommand(Server &serv, Message &attempt)
 			// sending to client
 			// if client is away, sending RPL_AWAY message
 		}
-		
+
 		it++;
 	}
 
@@ -298,17 +298,17 @@ int	privmsgCommand(Server &serv, Message &attempt)
 
 int	noticeCommand(Server &serv, Message &attempt)
 {
-	// How I understand, NOTICE is the same as PRIVMSG, it just dont send any replies, even if some errors occur 
+	// How I understand, NOTICE is the same as PRIVMSG, it just dont send any replies, even if some errors occur
 	if (attempt.getSender()->getState() != 3)
 	{
 		sendResponse(*(attempt.getSender()), Error::notregistered());
 		return (-1);
 	}
 	if (attempt.getParams().size() == 0)
-		return (-2); 
+		return (-2);
 	if (attempt.getText().size() == 0)
 		return (-3);
-	
+
 	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
 	// iterating thorough all the recipients whom to send message
 	std::vector<std::string>::iterator it = recipients.begin();
@@ -351,7 +351,7 @@ int	noticeCommand(Server &serv, Message &attempt)
 			message.clear();
 			// sending to client
 		}
-		
+
 		it++;
 	}
 
@@ -385,7 +385,7 @@ int	inviteCommand(Server &serv, Message &attempt)
 	if (!chn->is_member(attempt.getSender()->getNickname()))
 	{
 		sendResponse(*(attempt.getSender()), Error::notonchannel(*(attempt.getSender()), chn->get_name()));
-		return (-5); // this said ERR_USERONCHANNEL, but i think it should be not on channel, change if needed 
+		return (-5); // this said ERR_USERONCHANNEL, but i think it should be not on channel, change if needed
 	}
 	int chn_resp = chn->can_invite(attempt.getSender()->getNickname());
 	if (chn_resp == 0)
@@ -393,7 +393,7 @@ int	inviteCommand(Server &serv, Message &attempt)
 		chn->cmd_invite(cln->getNickname());
 		sendResponse(*(attempt.getSender()), Reply::inviting(*(attempt.getSender()), chn->get_name(), cln->getNickname()));
 		std::string msg1 = ":" + attempt.getSender()->getNickname() + "!" + attempt.getSender()->getUsername() + "@localhost INVITE " + cln->getNickname() + " " + chn->get_name() + "\r\n";
-		send(cln->getFd(), msg1.c_str(), msg1.length(), 0); 
+		send(cln->getFd(), msg1.c_str(), msg1.length(), 0);
 		//send invite
 	}
 	else if (chn_resp == -6)
@@ -415,7 +415,7 @@ int	killCommand(Server &serv, Message &attempt)
 {
 	if (attempt.getSender()->getState() != 3)
 	{
-		sendResponse(*(attempt.getSender()), Error::notregistered()); 
+		sendResponse(*(attempt.getSender()), Error::notregistered());
 		return (-1);
 	}
   	if (!attempt.getSender()->is_op())
@@ -682,7 +682,7 @@ int	squitCommand(Server &serv, Message &attempt)
 		sendResponse(*(attempt.getSender()), Error::nopriveleges(*(attempt.getSender())));
 		return (-2);
 	}
-		
+
 	if (attempt.getParams().size() == 0)
 	{
 		sendResponse(*(attempt.getSender()), Error::needmoreparams(attempt.getCommand()));
@@ -803,7 +803,7 @@ int	plus(Message &attempt, Channel &ch)
 		else if (tmp[i] == 'k')
 		{
 			if (attempt.getParams().size() < (y + 1))
-				return (-6); 
+				return (-6);
 			ch.change_password("+", attempt.getParams()[y]);
 		}
 		else
