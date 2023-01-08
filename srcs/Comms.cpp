@@ -306,7 +306,7 @@ int	noticeCommand(Server &serv, Message &attempt)
 	}
 	if (attempt.getParams().size() == 0)
 		return (-2);
-	if (attempt.getText().size() == 0)
+	if (attempt.getParams().size() == 1 || attempt.getText().size() == 0)
 		return (-3);
 
 	std::vector<std::string> recipients = split(attempt.getParams()[0], ",");
