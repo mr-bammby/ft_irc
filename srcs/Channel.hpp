@@ -90,7 +90,7 @@ class Channel
 		std::string						password;
 		std::vector<std::string>		who_speaks_on_moderated;
 
-		Channel(const Channel &c); //canonical form				
+		//Channel(const Channel &c); //canonical form				
 
 };
 

@@ -20,6 +20,11 @@
 #define MAX_CLIENTS 128
 #define TIMEOUT 	180
 
+/** @class Server
+ * @brief This class handless server operation based.
+ * 
+ * @details The main class of irc server.
+ */
 class Server
 {
 	public:
@@ -27,7 +32,7 @@ class Server
 		~Server();
 		int 								init();
 		int 								start_loop();
-		Channel* 							create_channel(std::string name, Client& c);
+		Channel*							create_channel(std::string name, Client& c);
 		bool								check_password(std::string pass);
 		Message 							*getNextMessage();
 		int									getBacklogLength();
@@ -44,17 +49,19 @@ class Server
 		void								cmd_namesAllchannels(Client& c);
 		std::string							get_name();
 		int									get_serverfd();
+		std::vector<pollfd>&				get_pollfds();
 		int									list_allchannels(Client& c);
 		int									deleteChannel(std::string name);
 		std::map<std::string, Channel>		&getChannels();
 
 		typedef int (*fun)(Server&, Message&);
-		bool					   			on;
+		bool								on;
+
 	private:
 		Server();
 		Server(const Server &s);
 		Server	&operator=(const Server &s);
-		int 								create_client();
+		int									create_client();
 		void								setupTable();
 		void								cleanTable();
 
@@ -63,13 +70,13 @@ class Server
 		std::string 						password;
 		std::vector<pollfd> 				pollfds;
 		std::map<int, Client> 				clients_fdMap;
-		std::map<std::string, Client*> 		clients_nameMap;
-		std::map<std::string, Channel> 		channels;
+		std::map<std::string, Client*>		clients_nameMap;
+		std::map<std::string, Channel>		channels;
 		std::vector<Message> 				messages;
 		std::map<Client*, std::string>		incomplete;
-		std::string				   			name;
+		std::string							name;
 		std::vector<fun*>					table;
-		int						   			server_fd;
+		int									server_fd;
 };
 
 

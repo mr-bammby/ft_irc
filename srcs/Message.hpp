@@ -32,27 +32,21 @@ struct prefix {
 // forward declaration to break include cycle
 class Client;
 
+/** @class Message
+ * @brief This class handless operation based on irc messages. That includes received and send messages.
+ * 
+ * @details Parse incoming Message. Create outgoing message (response).
+ */
 class Message
 {
 public:
 	Message();
-
-	// Message(const std::string& rawMsg, Client *cl = NULL);
-
 	Message(const std::string& rawMsg, Client* sender);
-
-	// parse incomming Message
-	// Message(const std::string& rawMsg, Client* sender = NULL);
-	// create outgoing message (response)
 	Message(
 		enum Commands cmdType,
 		const std::vector<std::string>& params,
 		Client*							sender);
-	// Message(const Message& other);
 	~Message();
-
-	// Message& operator=(const Message& other);
-
 	const struct prefix&			getPrefix() const;
 	enum ComCategory				getComCategory() const;
 	enum Commands					getType() const;
@@ -64,8 +58,6 @@ public:
 	void setCommand(enum Commands cmd, const std::string& cmd_str = "");
 	void setParams(const std::vector<std::string>& params);
 	void setSender(Client* sender);
-
-	// void setHostname(const std::string& hostname)
 
 	std::string buildRawMsg() const;
 
@@ -101,11 +93,9 @@ private:
 };
 
 // non-member functions
-
 std::vector<Message> getMessages(const std::string& raw, Client* sender);
 std::vector<Message> getMessages(const std::string& raw, Client* sender, \
-std::map<Client*, std::string> &incomplete_map);
-
+	std::map<Client*, std::string> &incomplete_map);
 std::ostream& operator<<(std::ostream& os, const Message& msg);
 
 #endif // MESSAGE_HPP

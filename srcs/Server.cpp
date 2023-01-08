@@ -12,6 +12,11 @@ Server::~Server()
 {
 	cleanTable();
 	shutdown(this->pollfds[0].fd, SHUT_RDWR);
+	for (std::vector<pollfd>::iterator pfdit = pollfds.begin(); pfdit != pollfds.end(); ++pfdit)
+    {
+        close((*pfdit).fd);
+    }
+
 }
 
 std::string		Server::get_name()
@@ -40,24 +45,10 @@ void Server::executor()
 				this->table[current->getComCategory()][current->getType() % 10](*this, *current);
 		if (current->getType() == UNKNOWN)
 			sendResponse(*(current->getSender()), Error::unknowncommand(*(current->getSender()), current->getCommand()));
-		// std::map<std::string, fun>::iterator it = exeCommands.find(current->getCommand());
-		// if (it == exeCommands.end())
-		// {
-		// 	std::cout<<"Command not found"<<std::endl;
-		// 	std::string msg = ":<servername> 421 " + current->getSender()->getNickname() + " " + current->getCommand() + " :Unknown command\r\n";
-		// 	send(current->getSender()->getFd(), msg.c_str(), msg.length(), 0);
-		// }
-		// else
-		// {
-		// 	if (it->second != NULL)
-		// 		it->second(*this, *current);
-		// }
 		std::cout << BLANK;
 		removeLastMessage();
 	}
 }
-
-
 
 int Server::init()
 {
@@ -127,12 +118,12 @@ int Server::start_loop()
 				else{
 					buf[buffsize] = '\0';
 					std::vector<Message> current = getMessages(buf, &(this->clients_fdMap.at(pfdit->fd)), incomplete);
-					std::cout <<"666666666" << std::endl;
+					//std::cout <<"666666666" << std::endl;
 					messages.insert(messages.begin(), current.rbegin(), current.rend());
-					std::cout <<"7777777" << std::endl;
+					//std::cout <<"7777777" << std::endl;
 					current.clear();
 
-					printf("Client: %s\n", buf);
+					//printf("Client: %s\n", buf);
 				}
 				break ;
 			}
@@ -355,6 +346,7 @@ void	 Server::deleteUser(Client *user)
 		channels.erase(*i);
 	}
 	shutdown(it->fd, SHUT_RDWR);
+	close(it->fd);
 	this->pollfds.erase(it);
 	this->clients_nameMap.erase(user->getNickname());
 	this->clients_fdMap.erase(user->getFd());
@@ -372,7 +364,6 @@ std::map<std::string, Channel>	&Server::getChannels()
 {
 	return (this->channels);
 }
-
 
 typedef int (*fun)(Server&, Message&);
 
@@ -418,4 +409,9 @@ void	Server::cleanTable()
 		delete[] this->table[i];
 	}
 	this->table.clear();
+}
+
+std::vector<pollfd>&		Server::get_pollfds()
+{
+	return(pollfds);
 }
